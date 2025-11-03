@@ -1,0 +1,488 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card material-card text-white mb-4">
+            <div class="card-body">
+                <h2 class="card-title text-center">
+                    <i class="fas fa-box-open"></i> Material Properties & Applications
+                </h2>
+                <p class="text-center mb-0">Complete guide to flexible packaging materials, their properties, and typical applications</p>
+            </div>
+        </div>
+
+        <!-- Quick Navigation -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <a href="{% url 'home' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-calculator"></i> Main Calculator
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'calculation_history' %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-history"></i> History
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'material_reference' %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-database"></i> Materials
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'calculation_reasons' %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-lightbulb"></i> Purposes
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'material_properties' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-box-open"></i> Applications
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'sales:sales_home' %}" class="btn btn-purple w-100">
+                            <i class="fas fa-money-bill-wave"></i> Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Introduction -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Understanding Material Roles in Flexible Packaging
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-palette fa-2x mb-2"></i>
+                                <h6>Structural/Print Layer (Outer)</h6>
+                                <p class="small mb-0">Stiffness, printability, surface protection</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                                <h6>Barrier Layer (Middle/Curtain)</h6>
+                                <p class="small mb-0">Gas, moisture, and light protection</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-dark h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-seal fa-2x mb-2"></i>
+                                <h6>Sealant Layer (Inner)</h6>
+                                <p class="small mb-0">Heat sealing, product contact</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-muted mt-3 mb-0"><small>Each material serves specific functions in laminate structures, balancing quality requirements with cost efficiency.</small></p>
+            </div>
+        </div>
+
+        <!-- Single Material Properties -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-layer-group"></i> Single Material Properties and Applications
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Material Name</th>
+                                <th>Code</th>
+                                <th>Density (g/cm³)</th>
+                                <th>Key Single Property & Role</th>
+                                <th>Typical Products Packaged</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Polyethylene Terephthalate</strong></td>
+                                <td><code>PET</code></td>
+                                <td><span class="badge bg-info">1.365</span></td>
+                                <td><strong>High Stiffness & Heat Resistance.</strong> Excellent print surface, good clarity, and high dimensional stability under heat (used as the primary outer print layer).</td>
+                                <td><strong>Microwave Meals, Snack Trays,</strong> High-Speed Printed Films (e.g., confectionery wrappers).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Biaxially Oriented Polypropylene</strong></td>
+                                <td><code>BOPP</code></td>
+                                <td><span class="badge bg-info">0.905</span></td>
+                                <td><strong>High Clarity & Yield.</strong> Cost-effective, high-gloss film with good moisture barrier properties and low density (yields more film per kg).</td>
+                                <td><strong>Pasta, Biscuits, Snack Foods,</strong> Cigarette Overwraps.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Low-Density Polyethylene</strong></td>
+                                <td><code>LDPE</code></td>
+                                <td><span class="badge bg-info">0.925</span></td>
+                                <td><strong>Excellent Heat Seal & Flexibility.</strong> Lowest melting point film; provides high dart impact strength (puncture resistance) and superior weld integrity. <strong>Always the Sealant Layer.</strong></td>
+                                <td><strong>Frozen Foods, Bread Bags, Produce,</strong> Heavy-Duty Shipping Sacks.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>High-Density Polyethylene</strong></td>
+                                <td><code>HDPE</code></td>
+                                <td><span class="badge bg-info">0.955</span></td>
+                                <td><strong>High Rigidity & Toughness.</strong> Provides better stiffness and higher-temperature resistance than LDPE; useful for heavy or bulky products.</td>
+                                <td><strong>Rice/Grain Bags, Detergent Pouches,</strong> Heavy-Duty Industrial Liners.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nylon Film (BOPA)</strong></td>
+                                <td><code>NYLON</code></td>
+                                <td><span class="badge bg-info">1.145</span></td>
+                                <td><strong>Outstanding Puncture Resistance & Aroma Barrier.</strong> Excellent toughness, wear, and abrasion resistance, especially at freezing temperatures.</td>
+                                <td><strong>Frozen Seafood, Cheese, Deli Meats,</strong> High-abuse applications (e.g., sharp-edged items).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cast Polypropylene</strong></td>
+                                <td><code>CPP</code></td>
+                                <td><span class="badge bg-info">0.91</span></td>
+                                <td><strong>Strong Seal & Hot Tack.</strong> Used as a sealant layer, offering better thermal resistance (higher melting point) and faster sealing speeds than LDPE.</td>
+                                <td><strong>Retort Pouches, Stand-up Pouches,</strong> Medical/Sterilization Packaging.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Polypropylene</strong></td>
+                                <td><code>PP</code></td>
+                                <td><span class="badge bg-info">0.908</span></td>
+                                <td><strong>General Rigidity.</strong> Used as a basic structural film where high clarity is not paramount; good balance of strength and cost.</td>
+                                <td><strong>Bulk Grains, Textile Packaging,</strong> Non-food bulk goods.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metallized and Specialty Materials -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-star"></i> Metallized and Specialty Material Properties
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3"><em>These materials gain their key properties through modification (metallization) or finish (matt/pearlized).</em></p>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Material Name</th>
+                                <th>Code</th>
+                                <th>Density (g/cm³)</th>
+                                <th>Key Property and Role</th>
+                                <th>Typical Products Packaged</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Metallized PET</strong></td>
+                                <td><code>MPET</code></td>
+                                <td><span class="badge bg-info">1.365</span></td>
+                                <td><strong>High Barrier Curtain (Light & O₂).</strong> Excellent barrier against light, oxygen, and moisture, achieved by depositing a thin layer of aluminium. Used as the barrier layer in high-specification laminates.</td>
+                                <td><strong>Ground Coffee, Dried Herbs,</strong> High-end Nutritional Supplements, <strong>Lamination Barrier Curtains.</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Metallized BOPP</strong></td>
+                                <td><code>MBOPP</code></td>
+                                <td><span class="badge bg-info">0.905</span></td>
+                                <td><strong>Cost-Effective Moisture Barrier.</strong> Provides a good moisture and light barrier, but at a lower cost and density than MPET. Common barrier layer in snack packaging.</td>
+                                <td><strong>Potato Chips, Snack Mixes,</strong> Cereal Liners, <strong>Moisture-Sensitive Powder Mixes.</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Matt Finish BOPP</strong></td>
+                                <td><code>BOPP_matt</code></td>
+                                <td><span class="badge bg-info">0.855</span></td>
+                                <td><strong>Tactile & Low-Glare Aesthetic.</strong> The surface is treated to give a low-gloss, paper-like feel. Primarily an outer layer used for <strong>marketing and shelf appeal</strong>.</td>
+                                <td><strong>Gourmet Pet Food, Organic Snacks,</strong> High-end Candy Bars.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pearlized BOPP</strong></td>
+                                <td><code>BOPP_pearlized</code></td>
+                                <td><span class="badge bg-info">0.79</span></td>
+                                <td><strong>High Opacity & Low Density.</strong> The film contains micro-voids, making it opaque and giving it the lowest density, thus maximizing yield (more meters per kg).</td>
+                                <td><strong>Ice Cream Wraps, Candy Wrappers,</strong> Opaque outer layers requiring maximum coverage.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Twist PET</strong></td>
+                                <td><code>PET_twist</code></td>
+                                <td><span class="badge bg-info">1.335</span></td>
+                                <td><strong>Twist Retention.</strong> Designed to hold a twisted shape after wrapping (high "dead fold" property).</td>
+                                <td><strong>Hard Candies, Taffy,</strong> Chocolate Bars (where the twist is part of the seal).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Colored HDPE/LDPE</strong></td>
+                                <td><code>HDPE/LDPE_colored</code></td>
+                                <td><span class="badge bg-info">0.96 / 0.925</span></td>
+                                <td><strong>Opaque & UV Protection.</strong> Pigment provides opacity, often eliminating the need for a metallized layer when light barrier is the main concern (and O₂ is secondary).</td>
+                                <td><strong>Gardening Soil, Fertilizer Bags,</strong> Films requiring full light blockage.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Laminates Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-object-group"></i> Laminated Structures & Case Studies
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-primary">
+                    <h6 class="alert-heading"><i class="fas fa-balance-scale"></i> Material Selection Balance</h6>
+                    <p class="mb-0">Flexible packaging material selection is a balancing act between achieving the necessary <strong>Quality Control (QC)</strong> properties (barrier, strength) and minimizing cost to ensure <strong>Efficiency</strong> and profitability.</p>
+                </div>
+
+                <!-- Fundamental Material Selection -->
+                <h5 class="mt-4 mb-3"><i class="fas fa-cube"></i> Fundamental Material Selection by Role</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Material</th>
+                                <th>Density (g/cm³)</th>
+                                <th>Key Role and Property</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>PET (Polyethylene Terephthalate)</strong></td>
+                                <td><span class="badge bg-info">1.365</span></td>
+                                <td><strong>Outer Strength.</strong> Excellent stiffness, high clarity, dimensional stability, and high chemical resistance.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>BOPP (Biaxially Oriented Polypropylene)</strong></td>
+                                <td><span class="badge bg-info">0.905</span></td>
+                                <td><strong>Structural/Print.</strong> Good barrier, high gloss, low density, and cost-effective surface layer.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>LDPE / HDPE</strong></td>
+                                <td><span class="badge bg-info">0.925 / 0.955</span></td>
+                                <td><strong>Sealant.</strong> Low melting point, high clarity, and high dart impact strength (puncture resistance). Always the innermost layer.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>NYLON</strong></td>
+                                <td><span class="badge bg-info">1.145</span></td>
+                                <td><strong>Abuse Resistance.</strong> Excellent puncture and abrasion resistance (often used for frozen or abrasive products).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Metallized Films (MPET, MBOPP)</strong></td>
+                                <td><span class="badge bg-info">~0.905-1.365</span></td>
+                                <td><strong>Barrier Curtain.</strong> Provides an opaque, high barrier "curtain" against <strong>light, oxygen, and moisture</strong>.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Case Studies -->
+                <h5 class="mt-5 mb-3"><i class="fas fa-flask"></i> Case Studies: Product Applications</h5>
+                
+                <!-- Ground Coffee Case Study -->
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0"><i class="fas fa-coffee"></i> Product 1: Ground Coffee Bag (High Barrier, Puncture Resistance)</h6>
+                    </div>
+                    <div class="card-body">
+                        <p>Coffee requires an extremely high barrier to protect volatile aromatics and prevent oxidation.</p>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr class="table-secondary">
+                                        <th width="25%">Required Properties</th>
+                                        <th width="35%">Why the Material is Chosen</th>
+                                        <th width="40%">Alternative Layering</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Puncture & Abuse Resistance</strong></td>
+                                        <td><strong>NYLON (1.145)</strong> is often chosen as a sub-surface layer due to its superior toughness and abrasion resistance.</td>
+                                        <td>Replace NYLON with thicker <strong>PET (1.365)</strong> for stiffness and clarity, if puncture resistance is secondary to print quality.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Oxygen & Light Barrier</strong></td>
+                                        <td><strong>Metallized PET (MPET, 1.365)</strong> is the chosen "curtain" layer providing opaque barrier against Oxygen Transmission Rate (OTR).</td>
+                                        <td>Use <strong>Aluminium Foil</strong> for zero OTR, or <strong>PET/SiOx</strong> for transparent, high-barrier film.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Seal Integrity</strong></td>
+                                        <td><strong>LDPE (0.925)</strong> provides robust, low-temperature seal critical for maintaining pressure and freshness.</td>
+                                        <td>Use <strong>Colored LDPE (0.925)</strong> for colored seals or <strong>CPP (0.91)</strong> for better hot tack performance.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert alert-success mt-3">
+                            <strong>Primary Lamination Choice:</strong> <code>PET (1.365) / MPET (1.365) / LLDPE (0.925)</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Snack Food Case Study -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0"><i class="fas fa-cookie"></i> Product 2: Salty Snack Food (Moisture Barrier, Aesthetics, Cost)</h6>
+                    </div>
+                    <div class="card-body">
+                        <p>Snacks require a high moisture barrier to maintain crispness, protection from light (to prevent oil rancidity), and an easy, clean tear.</p>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr class="table-secondary">
+                                        <th width="25%">Required Properties</th>
+                                        <th width="35%">Why the Material is Chosen</th>
+                                        <th width="40%">Alternative Layering</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Moisture Barrier & Aesthetics</strong></td>
+                                        <td><strong>Matt Finish BOPP (0.855)</strong> or <strong>Pearlized BOPP (0.79)</strong> provides moisture barrier with marketing appeal.</td>
+                                        <td>Use <strong>Twist PET (1.335)</strong> for high-end, crinkly appearance often used for candies.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Light/Fat Barrier</strong></td>
+                                        <td><strong>Metallized BOPP (MBOPP, 0.905)</strong> serves as cost-effective "curtain" blocking light and boosting moisture barrier.</td>
+                                        <td>Use <strong>Colored HDPE (0.96)</strong> for opaque barrier without metallization cost.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Easy Tear & Seal</strong></td>
+                                        <td><strong>CPP (Cast Polypropylene, 0.91)</strong> offers higher melting point for fast machinery and clean tear properties.</td>
+                                        <td>Use <strong>BOPP/BOPP</strong> mono-material structure for easy-recycling with special sealant grade.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert alert-success mt-3">
+                            <strong>Primary Lamination Choice:</strong> <code>BOPP (0.905) / MPET (1.365) / CPP (0.91)</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lamination Benefits -->
+                <h5 class="mt-5 mb-3"><i class="fas fa-puzzle-piece"></i> Why Use Laminates? (The "Curtain" Concept)</h5>
+                <div class="alert alert-info">
+                    <p class="mb-0">The act of lamination (combining materials) is necessary because <strong>no single plastic film offers all four required properties</strong> (strength, printability, high barrier, and heat sealability).</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Lamination Property</th>
+                                <th>Material Layer Role</th>
+                                <th>Example Rationale</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Barrier Enhancement</strong></td>
+                                <td><strong>Metallized Film (MPET/MBOPP)</strong></td>
+                                <td>The metal acts as an extreme <strong>"curtain"</strong> against O₂ and water vapor. MPET's inherent stiffness is maintained, but the metal provides the function that the plain polymer lacks.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mechanical Strength</strong></td>
+                                <td><strong>Outer PET or NYLON</strong></td>
+                                <td>Lamination allows the strength layer (PET) to protect the underlying barrier layer (MPET), preventing flex cracks or pinholes that compromise the curtain.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Chemical Resistance</strong></td>
+                                <td><strong>Adhesive in Lamination</strong></td>
+                                <td>Lamination bonds the material layers, protecting the inks and ensuring that the final heat-seal layer (PE) never touches the print layer, avoiding ink smudge or chemical degradation.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Weldability</strong></td>
+                                <td><strong>Inner LDPE/CPP</strong></td>
+                                <td>The low-cost sealant layer (PE) provides the required welding properties. It is laminated to the higher-cost barrier layers, ensuring the final bag is structurally sound and sealable.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 text-dark">
+                    <i class="fas fa-graduation-cap text-primary"></i> Key Takeaways
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-layer-group text-success"></i> Material Selection Principles</h6>
+                        <ul>
+                            <li>Match material properties to product protection requirements</li>
+                            <li>Balance quality needs with cost efficiency</li>
+                            <li>Consider processing requirements (sealing, printing)</li>
+                            <li>Evaluate end-use conditions (storage, transportation)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-project-diagram text-info"></i> Lamination Benefits</h6>
+                        <ul>
+                            <li>Combines multiple properties in one structure</li>
+                            <li>Enables high-barrier protection</li>
+                            <li>Provides mechanical strength and durability</li>
+                            <li>Allows optimal material usage and cost control</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-3">
+                    <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> Professional Insight</h6>
+                    <p class="mb-0">Successful flexible packaging design requires understanding both material science and practical manufacturing constraints. The right material combination ensures product protection, consumer appeal, and production efficiency.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.material-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transition: background-color 0.2s ease-in-out;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-weight: 600;
+}
+</style>
+{% endblock %}

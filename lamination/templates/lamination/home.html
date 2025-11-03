@@ -1,0 +1,1594 @@
+{% extends 'calculator/section_base.html' %}
+{% load static %}
+
+{% block section_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-center">
+                <h2 class="card-title">
+                    <i class="fas fa-layer-group"></i> Lamination Calculators
+                </h2>
+                <p class="mb-0">Comprehensive calculations for film lamination processes, adhesive systems, and production efficiency</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GSM Calculation Calculator -->
+<div class="card shadow mb-4" id="gsm_calc">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-weight-scale"></i> GSM Calculation
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- Single Layer GSM -->
+        <div class="mb-4">
+            <h6><i class="fas fa-layer-group"></i> Single Layer GSM</h6>
+            <form id="gsmForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Material</label>
+                            <select class="form-select" name="material_id" required>
+                                <option value="">Select Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Thickness</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="thickness" required placeholder="Enter thickness" style="min-width: 120px;">
+                                <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                    <option value="micron">Microns</option>
+                                    <option value="mm">mm</option>
+                                    <option value="mil">Mil</option>
+                                    <option value="gauge">Gauge</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Material Density</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" id="material_density_display" readonly value="0.920">
+                                <span class="input-group-text">g/cm³</span>
+                            </div>
+                            <div class="form-text">Density automatically selected from material</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-calculator"></i> Calculate Single Layer GSM
+                </button>
+            </form>
+
+            <div id="gsmResult" class="mt-3" style="display: none;"></div>
+        </div>
+
+        <hr>
+
+        <!-- Multi-layer GSM -->
+        <div>
+            <h6><i class="fas fa-layers"></i> Multi-layer Laminate GSM</h6>
+            <form id="multilayerGsmForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Adhesive GSM per Layer</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="adhesive_gsm" required placeholder="e.g., 2.5" style="min-width: 120px;">
+                                <span class="input-group-text">g/m²</span>
+                            </div>
+                            <div class="form-text">Dry adhesive weight per bonding layer</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Laminate Structure</label>
+                            <div id="gsmLayerContainer">
+                                <!-- Layers will be added dynamically -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addGsmLayer()">
+                                <i class="fas fa-plus"></i> Add Layer
+                            </button>
+                            <div class="form-text">Minimum 2 layers required for laminate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-calculator"></i> Calculate Multi-layer GSM
+                </button>
+            </form>
+
+            <div id="multilayerGsmResult" class="mt-3" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Weight Breakdown Calculator -->
+<div class="card shadow mb-4" id="weight_breakdown">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-balance-scale"></i> Laminate Weight Breakdown
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="weightBreakdownForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Laminate Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="total_mass" required placeholder="e.g., 100" style="min-width: 120px;">
+                            <select class="form-select" name="total_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Lamination System</label>
+                        <select class="form-select" name="adhesive_type" required>
+                            <option value="">Select Lamination System</option>
+                            {% for type_code, type_name in adhesive_types %}
+                            <option value="{{ type_code }}">{{ type_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Dry Adhesive Coat Weight</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="adhesive_gsm" required placeholder="e.g., 2.5" style="min-width: 120px;">
+                            <span class="input-group-text">g/m²</span>
+                        </div>
+                        <div class="form-text">Target dry adhesive weight per square meter</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Laminate Structure</label>
+                        <div id="layerContainer">
+                            <!-- Layers will be added dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-outline-success btn-sm mt-2" onclick="addLayer()">
+                            <i class="fas fa-plus"></i> Add Layer
+                        </button>
+                        <div class="form-text">Minimum 2 layers required for lamination</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success" id="weightBreakdownBtn">
+                <i class="fas fa-calculator"></i> Calculate Weight Breakdown
+            </button>
+        </form>
+
+        <div id="weightBreakdownResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Adhesive Components Calculator -->
+<div class="card shadow mb-4" id="adhesive_components">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-flask"></i> Adhesive Components Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="adhesiveComponentsForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Lamination System</label>
+                        <select class="form-select" name="adhesive_type" required id="adhesiveTypeSelect">
+                            <option value="">Select Lamination System</option>
+                            <option value="SOLVENTLESS">Solventless (Default)</option>
+                            <option value="SOLVENT_BASE">Solvent Base (Default)</option>
+                            <option value="CUSTOM_SOLVENTLESS">Custom Solventless</option>
+                            <option value="CUSTOM_SOLVENT_BASE">Custom Solvent Base</option>
+                        </select>
+                    </div>
+
+                    <!-- Custom Ratio Options -->
+                    <div id="customRatioSection" style="display: none;">
+                        <div class="card border-warning mb-3">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0">Custom Ratio Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                            <label class="form-label">Mix Ratio (A:B:C)</label>
+                            <div class="mb-2">
+                                <label class="form-label small text-muted">Adhesive (A)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="custom_ratio_a" placeholder="100" min="1">
+                                    <span class="input-group-text">A</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small text-muted">Hardener (B)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="custom_ratio_b" placeholder="10" min="1">
+                                    <span class="input-group-text">B</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small text-muted">Solvent (C)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="custom_ratio_c" placeholder="0" min="0">
+                                    <span class="input-group-text">C</span>
+                                </div>
+                            </div>
+
+                                <div class="form-text">
+                                    Adhesive (A) : Hardener (B) : Solvent (C) ratio
+                                </div>
+                            </div>
+
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                        <label class="form-label">Solids Content (%)</label>
+                                        <div class="mb-2">
+                                            <label class="form-label small text-muted">Adhesive (A)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.1" class="form-control" name="custom_adhesive_solids" placeholder="100" min="0" max="100">
+                                                <span class="input-group-text">A</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label small text-muted">Hardener (B)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.1" class="form-control" name="custom_hardener_solids" placeholder="60" min="0" max="100">
+                                                <span class="input-group-text">B</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-text">
+                                            Adhesive (A) : Hardener (B) solids (Solvent C is always 0%)
+                                        </div>
+                                    </div>
+
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <label class="form-label">Adhesive Name</label>
+                                            <input type="text" class="form-control" name="custom_adhesive_name" placeholder="e.g., My Adhesive">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <label class="form-label">Hardener Name</label>
+                                            <input type="text" class="form-control" name="custom_hardener_name" placeholder="e.g., My Hardener">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info mt-2">
+                                    <small>
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Ratio Guide:</strong><br>
+                                        • <strong>A:B:C</strong> = Adhesive:Hardener:Solvent<br>
+                                        • <strong>Solventless:</strong> Set C = 0 (e.g., 100:10:0)<br>
+                                        • <strong>Solvent Base:</strong> Set C = solvent amount (e.g., 100:10:50)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dry Adhesive Coat Weight</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="coat_weight_gsm" required placeholder="e.g., 2.5" style="min-width: 120px;">
+                            <span class="input-group-text">g/m²</span>
+                        </div>
+                        <div class="form-text">Target dry adhesive weight after solvent evaporation</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Total Laminate Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="total_mass" required placeholder="e.g., 100" style="min-width: 120px;">
+                            <select class="form-select" name="total_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                        <div class="form-text">Total mass of finished laminate roll</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Total Film GSM (Optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="total_film_gsm" placeholder="e.g., 45.5" style="min-width: 120px;">
+                            <span class="input-group-text">g/m²</span>
+                        </div>
+                        <div class="form-text">If known, otherwise calculated from layers below</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="adhesiveSystemInfo" class="card bg-light">
+                        <div class="card-header">
+                            <h6 class="mb-0">Lamination System Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="solventlessInfo" style="display: none;">
+                                <p><strong>Solventless System</strong></p>
+                                <small>
+                                    • Adhesive: Brilliant 2S79 (OH) - 100% solids<br>
+                                    • Hardener: Brilliant S621 (NCO) - 100% solids<br>
+                                    • Mix Ratio: 100:10 (Adhesive:Hardener)<br>
+                                    • No solvents required
+                                </small>
+                            </div>
+                            <div id="solventBaseInfo" style="display: none;">
+                                <p><strong>Solvent Base System</strong></p>
+                                <small>
+                                    • Adhesive: Brilliant A405 (OH) - 100% solids<br>
+                                    • Hardener: Brilliant H414 (NCO) - 60% solids<br>
+                                    • Mix Ratio: 100:10 (Adhesive:Hardener)<br>
+                                    • Ethyl Acetate solvent calculated automatically
+                                </small>
+                            </div>
+                            <div id="customSolventlessInfo" style="display: none;">
+                                <p><strong>Custom Solventless System</strong></p>
+                                <small>Configure your own solventless adhesive system with custom ratios and solids content.</small>
+                            </div>
+                            <div id="customSolventBaseInfo" style="display: none;">
+                                <p><strong>Custom Solvent Base System</strong></p>
+                                <small>Configure your own solvent base adhesive system with custom ratios and solids content.</small>
+                            </div>
+                            <div id="noSystemInfo">
+                                <small class="text-muted">Select a lamination system to see details</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="card bg-light">
+                            <div class="card-header">
+                                <h6 class="mb-0">Quick Film GSM Reference</h6>
+                            </div>
+                            <div class="card-body">
+                                <small>
+                                    • LDPE: 25µm = ~23 g/m²<br>
+                                    • PET: 12µm = ~16.5 g/m²<br>
+                                    • BOPP: 20µm = ~18 g/m²<br>
+                                    • CPP: 30µm = ~27 g/m²<br>
+                                    • NYLON: 15µm = ~17 g/m²
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optional layer input for film GSM calculation -->
+            <div class="mt-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="useLayersForGSM">
+                    <label class="form-check-label" for="useLayersForGSM">
+                        Calculate Film GSM from Layers
+                    </label>
+                </div>
+            </div>
+
+            <div id="layerContainerAdhesive" class="mt-3" style="display: none;">
+                <h6>Film Layers (2 or more layers supported)</h6>
+                <div id="adhesiveLayersContainer">
+                    <!-- Layers will be added dynamically -->
+                </div>
+                <button type="button" class="btn btn-outline-warning btn-sm mt-2" onclick="addAdhesiveLayer()">
+                    <i class="fas fa-plus"></i> Add Another Layer
+                </button>
+                <div class="form-text">Add as many layers as needed for your laminate structure</div>
+            </div>
+            <button type="submit" class="btn btn-warning mt-3">
+                <i class="fas fa-calculator"></i> Calculate Component Weights
+            </button>
+        </form>
+
+        <div id="adhesiveComponentsResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Lamination Time Calculator -->
+<div class="card shadow mb-4" id="lamination_time">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-clock"></i> Lamination Time Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="laminationTimeForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Length to Laminate</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="roll_length" required placeholder="e.g., 1000" style="min-width: 120px;">
+                            <select class="form-select" name="roll_length_unit" style="max-width: 100px;">
+                                <option value="m">Meters</option>
+                                <option value="ft">Feet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Machine Speed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="machine_speed" required placeholder="e.g., 150" style="min-width: 120px;">
+                            <select class="form-select" name="machine_speed_unit" style="max-width: 120px;">
+                                <option value="m_min">m/min</option>
+                                <option value="m_hr">m/hr</option>
+                                <option value="ft_min">ft/min</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Typical Machine Speeds</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <small>
+                                    • Solventless: 200-400 m/min<br>
+                                    • Solvent Base: 150-300 m/min<br>
+                                    • High-speed: 400-600 m/min
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Calculate Lamination Time
+            </button>
+        </form>
+
+        <div id="laminationTimeResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Production Efficiency Calculator -->
+<div class="card shadow mb-4" id="production_efficiency">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-line"></i> Production Efficiency Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="productionEfficiencyForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Theoretical Lamination Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="lamination_time" required placeholder="e.g., 480" style="min-width: 120px;">
+                            <select class="form-select" name="lamination_time_unit" style="max-width: 100px;">
+                                <option value="min">Minutes</option>
+                                <option value="hr">Hours</option>
+                            </select>
+                        </div>
+                        <div class="form-text">Time the machine should have been running</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Actual Total Run Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="total_run_time" required placeholder="e.g., 600" style="min-width: 120px;">
+                            <select class="form-select" name="total_run_time_unit" style="max-width: 100px;">
+                                <option value="min">Minutes</option>
+                                <option value="hr">Hours</option>
+                            </select>
+                        </div>
+                        <div class="form-text">Including setup, stops, and breaks</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Efficiency Standards</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <small>
+                                    • <span class="text-success">≥90%</span>: Excellent<br>
+                                    • <span class="text-primary">80-89%</span>: Good<br>
+                                    • <span class="text-warning">70-79%</span>: Average<br>
+                                    • <span class="text-danger">&lt;70%</span>: Needs Improvement
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-calculator"></i> Calculate Efficiency
+            </button>
+        </form>
+
+        <div id="productionEfficiencyResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Material Yield Calculator -->
+<div class="card shadow mb-4" id="yield_calc">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-percentage"></i> Material Yield Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="yieldForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Input Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="input_mass" required placeholder="e.g., 105" style="min-width: 120px;">
+                            <select class="form-select" name="input_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                        <div class="form-text">Films + adhesive + hardener used</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Finished Laminate Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="output_mass" required placeholder="e.g., 100" style="min-width: 120px;">
+                            <select class="form-select" name="output_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                        <div class="form-text">Actual usable laminate produced</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Yield Standards</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <small>
+                                    • <span class="text-success">≥98%</span>: Excellent<br>
+                                    • <span class="text-primary">95-97%</span>: Good<br>
+                                    • <span class="text-warning">90-94%</span>: Average<br>
+                                    • <span class="text-danger">&lt;90%</span>: Needs Improvement
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark">
+                <i class="fas fa-calculator"></i> Calculate Yield
+            </button>
+        </form>
+
+        <div id="yieldResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<div class="alert alert-light mt-4">
+    <h6><i class="fas fa-lightbulb"></i> Pro Tips:</h6>
+    <ul class="mb-0">
+        <li>For accurate calculations, always use consistent units throughout</li>
+        <li>Regularly update material densities in the database for precise GSM calculations</li>
+        <li>Track actual vs theoretical times to identify process improvement opportunities</li>
+        <li>Monitor yield trends to detect material handling issues early</li>
+        <li>All calculations are saved to your history when logged in</li>
+    </ul>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize layers for weight breakdown
+let layerCount = 2;
+let adhesiveLayerCount = 2;
+
+// Initialize layers on page load
+function initializeLayers() {
+    const container = document.getElementById('layerContainer');
+    container.innerHTML = '';
+    for (let i = 0; i < layerCount; i++) {
+        addLayer(i);
+    }
+}
+
+function initializeAdhesiveLayers() {
+    const container = document.getElementById('adhesiveLayersContainer');
+    container.innerHTML = '';
+    for (let i = 0; i < adhesiveLayerCount; i++) {
+        addAdhesiveLayer(i);
+    }
+}
+
+// Layer management functions for weight breakdown
+function addLayer(index = null) {
+    const container = document.getElementById('layerContainer');
+    const layerIndex = index !== null ? index : layerCount;
+
+    const layerHtml = '<div class="layer-entry mb-3 p-3 border rounded">' +
+        '<div class="row">' +
+            '<div class="col-1">' +
+                '<label class="form-label">#' + (layerIndex + 1) + '</label>' +
+            '</div>' +
+            '<div class="col-5">' +
+                '<select class="form-select" name="layer_material_' + layerIndex + '" required>' +
+                    '<option value="">Select Material</option>' +
+                    '{% for material in materials %}' +
+                    '<option value="{{ material.id }}">{{ material.name }}</option>' +
+                    '{% endfor %}' +
+                '</select>' +
+            '</div>' +
+            '<div class="col-5">' +
+                '<div class="input-group">' +
+                    '<input type="number" step="0.1" class="form-control" name="layer_thickness_' + layerIndex + '" required placeholder="Thickness" style="min-width: 100px;">' +
+                    '<select class="form-select" name="layer_thickness_unit_' + layerIndex + '" style="max-width: 100px;">' +
+                        '<option value="micron">µm</option>' +
+                        '<option value="mm">mm</option>' +
+                    '</select>' +
+                '</div>' +
+            '</div>' +
+            '<div class="col-1">' +
+                (layerIndex >= 2 ? '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeLayer(' + layerIndex + ')"><i class="fas fa-times"></i></button>' : '') +
+            '</div>' +
+        '</div>' +
+    '</div>';
+
+    if (index !== null) {
+        container.insertAdjacentHTML('beforeend', layerHtml);
+    } else {
+        container.innerHTML += layerHtml;
+        layerCount++;
+    }
+}
+
+function removeLayer(index) {
+    const container = document.getElementById('layerContainer');
+    const layers = container.getElementsByClassName('layer-entry');
+
+    if (layers.length > 2) {
+        layers[index].remove();
+        const remainingLayers = container.getElementsByClassName('layer-entry');
+        for (let i = 0; i < remainingLayers.length; i++) {
+            const label = remainingLayers[i].querySelector('label');
+            const select = remainingLayers[i].querySelector('select[name^="layer_material"]');
+            const input = remainingLayers[i].querySelector('input[name^="layer_thickness"]');
+            const unitSelect = remainingLayers[i].querySelector('select[name^="layer_thickness_unit"]');
+
+            label.textContent = '#' + (i + 1);
+            select.name = 'layer_material_' + i;
+            input.name = 'layer_thickness_' + i;
+            unitSelect.name = 'layer_thickness_unit_' + i;
+        }
+        layerCount--;
+    }
+}
+
+// Layer management for adhesive components
+function addAdhesiveLayer(index = null) {
+    const container = document.getElementById('adhesiveLayersContainer');
+    const layerIndex = index !== null ? index : adhesiveLayerCount;
+
+    const layerHtml = '<div class="layer-entry mb-2 p-2 border rounded">' +
+        '<div class="row">' +
+            '<div class="col-1">' +
+                '<label class="form-label">#' + (layerIndex + 1) + '</label>' +
+            '</div>' +
+            '<div class="col-5">' +
+                '<select class="form-select" name="adhesive_layer_material_' + layerIndex + '">' +
+                    '<option value="">Select Material</option>' +
+                    '{% for material in materials %}' +
+                    '<option value="{{ material.id }}" data-density="{{ material.density }}">' +
+                        '{{ material.name }}' +
+                    '</option>' +
+                    '{% endfor %}' +
+                '</select>' +
+            '</div>' +
+            '<div class="col-5">' +
+                '<div class="input-group">' +
+                    '<input type="number" step="0.1" class="form-control" name="adhesive_layer_thickness_' + layerIndex + '" placeholder="Thickness">' +
+                    '<select class="form-select" name="adhesive_layer_thickness_unit_' + layerIndex + '" style="max-width: 80px;">' +
+                        '<option value="micron">µm</option>' +
+                        '<option value="mm">mm</option>' +
+                    '</select>' +
+                '</div>' +
+            '</div>' +
+            '<div class="col-1">' +
+                (layerIndex >= 2 ? '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeAdhesiveLayer(' + layerIndex + ')"><i class="fas fa-times"></i></button>' : '') +
+            '</div>' +
+        '</div>' +
+    '</div>';
+
+    if (index !== null) {
+        container.insertAdjacentHTML('beforeend', layerHtml);
+    } else {
+        container.innerHTML += layerHtml;
+        adhesiveLayerCount++;
+    }
+}
+
+
+function removeAdhesiveLayer(index) {
+    const container = document.getElementById('adhesiveLayersContainer');
+    const layers = container.getElementsByClassName('layer-entry');
+
+    if (layers.length > 2) {
+        layers[index].remove();
+        const remainingLayers = container.getElementsByClassName('layer-entry');
+        for (let i = 0; i < remainingLayers.length; i++) {
+            const label = remainingLayers[i].querySelector('label');
+            const select = remainingLayers[i].querySelector('select[name^="adhesive_layer_material"]');
+            const input = remainingLayers[i].querySelector('input[name^="adhesive_layer_thickness"]');
+            const unitSelect = remainingLayers[i].querySelector('select[name^="adhesive_layer_thickness_unit"]');
+
+            label.textContent = '#' + (i + 1);
+            select.name = 'adhesive_layer_material_' + i;
+            input.name = 'adhesive_layer_thickness_' + i;
+            unitSelect.name = 'adhesive_layer_thickness_unit_' + i;
+        }
+        adhesiveLayerCount--;
+    }
+}
+
+// Helper function for unit conversion
+function convertToMicrons(value, unit) {
+    const conversions = {
+        'micron': 1.0,
+        'mm': 1000.0
+    };
+    return value * (conversions[unit] || 1.0);
+}
+
+// Material density display
+document.addEventListener('DOMContentLoaded', function() {
+    initializeLayers();
+    initializeAdhesiveLayers();
+
+    // Update density display when material is selected
+    document.querySelector('select[name="material_id"]').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const density = selectedOption.getAttribute('data-density');
+        if (density) {
+            document.getElementById('material_density_display').value = density;
+        }
+    });
+
+    // Lamination system info display
+    document.getElementById('adhesiveTypeSelect').addEventListener('change', function() {
+        const value = this.value;
+        const customSection = document.getElementById('customRatioSection');
+
+        // Show/hide custom ratio section
+        if (value === 'CUSTOM_SOLVENTLESS' || value === 'CUSTOM_SOLVENT_BASE') {
+            customSection.style.display = 'block';
+        } else {
+            customSection.style.display = 'none';
+        }
+
+        // Update system info display
+        document.getElementById('solventlessInfo').style.display = value === 'SOLVENTLESS' ? 'block' : 'none';
+        document.getElementById('solventBaseInfo').style.display = value === 'SOLVENT_BASE' ? 'block' : 'none';
+        document.getElementById('customSolventlessInfo').style.display = value === 'CUSTOM_SOLVENTLESS' ? 'block' : 'none';
+        document.getElementById('customSolventBaseInfo').style.display = value === 'CUSTOM_SOLVENT_BASE' ? 'block' : 'none';
+        document.getElementById('noSystemInfo').style.display = value === '' ? 'block' : 'none';
+    });
+
+    // Update the toggle function to handle required attributes
+    document.getElementById('useLayersForGSM').addEventListener('change', function() {
+        const layerContainer = document.getElementById('layerContainerAdhesive');
+        const gsmInput = document.querySelector('input[name="total_film_gsm"]');
+
+        if (this.checked) {
+            layerContainer.style.display = 'block';
+            gsmInput.disabled = true;
+            gsmInput.placeholder = 'Calculated from layers';
+            // Add required attributes to visible layer inputs
+            updateAdhesiveLayerRequiredAttributes(true);
+        } else {
+            layerContainer.style.display = 'none';
+            gsmInput.disabled = false;
+            gsmInput.placeholder = 'e.g., 45.5';
+            // Remove required attributes from hidden layer inputs
+            updateAdhesiveLayerRequiredAttributes(false);
+        }
+    });
+});
+
+function updateAdhesiveLayerRequiredAttributes(required) {
+    for (let i = 0; i < adhesiveLayerCount; i++) {
+        const materialSelect = document.querySelector('select[name="adhesive_layer_material_' + i + '"]');
+        const thicknessInput = document.querySelector('input[name="adhesive_layer_thickness_' + i + '"]');
+
+        if (materialSelect) {
+            if (required) {
+                materialSelect.setAttribute('required', 'required');
+            } else {
+                materialSelect.removeAttribute('required');
+            }
+        }
+
+        if (thicknessInput) {
+            if (required) {
+                thicknessInput.setAttribute('required', 'required');
+            } else {
+                thicknessInput.removeAttribute('required');
+            }
+        }
+    }
+}
+
+// GSM layer management
+let gsmLayerCount = 2;
+
+function initializeGsmLayers() {
+    const container = document.getElementById('gsmLayerContainer');
+    container.innerHTML = '';
+    for (let i = 0; i < gsmLayerCount; i++) {
+        addGsmLayer(i);
+    }
+}
+
+function addGsmLayer(index = null) {
+    const container = document.getElementById('gsmLayerContainer');
+    const layerIndex = index !== null ? index : gsmLayerCount;
+
+    const layerHtml = '<div class="layer-entry mb-2 p-2 border rounded">' +
+        '<div class="row">' +
+            '<div class="col-1">' +
+                '<label class="form-label">#' + (layerIndex + 1) + '</label>' +
+            '</div>' +
+            '<div class="col-5">' +
+                '<select class="form-select" name="gsm_layer_material_' + layerIndex + '">' +
+                    '<option value="">Select Material</option>' +
+                    '{% for material in materials %}' +
+                    '<option value="{{ material.id }}">' +
+                        '{{ material.name }}' +
+                    '</option>' +
+                    '{% endfor %}' +
+                '</select>' +
+            '</div>' +
+            '<div class="col-5">' +
+                '<div class="input-group">' +
+                    '<input type="number" step="0.1" class="form-control" name="gsm_layer_thickness_' + layerIndex + '" placeholder="Thickness">' +
+                    '<select class="form-select" name="gsm_layer_thickness_unit_' + layerIndex + '" style="max-width: 80px;">' +
+                        '<option value="micron">µm</option>' +
+                        '<option value="mm">mm</option>' +
+                    '</select>' +
+                '</div>' +
+            '</div>' +
+            '<div class="col-1">' +
+                (layerIndex >= 2 ? '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeGsmLayer(' + layerIndex + ')"><i class="fas fa-times"></i></button>' : '') +
+            '</div>' +
+        '</div>' +
+    '</div>';
+
+    if (index !== null) {
+        container.insertAdjacentHTML('beforeend', layerHtml);
+    } else {
+        container.innerHTML += layerHtml;
+        gsmLayerCount++;
+    }
+}
+
+function removeGsmLayer(index) {
+    const container = document.getElementById('gsmLayerContainer');
+    const layers = container.getElementsByClassName('layer-entry');
+
+    if (layers.length > 2) {
+        layers[index].remove();
+        const remainingLayers = container.getElementsByClassName('layer-entry');
+        for (let i = 0; i < remainingLayers.length; i++) {
+            const label = remainingLayers[i].querySelector('label');
+            const select = remainingLayers[i].querySelector('select[name^="gsm_layer_material"]');
+            const input = remainingLayers[i].querySelector('input[name^="gsm_layer_thickness"]');
+            const unitSelect = remainingLayers[i].querySelector('select[name^="gsm_layer_thickness_unit"]');
+
+            label.textContent = '#' + (i + 1);
+            select.name = 'gsm_layer_material_' + i;
+            input.name = 'gsm_layer_thickness_' + i;
+            unitSelect.name = 'gsm_layer_thickness_unit_' + i;
+        }
+        gsmLayerCount--;
+    }
+}
+
+// Multi-layer GSM calculation
+function calculateMultilayerGSM() {
+    const form = document.getElementById('multilayerGsmForm');
+    const formData = new FormData(form);
+
+    // Validate at least 2 layers
+    if (gsmLayerCount < 2) {
+        displayError('multilayerGsmResult', 'At least 2 layers are required for multi-layer GSM calculation');
+        return;
+    }
+
+    const adhesive_gsm = parseFloat(formData.get('adhesive_gsm'));
+    if (!adhesive_gsm || adhesive_gsm <= 0) {
+        displayError('multilayerGsmResult', 'Please enter a valid adhesive GSM greater than zero');
+        return;
+    }
+
+    // Collect layer data
+    const layers = [];
+    let validLayers = 0;
+
+    for (let i = 0; i < gsmLayerCount; i++) {
+        const material = formData.get('gsm_layer_material_' + i);
+        const thickness = parseFloat(formData.get('gsm_layer_thickness_' + i));
+        const thicknessUnit = formData.get('gsm_layer_thickness_unit_' + i);
+
+        // Only include layers that have both material and thickness
+        if (material && thickness) {
+            layers.push({
+                material_id: material,
+                thickness: parseFloat(thickness),
+                thickness_unit: thicknessUnit
+            });
+            validLayers++;
+        }
+    }
+
+    // Require at least 2 valid layers
+    if (validLayers < 2) {
+        displayError('multilayerGsmResult', 'Please provide at least 2 complete layers with material and thickness');
+        return;
+    }
+
+    const requestData = {
+        adhesive_gsm: adhesive_gsm,
+        layers: layers
+    };
+
+    fetch('/lamination/calculate-multilayer-gsm/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayMultilayerGsmResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('multilayerGsmResult', 'Network error: ' + error);
+    });
+}
+
+
+// Form submission handlers
+document.getElementById('gsmForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateGSM();
+});
+
+document.getElementById('multilayerGsmForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateMultilayerGSM();
+});
+
+document.getElementById('weightBreakdownForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateWeightBreakdown();
+});
+
+document.getElementById('adhesiveComponentsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateAdhesiveComponents();
+});
+
+document.getElementById('laminationTimeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateLaminationTime();
+});
+
+document.getElementById('productionEfficiencyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateProductionEfficiency();
+});
+
+document.getElementById('yieldForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateYield();
+});
+
+// Calculation functions
+function calculateGSM() {
+    const form = document.getElementById('gsmForm');
+    const formData = new FormData(form);
+
+    const data = {
+        material_id: formData.get('material_id'),
+        thickness: parseFloat(formData.get('thickness')),
+        thickness_unit: formData.get('thickness_unit')
+    };
+
+    fetch('/lamination/calculate-gsm/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayGSMResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('gsmResult', 'Network error: ' + error);
+    });
+}
+
+function calculateWeightBreakdown() {
+    const form = document.getElementById('weightBreakdownForm');
+    const formData = new FormData(form);
+
+    // Validate at least 2 layers
+    if (layerCount < 2) {
+        displayError('weightBreakdownResult', 'At least 2 layers are required for lamination');
+        return;
+    }
+
+    // Collect layer data
+    const layers = [];
+    for (let i = 0; i < layerCount; i++) {
+        const material = formData.get('layer_material_' + i);
+        const thickness = formData.get('layer_thickness_' + i);
+        const thicknessUnit = formData.get('layer_thickness_unit_' + i);
+
+        if (!material || !thickness) {
+            displayError('weightBreakdownResult', 'Please fill all fields for Layer ' + (i + 1));
+            return;
+        }
+
+        layers.push({
+            material_id: material,
+            thickness: parseFloat(thickness),
+            thickness_unit: thicknessUnit
+        });
+    }
+
+    const requestData = {
+        total_mass: parseFloat(formData.get('total_mass')),
+        total_mass_unit: formData.get('total_mass_unit'),
+        adhesive_type: formData.get('adhesive_type'),
+        adhesive_gsm: parseFloat(formData.get('adhesive_gsm')),
+        layers: layers
+    };
+
+    fetch('/lamination/calculate-weight-breakdown/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayWeightBreakdownResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('weightBreakdownResult', 'Network error: ' + error);
+    });
+}
+
+function calculateAdhesiveComponents() {
+    const form = document.getElementById('adhesiveComponentsForm');
+    const formData = new FormData(form);
+    const useLayers = document.getElementById('useLayersForGSM').checked;
+    const adhesiveType = formData.get('adhesive_type');
+    const isCustomSystem = adhesiveType === 'CUSTOM_SOLVENTLESS' || adhesiveType === 'CUSTOM_SOLVENT_BASE';
+
+    let total_film_gsm = parseFloat(formData.get('total_film_gsm')) || 0;
+
+    // Validate main form inputs first
+    if (!adhesiveType) {
+        displayError('adhesiveComponentsResult', 'Please select a lamination system');
+        return;
+    }
+
+    const coat_weight_gsm = parseFloat(formData.get('coat_weight_gsm'));
+    if (!coat_weight_gsm || coat_weight_gsm <= 0) {
+        displayError('adhesiveComponentsResult', 'Please enter a valid coat weight greater than zero');
+        return;
+    }
+
+    const total_mass = parseFloat(formData.get('total_mass'));
+    if (!total_mass || total_mass <= 0) {
+        displayError('adhesiveComponentsResult', 'Please enter a valid total mass greater than zero');
+        return;
+    }
+
+    // Calculate film GSM from layers if enabled
+    if (useLayers) {
+        total_film_gsm = 0;
+        let validLayers = 0;
+
+        for (let i = 0; i < adhesiveLayerCount; i++) {
+            const materialSelect = document.querySelector('select[name="adhesive_layer_material_' + i + '"]');
+            const thickness = parseFloat(formData.get('adhesive_layer_thickness_' + i));
+            const thicknessUnit = formData.get('adhesive_layer_thickness_unit_' + i);
+
+            // Only count layers that have both material and thickness
+            if (materialSelect && materialSelect.value && thickness && !isNaN(thickness)) {
+                const selectedOption = materialSelect.options[materialSelect.selectedIndex];
+                const density = parseFloat(selectedOption.getAttribute('data-density'));
+                const thicknessMicrons = convertToMicrons(thickness, thicknessUnit);
+                const layerGSM = thicknessMicrons * density;
+                total_film_gsm += layerGSM;
+                validLayers++;
+            }
+        }
+
+        // Require at least 2 valid layers when using layer calculation
+        if (validLayers < 2) {
+            displayError('adhesiveComponentsResult', 'Please provide at least 2 complete layers with material and thickness');
+            return;
+        }
+
+        total_film_gsm = Math.round(total_film_gsm * 10) / 10;
+    } else {
+        // Validate direct GSM input
+        if (!total_film_gsm || total_film_gsm <= 0) {
+            displayError('adhesiveComponentsResult', 'Please provide total film GSM or enable layer calculation');
+            return;
+        }
+    }
+
+    // Validate custom ratios if using custom system
+    if (isCustomSystem) {
+        const customRatioA = formData.get('custom_ratio_a');
+        const customRatioB = formData.get('custom_ratio_b');
+        const customRatioC = formData.get('custom_ratio_c');
+
+        if (!customRatioA || !customRatioB || !customRatioC) {
+            displayError('adhesiveComponentsResult', 'Please provide all custom ratio values (A, B, and C)');
+            return;
+        }
+
+        if (parseFloat(customRatioA) <= 0 || parseFloat(customRatioB) <= 0 || parseFloat(customRatioC) < 0) {
+            displayError('adhesiveComponentsResult', 'Custom ratios A and B must be greater than zero, and C must be zero or positive');
+            return;
+        }
+    }
+
+    // Prepare request data
+    const requestData = {
+        adhesive_type: adhesiveType,
+        coat_weight_gsm: coat_weight_gsm,
+        total_mass: total_mass,
+        total_mass_unit: formData.get('total_mass_unit'),
+        total_film_gsm: total_film_gsm,
+        calculated_from_layers: useLayers,
+        use_custom_ratio: isCustomSystem
+    };
+
+    // Add custom ratio data if using custom system
+    if (isCustomSystem) {
+        requestData.custom_ratio_a = formData.get('custom_ratio_a');
+        requestData.custom_ratio_b = formData.get('custom_ratio_b');
+        requestData.custom_ratio_c = formData.get('custom_ratio_c');
+        requestData.custom_adhesive_solids = formData.get('custom_adhesive_solids');
+        requestData.custom_hardener_solids = formData.get('custom_hardener_solids');
+        requestData.custom_adhesive_name = formData.get('custom_adhesive_name');
+        requestData.custom_hardener_name = formData.get('custom_hardener_name');
+    }
+
+    fetch('/lamination/calculate-adhesive-components/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayAdhesiveComponentsResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('adhesiveComponentsResult', 'Network error: ' + error);
+    });
+}
+
+function calculateLaminationTime() {
+    const form = document.getElementById('laminationTimeForm');
+    const formData = new FormData(form);
+
+    const requestData = {
+        roll_length: parseFloat(formData.get('roll_length')),
+        roll_length_unit: formData.get('roll_length_unit'),
+        machine_speed: parseFloat(formData.get('machine_speed')),
+        machine_speed_unit: formData.get('machine_speed_unit')
+    };
+
+    fetch('/lamination/calculate-lamination-time/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayLaminationTimeResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('laminationTimeResult', 'Network error: ' + error);
+    });
+}
+
+function calculateProductionEfficiency() {
+    const form = document.getElementById('productionEfficiencyForm');
+    const formData = new FormData(form);
+
+    const requestData = {
+        lamination_time: parseFloat(formData.get('lamination_time')),
+        lamination_time_unit: formData.get('lamination_time_unit'),
+        total_run_time: parseFloat(formData.get('total_run_time')),
+        total_run_time_unit: formData.get('total_run_time_unit')
+    };
+
+    fetch('/lamination/calculate-production-efficiency/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayProductionEfficiencyResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('productionEfficiencyResult', 'Network error: ' + error);
+    });
+}
+
+function calculateYield() {
+    const form = document.getElementById('yieldForm');
+    const formData = new FormData(form);
+
+    const requestData = {
+        input_mass: parseFloat(formData.get('input_mass')),
+        input_mass_unit: formData.get('input_mass_unit'),
+        output_mass: parseFloat(formData.get('output_mass')),
+        output_mass_unit: formData.get('output_mass_unit')
+    };
+
+    fetch('/lamination/calculate-yield/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayYieldResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('yieldResult', 'Network error: ' + error);
+    });
+}
+
+// Result display functions - COMPLETELY REWRITTEN WITHOUT TEMPLATE LITERALS
+function displayGSMResult(result) {
+    const resultDiv = document.getElementById('gsmResult');
+    resultDiv.innerHTML = '';
+
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success">';
+        html += '<h6><i class="fas fa-check-circle"></i> GSM Calculation Results:</h6>';
+        html += '<div class="mb-2 p-2 bg-light rounded">';
+        html += '<small><i class="fas fa-info-circle"></i> <strong>Hint:</strong> GSM (Grams per Square Meter) helps determine material weight distribution in laminated structures and is essential for cost calculations.</small>';
+        html += '</div>';
+        html += '<p><strong>Material:</strong> ' + res.material_name + '</p>';
+        html += '<p><strong>Thickness:</strong> ' + res.thickness_microns + ' microns</p>';
+        html += '<p><strong>Density:</strong> ' + res.density + ' g/cm³</p>';
+        html += '<p><strong>GSM:</strong> <span class="fw-bold">' + res.gsm + ' g/m²</span></p>';
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + result.error + '</div>';
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayMultilayerGsmResult(result) {
+    const resultDiv = document.getElementById('multilayerGsmResult');
+    resultDiv.innerHTML = '';
+
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success">';
+        html += '<h6><i class="fas fa-check-circle"></i> Multi-layer GSM Results:</h6>';
+        html += '<div class="mb-2 p-2 bg-light rounded">';
+        html += '<small><i class="fas fa-info-circle"></i> <strong>Hint:</strong> Total GSM includes film layers plus adhesive between each layer (n-1 adhesive applications for n layers).</small>';
+        html += '</div>';
+
+        // Show individual layer GSM
+        html += '<h6>Layer Breakdown:</h6>';
+        res.layer_details.forEach(function(layer, index) {
+            html += '<p><strong>Layer ' + (index + 1) + ':</strong> ' + layer.material + ' - ' + layer.thickness_microns + 'µm (' + layer.gsm + ' g/m²)</p>';
+        });
+
+        html += '<hr>';
+        html += '<h6>GSM Summary:</h6>';
+        html += '<p><strong>Total Film GSM:</strong> ' + res.total_film_gsm + ' g/m²</p>';
+        html += '<p><strong>Adhesive GSM per Layer:</strong> ' + res.adhesive_gsm_per_layer + ' g/m²</p>';
+        html += '<p><strong>Number of Adhesive Layers:</strong> ' + res.number_of_adhesive_layers + ' (between ' + res.number_of_layers + ' film layers)</p>';
+        html += '<p><strong>Total Adhesive GSM:</strong> ' + res.total_adhesive_gsm + ' g/m²</p>';
+        html += '<p><strong>Total Laminate GSM:</strong> <span class="fw-bold text-primary">' + res.total_laminate_gsm + ' g/m²</span></p>';
+
+        // Adhesive application info
+        html += '<div class="mt-3 p-2 bg-info text-white rounded">';
+        html += '<small><i class="fas fa-lightbulb"></i> <strong>Adhesive Application:</strong> ' + res.number_of_layers + ' film layers require ' + res.number_of_adhesive_layers + ' adhesive applications</small>';
+        html += '</div>';
+
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + result.error + '</div>';
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayWeightBreakdownResult(result) {
+    const resultDiv = document.getElementById('weightBreakdownResult');
+    resultDiv.innerHTML = '';
+
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success">';
+        html += '<h6><i class="fas fa-check-circle"></i> Weight Breakdown Results:</h6>';
+        html += '<div class="mb-2 p-2 bg-light rounded">';
+        html += '<small><i class="fas fa-info-circle"></i> <strong>Hint:</strong> This breakdown shows material distribution between films and adhesive. For ' + res.number_of_layers + ' layers, there are ' + res.adhesive_layers_count + ' adhesive bonding layers.</small>';
+        html += '</div>';
+
+        // Show structure info
+        html += '<div class="mb-3 p-3 border rounded bg-light">';
+        html += '<h6>Laminate Structure:</h6>';
+        html += '<p><strong>Total Layers:</strong> ' + res.number_of_layers + ' film layers</p>';
+        html += '<p><strong>Adhesive Layers:</strong> ' + res.adhesive_layers_count + ' bonding layers</p>';
+        html += '<p><strong>Adhesive per Layer:</strong> ' + res.adhesive_gsm_per_layer + ' g/m²</p>';
+        html += '</div>';
+
+        // Show individual layer masses
+        html += '<h6>Film Layer Breakdown:</h6>';
+        if (res.layer_masses && res.layer_masses.length > 0) {
+            res.layer_masses.forEach(function(layer, index) {
+                html += '<p><strong>Layer ' + (index + 1) + ':</strong> ' + layer.material_name + ' - ' + layer.thickness_microns + 'µm (' + layer.gsm + ' g/m²) - <span class="text-primary">' + layer.mass_kg.toFixed(3) + ' kg (' + layer.mass_percent.toFixed(1) + '%)</span></p>';
+            });
+        } else {
+            // Fallback to original display
+            res.layer_details.forEach(function(layer, index) {
+                html += '<p><strong>Layer ' + (index + 1) + ':</strong> ' + layer.material + ' - ' + layer.thickness_microns + 'µm (' + layer.gsm + ' g/m²)</p>';
+            });
+        }
+
+        html += '<hr>';
+        html += '<h6>Mass Summary:</h6>';
+        html += '<p><strong>Total Film Mass:</strong> ' + res.total_film_mass_kg + ' kg (' + res.film_breakdown_percent + '%)</p>';
+        html += '<p><strong>Total Adhesive Mass:</strong> ' + res.total_adhesive_mass_kg + ' kg (' + res.adhesive_breakdown_percent + '%)</p>';
+        html += '<p><strong>Total Laminate Mass:</strong> ' + (res.total_film_mass_kg + res.total_adhesive_mass_kg).toFixed(3) + ' kg (100%)</p>';
+
+        html += '<hr>';
+        html += '<h6>GSM Summary:</h6>';
+        html += '<p><strong>Total Film GSM:</strong> ' + res.total_film_gsm + ' g/m²</p>';
+        html += '<p><strong>Total Adhesive GSM:</strong> ' + res.total_adhesive_gsm + ' g/m² (' + res.adhesive_layers_count + ' layers × ' + res.adhesive_gsm_per_layer + ' g/m²)</p>';
+        html += '<p><strong>Total Laminate GSM:</strong> ' + res.total_laminate_gsm + ' g/m²</p>';
+
+        // Show adhesive calculation details
+        html += '<div class="mt-3 p-2 bg-info text-white rounded">';
+        html += '<small><i class="fas fa-calculator"></i> <strong>Calculation:</strong> Adhesive GSM = ' + res.adhesive_gsm_per_layer + ' g/m² × ' + res.adhesive_layers_count + ' bonding layers = ' + res.total_adhesive_gsm + ' g/m²</small>';
+        html += '</div>';
+
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + result.error + '</div>';
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayAdhesiveComponentsResult(result) {
+    const resultDiv = document.getElementById('adhesiveComponentsResult');
+    resultDiv.innerHTML = '';
+
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success">';
+
+        // Custom ratio indicator
+        if (res.is_custom) {
+            html += '<h6><i class="fas fa-check-circle"></i> Adhesive Component Results <span class="badge bg-warning text-dark ms-2">Custom</span></h6>';
+        } else {
+            html += '<h6><i class="fas fa-check-circle"></i> Adhesive Component Results</h6>';
+        }
+
+        html += '<div class="mb-2 p-2 bg-light rounded">';
+        html += '<small><i class="fas fa-info-circle"></i> <strong>Hint:</strong> These quantities ensure proper adhesive mixing. Always follow manufacturer\'s instructions.</small>';
+        html += '</div>';
+
+        // Format adhesive type for display
+        let displayAdhesiveType = '';
+        if (res.adhesive_type) {
+            displayAdhesiveType = res.adhesive_type.split('_').join(' ');
+        }
+
+        html += '<p><strong>Lamination System:</strong> ' + displayAdhesiveType + '</p>';
+        html += '<p><strong>Adhesive:</strong> ' + res.adhesive_system + '</p>';
+        html += '<p><strong>Hardener:</strong> ' + res.hardener_system + '</p>';
+        html += '<p><strong>Mix Ratio:</strong> ' + res.mix_ratio + ' (A:B:C)</p>';
+
+        // Solids content info
+        if (res.solids_content) {
+            const adhesiveSolids = (res.solids_content.adhesive).toFixed(1);
+            const hardenerSolids = (res.solids_content.hardener).toFixed(1);
+            html += '<p><strong>Solids Content:</strong> Adhesive: ' + adhesiveSolids + '%, Hardener: ' + hardenerSolids + '%</p>';
+        }
+
+        html += '<hr>';
+        html += '<h6>Component Quantities:</h6>';
+        html += '<p><strong>Dry Adhesive Required:</strong> ' + res.dry_adhesive_mass_kg + ' kg</p>';
+        html += '<p><strong>Resin Component (Part A):</strong> ' + res.resin_kg + ' kg</p>';
+        html += '<p><strong>Hardener Component (Part B):</strong> ' + res.hardener_kg + ' kg</p>';
+
+        // Solvent info
+        if (res.ethyl_acetate_kg > 0) {
+            html += '<p><strong>Ethyl Acetate Solvent (Part C):</strong> ' + res.ethyl_acetate_kg + ' kg</p>';
+            html += '<div class="alert alert-warning mt-2">';
+            html += '<small><i class="fas fa-exclamation-triangle"></i> <strong>Safety Note:</strong> Handle ethyl acetate with proper ventilation and PPE.</small>';
+            html += '</div>';
+        } else {
+            html += '<p><strong>Solvent (Part C):</strong> None required (Solventless System)</p>';
+        }
+
+        html += '<p><strong>Total Wet Mix:</strong> ' + res.total_wet_mix_kg + ' kg</p>';
+
+        // Area info
+        if (res.total_area_m2) {
+            html += '<p><strong>Total Area Covered:</strong> ' + res.total_area_m2 + ' m²</p>';
+        }
+
+        // Mixing instructions
+        html += '<div class="mt-3 p-2 bg-info text-white rounded">';
+        html += '<small><i class="fas fa-lightbulb"></i> <strong>Mixing Ratio:</strong> ' + res.mix_ratio + ' (Resin:Hardener:Solvent) - Mix thoroughly before use.</small>';
+        html += '</div>';
+
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + result.error + '</div>';
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayLaminationTimeResult(result) {
+    const resultDiv = document.getElementById('laminationTimeResult');
+    resultDiv.innerHTML = '';
+
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success">';
+        html += '<h6><i class="fas fa-check-circle"></i> Lamination Time Results:</h6>';
+        html += '<div class="mb-2 p-2 bg-light rounded">';
+        html += '<small><i class="fas fa-info-circle"></i> <strong>Hint:</strong> Use this for production planning and scheduling. Remember to account for setup time, material changes, and maintenance in your actual schedule.</small>';
+        html += '</div>';
+        html += '<p><strong>Theoretical Lamination Time:</strong> ' + res.lamination_time_min + ' minutes (' + res.lamination_time_hr + ' hours)</p>';
+        html += '<p><strong>Roll Length:</strong> ' + res.roll_length_m + ' meters</p>';
+        html += '<p><strong>Machine Speed:</strong> ' + res.machine_speed_m_min + ' m/min</p>';
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + result.error + '</div>';
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayProductionEfficiencyResult(result) {
+    const resultDiv = document.getElementById('productionEfficiencyResult');
+    resultDiv.innerHTML = '';
+
+    if (result.success) {
+        const res = result.result;
+        let ratingClass = 'text-danger';
+        if (res.efficiency_rating === 'Excellent') ratingClass = 'text-success';
+        else if (res.efficiency_rating === 'Good') ratingClass = 'text-primary';
+        else if (res.efficiency_rating === 'Average') ratingClass = 'text-warning';
+
+        let html = '<div class="alert alert-success">';
+        html += '<h6><i class="fas fa-check-circle"></i> Production Efficiency Results:</h6>';
+        html += '<div class="mb-2 p-2 bg-light rounded">';
+        html += '<small><i class="fas fa-info-circle"></i> <strong>Hint:</strong> Track efficiency trends to identify improvement opportunities. Common issues include excessive setup time, frequent stops, and material handling delays.</small>';
+        html += '</div>';
+        html += '<p><strong>Efficiency:</strong> <span class="fw-bold ' + ratingClass + '">' + res.efficiency_percent + '%</span></p>';
+        html += '<p><strong>Rating:</strong> <span class="' + ratingClass + '">' + res.efficiency_rating + '</span></p>';
+        html += '<p><strong>Theoretical Time:</strong> ' + res.lamination_time_min + ' minutes</p>';
+        html += '<p><strong>Actual Time:</strong> ' + res.total_run_time_min + ' minutes</p>';
+        html += '<p><strong>Downtime:</strong> ' + res.downtime_min + ' minutes</p>';
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + result.error + '</div>';
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayYieldResult(result) {
+    const resultDiv = document.getElementById('yieldResult');
+    resultDiv.innerHTML = '';
+
+    if (result.success) {
+        const res = result.result;
+        let ratingClass = 'text-danger';
+        if (res.yield_rating === 'Excellent') ratingClass = 'text-success';
+        else if (res.yield_rating === 'Good') ratingClass = 'text-primary';
+        else if (res.yield_rating === 'Average') ratingClass = 'text-warning';
+
+        let html = '<div class="alert alert-success">';
+        html += '<h6><i class="fas fa-check-circle"></i> Material Yield Results:</h6>';
+        html += '<div class="mb-2 p-2 bg-light rounded">';
+        html += '<small><i class="fas fa-info-circle"></i> <strong>Hint:</strong> Monitor yield to detect material waste issues. Common waste sources include edge trim, setup waste, and processing errors. Aim for consistent yield above 95%.</small>';
+        html += '</div>';
+        html += '<p><strong>Yield:</strong> <span class="fw-bold ' + ratingClass + '">' + res.yield_percent + '%</span></p>';
+        html += '<p><strong>Rating:</strong> <span class="' + ratingClass + '">' + res.yield_rating + '</span></p>';
+        html += '<p><strong>Input Mass:</strong> ' + res.input_mass_kg + ' kg</p>';
+        html += '<p><strong>Output Mass:</strong> ' + res.output_mass_kg + ' kg</p>';
+        html += '<p><strong>Material Waste:</strong> ' + res.waste_mass_kg + ' kg</p>';
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + result.error + '</div>';
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayError(resultDivId, message) {
+    const resultDiv = document.getElementById(resultDivId);
+    resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + message + '</div>';
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Smooth scrolling for navigation
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.list-group-item');
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+

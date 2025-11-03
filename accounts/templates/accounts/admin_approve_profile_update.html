@@ -1,0 +1,76 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-user-check"></i> Approve Profile Update
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-edit fa-4x text-success mb-3"></i>
+                    <h4>Approve Profile Changes</h4>
+                    <p class="lead">Review and approve the requested profile changes</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Current Profile</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Username:</strong> {{ user.username }}</p>
+                                <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
+                                <p><strong>Email:</strong> {{ user.email }}</p>
+                                <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+                                <p><strong>Role:</strong> {{ user.get_role_display_name }}</p>
+                                <p><strong>Section:</strong> {{ user.get_section_display_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Requested Changes</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if pending_data %}
+                                    {% for field, value in pending_data.items %}
+                                    <p><strong>{{ field|title }}:</strong> {{ value }}</p>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted">No changes requested</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Approval Note</h6>
+                    <p class="mb-0">
+                        Approving these changes will update the user's profile immediately. 
+                        The user will be able to see the updated information in their profile.
+                    </p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-block text-center">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> Approve Changes
+                        </button>
+                        <a href="{% url 'accounts:admin_profile_approval_list' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

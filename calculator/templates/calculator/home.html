@@ -1,0 +1,160 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Hero Section -->
+        <div class="card calculator-card text-white mb-5">
+            <div class="card-body text-center py-5">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-industry"></i> Plastic QC Calculator
+                </h1>
+                <p class="lead mb-4">Comprehensive Quality Control Solutions for Plastic Manufacturing</p>
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <p class="mb-4">Advanced calculation tools for extrusion, printing, lamination, slitting, and bag making processes.</p>
+                    </div>
+                </div>
+
+                {% if not user.is_authenticated %}
+                <div class="mt-4">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="row g-4">
+            <!-- Extrusion -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary rounded-circle mx-auto mb-3">
+                            <i class="fas fa-industry fa-2x text-white"></i>
+                        </div>
+                        <h4 class="card-title">Extrusion</h4>
+                        <p class="card-text text-muted">
+                            Thickness calculations, roll properties, BUR/DDR ratios, and quality control tests.
+                        </p>
+                        <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-primary mt-3">
+                            Access Extrusion Tools
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Printing -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-success rounded-circle mx-auto mb-3">
+                            <i class="fas fa-print fa-2x text-white"></i>
+                        </div>
+                        <h4 class="card-title">Printing</h4>
+                        <p class="card-text text-muted">
+                            Ink usage calculations, production timing, and print quality metrics.
+                        </p>
+                        <a href="{% url 'printing:printing_home' %}" class="btn btn-primary mt-3">
+                            Access Printing Tools
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lamination -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-info rounded-circle mx-auto mb-3">
+                            <i class="fas fa-layer-group fa-2x text-white"></i>
+                        </div>
+                        <h4 class="card-title">Lamination</h4>
+                        <p class="card-text text-muted">
+                            Adhesive calculations, solvent usage, and multi-layer film properties.
+                        </p>
+                        <a href="{% url 'lamination:lamination_home' %}" class="btn btn-primary mt-3">
+                            Access Lamination Tools
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slitting -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-warning rounded-circle mx-auto mb-3">
+                            <i class="fas fa-cut fa-2x text-white"></i>
+                        </div>
+                        <h4 class="card-title">Slitting</h4>
+                        <p class="card-text text-muted">
+                            Roll length calculations, production efficiency, and material optimization.
+                        </p>
+                        <a href="{% url 'slitting:slitting_home' %}" class="btn btn-primary mt-3">
+                            Access Slitting Tools
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bag Making -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-secondary rounded-circle mx-auto mb-3">
+                            <i class="fas fa-shopping-bag fa-2x text-white"></i>
+                        </div>
+                        <h4 class="card-title">Bag Making</h4>
+                        <p class="card-text text-muted">
+                            Piece-to-weight conversions, packaging calculations, and production planning.
+                        </p>
+                        <a href="{% url 'bag_making:bag_making_home' %}" class="btn btn-primary mt-3">
+                            Access Bag Making Tools
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Reference -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-dark rounded-circle mx-auto mb-3">
+                            <i class="fas fa-database fa-2x text-white"></i>
+                        </div>
+                        <h4 class="card-title">Material Reference</h4>
+                        <p class="card-text text-muted">
+                            Comprehensive database of plastic material properties and specifications.
+                        </p>
+                        <a href="{% url 'material_reference' %}" class="btn btn-dark mt-3">
+                            Browse Materials
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}

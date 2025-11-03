@@ -1,0 +1,24 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">{{ section_name }} Calculators</h6>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for calc in calculators %}
+                <a href="#{{ calc.id }}" class="list-group-item list-group-item-action">
+                    <i class="{{ calc.icon }} me-2"></i>{{ calc.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        {% block section_content %}
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white text-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-user-cog"></i> My Profile
+                </h4>
+                <p class="mb-0 mt-2">Manage your account information</p>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Profile Update Status -->
+                {% if profile_update_pending %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-clock"></i> Profile Update Pending Approval</h6>
+                    <p class="mb-0">
+                        Your profile changes are awaiting admin approval.
+                        You will be notified once they are approved.
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Account Status</h6>
+                                {% if user.is_approved %}
+                                    <span class="badge bg-success">Approved</span>
+                                    <small class="text-muted d-block mt-1">You can access all features</small>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                                    <small class="text-muted d-block mt-1">Waiting for admin approval</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">User Role</h6>
+                                <span class="badge bg-primary">{{ user.get_role_display_name }}</span>
+                                <small class="text-muted d-block mt-1">{{ user.get_section_display_name }} Section</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        {{ form.email }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        {{ form.phone_number }}
+                        <div class="form-text">Format: +256XXXXXXXXX or 07XXXXXXXX</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Company Role</label>
+                                {{ form.company_role }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Section</label>
+                                {{ form.section }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-info btn-lg">
+                            <i class="fas fa-save"></i>
+                            {% if user.is_administrator %}
+                                Update Profile
+                            {% else %}
+                                Request Profile Update
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Account Management Actions -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="mb-3"><i class="fas fa-cog"></i> Account Management</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'accounts:delete_account' %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete My Account
+                        </a>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        Note: Account deletion is immediate and cannot be undone.
+                    </small>
+                </div>
+                <!-- Security Settings -->
+                <div class="card shadow mt-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt"></i> Security Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Password Management</h6>
+                                <p class="small text-muted">
+                                    Request a password reset if you've forgotten your password.
+                                    All reset requests require admin approval for security.
+                                </p>
+                                <a href="{% url 'accounts:password_reset_request' %}" class="btn btn-warning">
+                                    <i class="fas fa-unlock-alt"></i> Request Password Reset
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Account Security</h6>
+                                <p class="small text-muted">
+                                    Last password change:
+                                    {% if user.last_password_change %}
+                                        {{ user.last_password_change|date:"M d, Y" }}
+                                    {% else %}
+                                        Never changed
+                                    {% endif %}
+                                </p>
+                                {% if user.password_change_required %}
+                                <div class="alert alert-danger small">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Password change required by administrator
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if not user.is_approved %}
+                <div class="alert alert-warning mt-3">
+                    <h6><i class="fas fa-clock"></i> Account Pending Approval</h6>
+                    <p class="mb-0 small">
+                        Your account is currently pending admin approval.
+                        You will be able to access all features once your account is approved.
+                        Contact the administrator if you need immediate access.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,2467 @@
+{% extends 'calculator/section_base.html' %}
+{% load static %}
+
+{% block section_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body text-center">
+                <h2 class="card-title">
+                    <i class="fas fa-industry"></i> Extrusion Calculators
+                </h2>
+                <p class="mb-0">Comprehensive calculations for film extrusion processes and quality control</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pieces to Weight Calculator -->
+<div class="card shadow mb-4" id="pieces_weight">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-cubes"></i> Pieces to Weight Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="piecesWeightForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select class="form-select" name="material_id" required>
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                {{ material.name }} ({{ material.density }} g/cm³)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Film Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                                <option value="gauge">Gauge</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Piece Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="piece_length" required>
+                            <select class="form-select" name="piece_length_unit" style="max-width: 120px;">
+                                <option value="m">Meters</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="inch">Inches</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Piece Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="piece_width" required>
+                            <select class="form-select" name="piece_width_unit" style="max-width: 120px;">
+                                <option value="m">Meters</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="inch">Inches</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Calculate From</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pieces_calculation_type" value="pieces_to_mass" id="piecesToMass" checked>
+                            <label class="form-check-label" for="piecesToMass">Number of Pieces → Total Mass</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pieces_calculation_type" value="mass_to_pieces" id="massToPieces">
+                            <label class="form-check-label" for="massToPieces">Total Mass → Number of Pieces</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="piecesInput">
+                        <label class="form-label">Number of Pieces</label>
+                        <input type="number" class="form-control" name="total_pieces" value="1000" required>
+                    </div>
+
+                    <div class="mb-3" id="massInput" style="display: none;">
+                        <label class="form-label">Total Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="total_mass" required>
+                            <select class="form-select" name="total_mass_unit" style="max-width: 120px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="piecesWeightResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Thickness Calculator -->
+<div class="card shadow mb-4" id="thickness">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-ruler"></i> Thickness Calculation
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="thicknessForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Calculation Method</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="method" value="cut_weigh" id="cutWeighMethod" checked>
+                    <label class="form-check-label" for="cutWeighMethod">Cut & Weigh Method</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="method" value="extrusion_rate" id="extrusionRateMethod">
+                    <label class="form-check-label" for="extrusionRateMethod">Extrusion Rate Method</label>
+                </div>
+            </div>
+
+            <!-- Cut & Weigh Fields -->
+            <div id="cutWeighFields">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Sample Mass</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="cut_mass" required value="0.05">
+                                <select class="form-select" name="cut_mass_unit" style="max-width: 120px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Typical: 0.05-0.2 kg for film samples</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Sample Length</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="cut_length" required value="1.0">
+                                <select class="form-select" name="cut_length_unit" style="max-width: 120px;">
+                                    <option value="m">Meters</option>
+                                    <option value="cm">cm</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Typical: 1-2 meters</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Sample Width</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="cut_width" required value="1.0">
+                                <select class="form-select" name="cut_width_unit" style="max-width: 120px;">
+                                    <option value="m">Meters</option>
+                                    <option value="cm">cm</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Typical: 1 meter for full width</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extrusion Rate Fields -->
+            <div id="extrusionRateFields" style="display: none;">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Mass Flow Rate</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="extrusion_mass_flow" required value="100">
+                                <select class="form-select" name="extrusion_mass_flow_unit" style="max-width: 120px;">
+                                    <option value="kg_hr">kg/hr</option>
+                                    <option value="kg_min">kg/min</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Typical: 50-200 kg/hr</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Film Width</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="extrusion_width" required value="2.0">
+                                <select class="form-select" name="extrusion_width_unit" style="max-width: 120px;">
+                                    <option value="m">Meters</option>
+                                    <option value="cm">cm</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Typical: 1-3 meters</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Take-up Speed</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="extrusion_takeup_speed" required value="30">
+                                <select class="form-select" name="extrusion_takeup_speed_unit" style="max-width: 120px;">
+                                    <option value="m_min">m/min</option>
+                                    <option value="m_hr">m/hr</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Typical: 20-50 m/min</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Calculate Thickness
+            </button>
+        </form>
+
+        <div id="thicknessResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Take-up Speed Calculator -->
+<div class="card shadow mb-4" id="takeup">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-sync"></i> Take-up Speed Adjustment
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="takeupForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Current Speed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="old_speed" required>
+                            <select class="form-select" name="old_speed_unit" style="max-width: 120px;">
+                                <option value="m_min">m/min</option>
+                                <option value="m_hr">m/hr</option>
+                                <option value="ft_min">ft/min</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Current Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="old_thickness" required>
+                            <select class="form-select" name="old_thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Target Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="new_thickness" required>
+                            <select class="form-select" name="new_thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-calculator"></i> Calculate New Speed
+            </button>
+        </form>
+
+        <div id="takeupResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Roll Properties Calculator -->
+<div class="card shadow mb-4" id="roll_calc">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-circle"></i> Roll Radius & Mass Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="rollForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Calculation Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="roll_calculation_type" value="length_mass" id="calcLengthMass" checked>
+                    <label class="form-check-label" for="calcLengthMass">Calculate Length & Mass from Dimensions</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="roll_calculation_type" value="radius_from_mass" id="calcRadiusFromMass">
+                    <label class="form-check-label" for="calcRadiusFromMass">Calculate Radius from Mass</label>
+                </div>
+            </div>
+
+            <!-- Length & Mass Calculation Fields -->
+            <div id="lengthMassFields">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Core Diameter</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="core_diameter" value="76" required>
+                                <select class="form-select" name="core_diameter_unit" style="max-width: 100px;">
+                                    <option value="mm">mm</option>
+                                    <option value="cm">cm</option>
+                                    <option value="inch">inch</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Outer Diameter</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="outer_diameter" value="500" required>
+                                <select class="form-select" name="outer_diameter_unit" style="max-width: 100px;">
+                                    <option value="mm">mm</option>
+                                    <option value="cm">cm</option>
+                                    <option value="inch">inch</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Film Thickness</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="thickness" value="50" required>
+                                <select class="form-select" name="thickness_unit" style="max-width: 100px;">
+                                    <option value="micron">Microns</option>
+                                    <option value="mm">mm</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Film Width</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="width" value="1000" required>
+                                <select class="form-select" name="width_unit" style="max-width: 100px;">
+                                    <option value="mm">mm</option>
+                                    <option value="cm">cm</option>
+                                    <option value="m">m</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Core Weight (Optional)</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" name="core_weight" value="0.5">
+                                <select class="form-select" name="core_weight_unit" style="max-width: 100px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                    <option value="lb">lb</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Radius from Mass Calculation Fields -->
+            <div id="radiusFromMassFields" style="display: none;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Core Diameter</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="core_diameter_mass" value="76" required>
+                                <select class="form-select" name="core_diameter_unit_mass" style="max-width: 100px;">
+                                    <option value="mm">mm</option>
+                                    <option value="cm">cm</option>
+                                    <option value="inch">inch</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Film Thickness</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="thickness_mass" value="50" required>
+                                <select class="form-select" name="thickness_unit_mass" style="max-width: 100px;">
+                                    <option value="micron">Microns</option>
+                                    <option value="mm">mm</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Film Width</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="width_mass" value="1000" required>
+                                <select class="form-select" name="width_unit_mass" style="max-width: 100px;">
+                                    <option value="mm">mm</option>
+                                    <option value="cm">cm</option>
+                                    <option value="m">m</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Total Mass</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="total_mass" value="50" required>
+                                <select class="form-select" name="total_mass_unit" style="max-width: 100px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                    <option value="lb">lb</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Core Weight (Optional)</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" name="core_weight_mass" value="0.5">
+                                <select class="form-select" name="core_weight_unit_mass" style="max-width: 100px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                    <option value="lb">lb</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="rollResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Tensile Strength Calculator -->
+<div class="card shadow mb-4" id="tensile">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-weight-hanging"></i> Tensile Strength Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="tensileForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Maximum Load</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="max_load" required>
+                            <select class="form-select" name="load_unit" style="max-width: 120px;">
+                                <option value="N">N</option>
+                                <option value="kN">kN</option>
+                                <option value="lbf">lbf</option>
+                                <option value="kgf">kgf</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Sample Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="width" required>
+                            <select class="form-select" name="width_unit" style="max-width: 120px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Sample Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-calculator"></i> Calculate Tensile Strength
+            </button>
+        </form>
+
+        <div id="tensileResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Percent Elongation Calculator -->
+<div class="card shadow mb-4" id="elongation">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-arrows-alt-v"></i> Percent Elongation Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="elongationForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Initial Length (L₀)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="initial_length" required>
+                            <select class="form-select" name="initial_length_unit" style="max-width: 120px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Final Length (Lf)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="final_length" required>
+                            <select class="form-select" name="final_length_unit" style="max-width: 120px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-calculator"></i> Calculate Elongation
+            </button>
+        </form>
+
+        <div id="elongationResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Coefficient of Friction Calculator -->
+<div class="card shadow mb-4" id="cof">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-sliders-h"></i> Coefficient of Friction (COF)
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="cofForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Friction Force (Ff)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="friction_force" required>
+                            <select class="form-select" name="friction_force_unit" style="max-width: 120px;">
+                                <option value="N">N</option>
+                                <option value="lbf">lbf</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Normal Force (Fn)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="normal_force" required>
+                            <select class="form-select" name="normal_force_unit" style="max-width: 120px;">
+                                <option value="N">N</option>
+                                <option value="lbf">lbf</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark">
+                <i class="fas fa-calculator"></i> Calculate COF
+            </button>
+        </form>
+
+        <div id="cofResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Film Length from Weight Calculator -->
+<div class="card shadow mb-4" id="film_length">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-ruler-horizontal"></i> Film Length from Weight
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="filmLengthForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Film Weight</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="film_weight" required>
+                            <select class="form-select" name="film_weight_unit" style="max-width: 120px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Film Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="film_width" required>
+                            <select class="form-select" name="film_width_unit" style="max-width: 120px;">
+                                <option value="m">Meters</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Film Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Calculate Length
+            </button>
+        </form>
+
+        <div id="filmLengthResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Weight from Length Calculator -->
+<div class="card shadow mb-4" id="weight_from_length">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-weight-hanging"></i> Weight from Length Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="weightFromLengthForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Film Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="film_length" required>
+                            <select class="form-select" name="film_length_unit" style="max-width: 120px;">
+                                <option value="m">Meters</option>
+                                <option value="ft">Feet</option>
+                                <option value="yd">Yards</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Film Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="film_width" required>
+                            <select class="form-select" name="film_width_unit" style="max-width: 120px;">
+                                <option value="m">Meters</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Film Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Calculate Weight
+            </button>
+        </form>
+
+        <div id="weightFromLengthResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Production Time Calculator -->
+<div class="card shadow mb-4" id="production_time">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-clock"></i> Production Time Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="productionTimeForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Quantity to Produce</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="quantity" required>
+                            <select class="form-select" name="quantity_unit" style="max-width: 120px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                                <option value="ton">ton</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Production Rate</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="production_rate" required>
+                            <select class="form-select" name="production_rate_unit" style="max-width: 120px;">
+                                <option value="kg_hr">kg/hr</option>
+                                <option value="kg_min">kg/min</option>
+                                <option value="lb_hr">lb/hr</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-calculator"></i> Calculate Production Time
+            </button>
+        </form>
+
+        <div id="productionTimeResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Blown Film Ratios Calculator -->
+<div class="card shadow mb-4" id="bur_ddr">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-expand"></i> Blown Film Ratios (BUR & DDR)
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="burDdrForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Lay Flat Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="lay_flat_width" required>
+                            <select class="form-select" name="lay_flat_width_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Die Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="die_diameter" required>
+                            <select class="form-select" name="die_diameter_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Die Gap</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="die_gap" required>
+                            <select class="form-select" name="die_gap_unit" style="max-width: 100px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Final Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="final_thickness" required>
+                            <select class="form-select" name="final_thickness_unit" style="max-width: 100px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-calculator"></i> Calculate Ratios
+            </button>
+        </form>
+
+        <div id="burDdrResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Dart Impact Calculator -->
+<div class="card shadow mb-4" id="dart_impact">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-bomb"></i> Dart Impact Test (M50)
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="dartImpactForm">
+            <div class="mb-3">
+                <label class="form-label">Test Results</label>
+                <div class="alert alert-info">
+                    <small>Enter test weights and results. M50 is the average weight at which samples fail.</small>
+                </div>
+            </div>
+
+            <div id="dartTestContainer">
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Test Weight (grams)</label>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Result</label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <input type="number" step="1" class="form-control" name="weights_g[]" placeholder="Weight in grams">
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select" name="results_pass_fail[]">
+                            <option value="true">Pass</option>
+                            <option value="false">Fail</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addDartTestRow()">
+                    <i class="fas fa-plus"></i> Add Test
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeDartTestRow()">
+                    <i class="fas fa-minus"></i> Remove Test
+                </button>
+            </div>
+
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-calculator"></i> Calculate M50
+            </button>
+        </form>
+
+        <div id="dartImpactResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Gauge Variation Calculator -->
+<div class="card shadow mb-4" id="gauge_variation">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-line"></i> Gauge Variation (CV%)
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="gaugeVariationForm">
+            <div class="mb-3">
+                <label class="form-label">Thickness Measurements (microns)</label>
+                <div class="alert alert-info">
+                    <small>Enter thickness measurements taken across the web. Minimum 3 measurements required.</small>
+                </div>
+            </div>
+
+            <div id="gaugeMeasurementsContainer">
+                <div class="row mb-2">
+                    <div class="col-md-8">
+                        <label class="form-label">Measurement Position</label>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Thickness (microns)</label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="positions[]" placeholder="e.g., Edge Left, Center, Edge Right">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.1" class="form-control" name="thickness_measurements[]" placeholder="Thickness">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="positions[]" placeholder="e.g., Edge Left, Center, Edge Right">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.1" class="form-control" name="thickness_measurements[]" placeholder="Thickness">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="positions[]" placeholder="e.g., Edge Left, Center, Edge Right">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.1" class="form-control" name="thickness_measurements[]" placeholder="Thickness">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addGaugeMeasurementRow()">
+                    <i class="fas fa-plus"></i> Add Measurement
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeGaugeMeasurementRow()">
+                    <i class="fas fa-minus"></i> Remove Measurement
+                </button>
+            </div>
+
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-calculator"></i> Calculate Variation
+            </button>
+        </form>
+
+        <div id="gaugeVariationResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Composite Density Calculator -->
+<div class="card shadow mb-4" id="composite_density">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-layer-group"></i> Composite Density (Multi-layer)
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="compositeDensityForm">
+            <div class="mb-3">
+                <label class="form-label">Multi-layer Film Structure</label>
+                <div class="alert alert-info">
+                    <small>Enter density and thickness for each layer. Composite density is calculated as weighted average.</small>
+                </div>
+            </div>
+
+            <div id="compositeLayersContainer">
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Layer Density (g/cm³)</label>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Layer Thickness (microns)</label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <input type="number" step="0.001" class="form-control" name="layer_densities[]" placeholder="e.g., 0.92 for LDPE">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" step="0.1" class="form-control" name="layer_thicknesses[]" placeholder="Thickness in microns">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <input type="number" step="0.001" class="form-control" name="layer_densities[]" placeholder="e.g., 1.35 for PET">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" step="0.1" class="form-control" name="layer_thicknesses[]" placeholder="Thickness in microns">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCompositeLayerRow()">
+                    <i class="fas fa-plus"></i> Add Layer
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCompositeLayerRow()">
+                    <i class="fas fa-minus"></i> Remove Layer
+                </button>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calculator"></i> Calculate Composite Density
+            </button>
+        </form>
+
+        <div id="compositeDensityResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Yield & Basis Weight Calculator -->
+<div class="card shadow mb-4" id="yield_basis">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-balance-scale"></i> Yield & Basis Weight
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="yieldBasisForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Film Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Calculate</label>
+                        <div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="calculate_yield" checked>
+                                <label class="form-check-label">Yield (Area per Mass)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="calculate_basis" checked>
+                                <label class="form-check-label">Basis Weight (Mass per Area)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="yieldBasisResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <h6><i class="fas fa-info-circle"></i> Notes:</h6>
+    <ul class="mb-0">
+        <li>All calculations use metric units as base and convert to other units for display</li>
+        <li>Results are rounded to appropriate significant figures</li>
+        <li>Calculations are saved to your history when logged in</li>
+        <li>For multi-layer calculations, use the Composite Density calculator</li>
+    </ul>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Event Listeners for Form Submissions
+document.getElementById('piecesWeightForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculatePiecesWeight();
+});
+
+document.getElementById('thicknessForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateThickness();
+});
+
+document.getElementById('takeupForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateTakeupSpeed();
+});
+
+document.getElementById('tensileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateTensileStrength();
+});
+
+document.getElementById('elongationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateElongation();
+});
+
+document.getElementById('cofForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateCOF();
+});
+
+document.getElementById('filmLengthForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateFilmLength();
+});
+
+document.getElementById('weightFromLengthForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateWeightFromLength();
+});
+
+document.getElementById('productionTimeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateProductionTime();
+});
+
+document.getElementById('burDdrForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateBURDDR();
+});
+
+document.getElementById('dartImpactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateDartImpact();
+});
+
+document.getElementById('gaugeVariationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateGaugeVariation();
+});
+
+document.getElementById('compositeDensityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateCompositeDensity();
+});
+
+document.getElementById('yieldBasisForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateYieldBasisWeight();
+});
+
+// Roll Calculator - Single Event Listener - UPDATED with unique name
+document.getElementById('rollForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    console.log('Roll form submitted');
+
+    const calculationType = document.querySelector('input[name="roll_calculation_type"]:checked').value;
+    console.log('Roll Calculation type:', calculationType);
+
+    if (calculationType === 'length_mass') {
+        console.log('Calling calculateRollProperties');
+        calculateRollProperties();
+    } else if (calculationType === 'radius_from_mass') {
+        console.log('Calling calculateRollRadiusFromMass');
+        calculateRollRadiusFromMass();
+    } else {
+        console.log('Unknown calculation type:', calculationType);
+        displayRollError('Unknown calculation type selected');
+    }
+});
+
+// Roll calculation type toggle
+document.querySelectorAll('input[name="roll_calculation_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const lengthMassFields = document.getElementById('lengthMassFields');
+        const radiusFromMassFields = document.getElementById('radiusFromMassFields');
+
+        if (this.value === 'length_mass') {
+            lengthMassFields.style.display = 'block';
+            radiusFromMassFields.style.display = 'none';
+        } else {
+            lengthMassFields.style.display = 'none';
+            radiusFromMassFields.style.display = 'block';
+        }
+    });
+});
+
+// Function for length & mass calculation
+function calculateRollProperties() {
+    const form = document.getElementById('rollForm');
+
+    // Get data from the visible fields only
+    const data = {
+        material_id: form.querySelector('select[name="material_id"]').value,
+        core_diameter: form.querySelector('input[name="core_diameter"]').value,
+        core_diameter_unit: form.querySelector('select[name="core_diameter_unit"]').value,
+        outer_diameter: form.querySelector('input[name="outer_diameter"]').value,
+        outer_diameter_unit: form.querySelector('select[name="outer_diameter_unit"]').value,
+        thickness: form.querySelector('input[name="thickness"]').value,
+        thickness_unit: form.querySelector('select[name="thickness_unit"]').value,
+        width: form.querySelector('input[name="width"]').value,
+        width_unit: form.querySelector('select[name="width_unit"]').value,
+        core_weight: form.querySelector('input[name="core_weight"]').value || '0',
+        core_weight_unit: form.querySelector('select[name="core_weight_unit"]').value,
+        calculation_type: 'length' // Default to calculating length
+    };
+
+    console.log('Roll Properties Data:', data);
+
+    // Validate required fields
+    if (!data.material_id || !data.core_diameter || !data.outer_diameter || !data.thickness || !data.width) {
+        displayRollError('Please fill in all required fields');
+        return;
+    }
+
+    fetch('/extrusion/calculate-roll-properties/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(result => {
+        console.log('Roll Properties Result:', result);
+        if (result.success) {
+            displayRollPropertiesResult(result);
+        } else {
+            displayRollError(result.error || 'Unknown error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayRollError('Network error: ' + error);
+    });
+}
+
+// Function for radius from mass calculation
+function calculateRollRadiusFromMass() {
+    const form = document.getElementById('rollForm');
+
+    // Get data from the radius-specific fields
+    const data = {
+        material_id: form.querySelector('select[name="material_id"]').value,
+        core_diameter: form.querySelector('input[name="core_diameter_mass"]').value,
+        core_diameter_unit: form.querySelector('select[name="core_diameter_unit_mass"]').value,
+        thickness: form.querySelector('input[name="thickness_mass"]').value,
+        thickness_unit: form.querySelector('select[name="thickness_unit_mass"]').value,
+        width: form.querySelector('input[name="width_mass"]').value,
+        width_unit: form.querySelector('select[name="width_unit_mass"]').value,
+        total_mass: form.querySelector('input[name="total_mass"]').value,
+        total_mass_unit: form.querySelector('select[name="total_mass_unit"]').value,
+        core_weight: form.querySelector('input[name="core_weight_mass"]').value || '0',
+        core_weight_unit: form.querySelector('select[name="core_weight_unit_mass"]').value
+    };
+
+    console.log('Roll Radius from Mass Data:', data);
+
+    // Validate required fields
+    if (!data.material_id || !data.core_diameter || !data.thickness || !data.width || !data.total_mass) {
+        displayRollError('Please fill in all required fields for radius calculation');
+        return;
+    }
+
+    fetch('/extrusion/calculate-roll-radius-from-mass/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(result => {
+        console.log('Roll Radius from Mass Result:', result);
+        if (result.success) {
+            displayRollRadiusFromMassResult(result);
+        } else {
+            displayRollError(result.error || 'Unknown error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayRollError('Network error: ' + error);
+    });
+}
+
+// Pieces to Weight toggle.
+document.querySelectorAll('input[name="pieces_calculation_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const piecesInput = document.getElementById('piecesInput');
+        const massInput = document.getElementById('massInput');
+        const piecesField = piecesInput.querySelector('input[name="total_pieces"]');
+        const massField = massInput.querySelector('input[name="total_mass"]');
+
+        if (this.value === 'pieces_to_mass') {
+            piecesInput.style.display = 'block';
+            massInput.style.display = 'none';
+            piecesField.required = true;
+            massField.required = false;
+            // Clear and set default value for mass field
+            massField.value = '';
+            // Set default value if pieces field is empty
+            if (!piecesField.value || piecesField.value === '0') {
+                piecesField.value = '1000';
+            }
+        } else {
+            piecesInput.style.display = 'none';
+            massInput.style.display = 'block';
+            piecesField.required = false;
+            massField.required = true;
+            // Clear and set default value for pieces field
+            piecesField.value = '';
+            // Set default value if mass field is empty
+            if (!massField.value || massField.value === '0') {
+                massField.value = '10';
+            }
+        }
+    });
+});
+
+// Thickness calculation method toggle
+document.querySelectorAll('input[name="method"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        if (this.value === 'cut_weigh') {
+            document.getElementById('cutWeighFields').style.display = 'block';
+            document.getElementById('extrusionRateFields').style.display = 'none';
+        } else {
+            document.getElementById('cutWeighFields').style.display = 'none';
+            document.getElementById('extrusionRateFields').style.display = 'block';
+        }
+    });
+});
+
+// Calculation Functions
+function calculatePiecesWeight() {
+    const form = document.getElementById('piecesWeightForm');
+
+    // Get the calculation type from the correct radio buttons
+    const calculationType = form.querySelector('input[name="pieces_calculation_type"]:checked').value;
+
+    // Build data object manually to ensure correct field names
+    const data = {
+        material_id: form.querySelector('select[name="material_id"]').value,
+        thickness: form.querySelector('input[name="thickness"]').value,
+        thickness_unit: form.querySelector('select[name="thickness_unit"]').value,
+        piece_length: form.querySelector('input[name="piece_length"]').value,
+        piece_length_unit: form.querySelector('select[name="piece_length_unit"]').value,
+        piece_width: form.querySelector('input[name="piece_width"]').value,
+        piece_width_unit: form.querySelector('select[name="piece_width_unit"]').value,
+        calculation_type: calculationType
+    };
+
+    // Only include the relevant field based on calculation type
+    if (calculationType === 'pieces_to_mass') {
+        data.total_pieces = form.querySelector('input[name="total_pieces"]').value;
+        // Don't send mass fields
+        data.total_mass = '';
+        data.total_mass_unit = '';
+    } else {
+        data.total_mass = form.querySelector('input[name="total_mass"]').value;
+        data.total_mass_unit = form.querySelector('select[name="total_mass_unit"]').value;
+        // Don't send pieces field
+        data.total_pieces = '';
+    }
+
+    console.log('Pieces Weight Data:', data); // Debug log
+
+    fetch('/extrusion/calculate-pieces-weight/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayPiecesWeightResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayPiecesWeightError('Network error: ' + error);
+    });
+}
+
+function calculateThickness() {
+    const form = document.getElementById('thicknessForm');
+    const method = form.querySelector('input[name="method"]:checked').value;
+
+    // Build data object based on selected method
+    const data = {
+        material_id: form.querySelector('select[name="material_id"]').value,
+        method: method
+    };
+
+    if (method === 'cut_weigh') {
+        // Use cut & weigh specific field names
+        data.cut_mass = form.querySelector('input[name="cut_mass"]').value;
+        data.cut_mass_unit = form.querySelector('select[name="cut_mass_unit"]').value;
+        data.cut_length = form.querySelector('input[name="cut_length"]').value;
+        data.cut_length_unit = form.querySelector('select[name="cut_length_unit"]').value;
+        data.cut_width = form.querySelector('input[name="cut_width"]').value;
+        data.cut_width_unit = form.querySelector('select[name="cut_width_unit"]').value;
+
+        // Validate cut & weigh fields
+        if (!data.cut_mass || !data.cut_length || !data.cut_width) {
+            displayThicknessError('Please fill in all required fields for Cut & Weigh method');
+            return;
+        }
+    } else {
+        // Use extrusion rate specific field names
+        data.extrusion_mass_flow = form.querySelector('input[name="extrusion_mass_flow"]').value;
+        data.extrusion_mass_flow_unit = form.querySelector('select[name="extrusion_mass_flow_unit"]').value;
+        data.extrusion_width = form.querySelector('input[name="extrusion_width"]').value;
+        data.extrusion_width_unit = form.querySelector('select[name="extrusion_width_unit"]').value;
+        data.extrusion_takeup_speed = form.querySelector('input[name="extrusion_takeup_speed"]').value;
+        data.extrusion_takeup_speed_unit = form.querySelector('select[name="extrusion_takeup_speed_unit"]').value;
+
+        // Validate extrusion rate fields
+        if (!data.extrusion_mass_flow || !data.extrusion_width || !data.extrusion_takeup_speed) {
+            displayThicknessError('Please fill in all required fields for Extrusion Rate method');
+            return;
+        }
+    }
+
+    console.log('Thickness Calculation Data:', data);
+
+    fetch('/extrusion/calculate-thickness/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayThicknessResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayThicknessError('Network error: ' + error);
+    });
+}
+
+function calculateTakeupSpeed() {
+    const formData = new FormData(document.getElementById('takeupForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-takeup-speed/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayTakeupResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayTakeupError('Network error: ' + error);
+    });
+}
+
+// Function for length & mass calculation
+function calculateRollProperties() {
+    const form = document.getElementById('rollForm');
+
+    // Get data from the visible fields only
+    const data = {
+        material_id: form.querySelector('select[name="material_id"]').value,
+        core_diameter: form.querySelector('input[name="core_diameter"]').value,
+        core_diameter_unit: form.querySelector('select[name="core_diameter_unit"]').value,
+        outer_diameter: form.querySelector('input[name="outer_diameter"]').value,
+        outer_diameter_unit: form.querySelector('select[name="outer_diameter_unit"]').value,
+        thickness: form.querySelector('input[name="thickness"]').value,
+        thickness_unit: form.querySelector('select[name="thickness_unit"]').value,
+        width: form.querySelector('input[name="width"]').value,
+        width_unit: form.querySelector('select[name="width_unit"]').value,
+        core_weight: form.querySelector('input[name="core_weight"]').value || '0',
+        core_weight_unit: form.querySelector('select[name="core_weight_unit"]').value,
+        calculation_type: 'length' // Default to calculating length
+    };
+
+    console.log('Roll Properties Data:', data);
+
+    // Validate required fields
+    if (!data.material_id || !data.core_diameter || !data.outer_diameter || !data.thickness || !data.width) {
+        displayRollError('Please fill in all required fields');
+        return;
+    }
+
+    fetch('/extrusion/calculate-roll-properties/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(result => {
+        console.log('Roll Properties Result:', result);
+        if (result.success) {
+            displayRollPropertiesResult(result);
+        } else {
+            displayRollError(result.error || 'Unknown error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayRollError('Network error: ' + error);
+    });
+}
+
+// Function for radius from mass calculation
+function calculateRollRadiusFromMass() {
+    const form = document.getElementById('rollForm');
+
+    // Get data from the radius-specific fields
+    const data = {
+        material_id: form.querySelector('select[name="material_id"]').value,
+        core_diameter: form.querySelector('input[name="core_diameter_mass"]').value,
+        core_diameter_unit: form.querySelector('select[name="core_diameter_unit_mass"]').value,
+        thickness: form.querySelector('input[name="thickness_mass"]').value,
+        thickness_unit: form.querySelector('select[name="thickness_unit_mass"]').value,
+        width: form.querySelector('input[name="width_mass"]').value,
+        width_unit: form.querySelector('select[name="width_unit_mass"]').value,
+        total_mass: form.querySelector('input[name="total_mass"]').value,
+        total_mass_unit: form.querySelector('select[name="total_mass_unit"]').value,
+        core_weight: form.querySelector('input[name="core_weight_mass"]').value || '0',
+        core_weight_unit: form.querySelector('select[name="core_weight_unit_mass"]').value
+    };
+
+    console.log('Roll Radius from Mass Data:', data);
+
+    // Validate required fields
+    if (!data.material_id || !data.core_diameter || !data.thickness || !data.width || !data.total_mass) {
+        displayRollError('Please fill in all required fields for radius calculation');
+        return;
+    }
+
+    fetch('/extrusion/calculate-roll-radius-from-mass/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(result => {
+        console.log('Roll Radius from Mass Result:', result);
+        if (result.success) {
+            displayRollRadiusFromMassResult(result);
+        } else {
+            displayRollError(result.error || 'Unknown error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayRollError('Network error: ' + error);
+    });
+}
+
+function calculateTensileStrength() {
+    const formData = new FormData(document.getElementById('tensileForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-tensile-strength/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayTensileResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayTensileError('Network error: ' + error);
+    });
+}
+
+function calculateElongation() {
+    const formData = new FormData(document.getElementById('elongationForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-elongation/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayElongationResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayElongationError('Network error: ' + error);
+    });
+}
+
+function calculateCOF() {
+    const formData = new FormData(document.getElementById('cofForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-cof/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayCOFResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayCOFError('Network error: ' + error);
+    });
+}
+
+function calculateFilmLength() {
+    const formData = new FormData(document.getElementById('filmLengthForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-film-length/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayFilmLengthResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayFilmLengthError('Network error: ' + error);
+    });
+}
+
+function calculateWeightFromLength() {
+    const formData = new FormData(document.getElementById('weightFromLengthForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-weight-from-length/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayWeightFromLengthResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayWeightFromLengthError('Network error: ' + error);
+    });
+}
+
+function calculateProductionTime() {
+    const formData = new FormData(document.getElementById('productionTimeForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-production-time/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayProductionTimeResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayProductionTimeError('Network error: ' + error);
+    });
+}
+
+function calculateBURDDR() {
+    const formData = new FormData(document.getElementById('burDdrForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-bur-ddr/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayBURDDRResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayBURDDRError('Network error: ' + error);
+    });
+}
+
+function calculateDartImpact() {
+    const form = document.getElementById('dartImpactForm');
+    const weights = Array.from(form.querySelectorAll('input[name="weights_g[]"]')).map(input => parseFloat(input.value));
+    const results = Array.from(form.querySelectorAll('select[name="results_pass_fail[]"]')).map(select => select.value === 'true');
+
+    const data = {
+        weights_g: weights,
+        results_pass_fail: results
+    };
+
+    fetch('/extrusion/calculate-dart-impact/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayDartImpactResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayDartImpactError('Network error: ' + error);
+    });
+}
+
+function calculateGaugeVariation() {
+    const form = document.getElementById('gaugeVariationForm');
+    const measurements = Array.from(form.querySelectorAll('input[name="thickness_measurements[]"]'))
+        .map(input => parseFloat(input.value))
+        .filter(value => !isNaN(value));
+
+    const data = {
+        thickness_measurements: measurements
+    };
+
+    fetch('/extrusion/calculate-gauge-variation/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayGaugeVariationResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayGaugeVariationError('Network error: ' + error);
+    });
+}
+
+function calculateCompositeDensity() {
+    const form = document.getElementById('compositeDensityForm');
+    const densities = Array.from(form.querySelectorAll('input[name="layer_densities[]"]')).map(input => parseFloat(input.value));
+    const thicknesses = Array.from(form.querySelectorAll('input[name="layer_thicknesses[]"]')).map(input => parseFloat(input.value));
+
+    const data = {
+        layer_densities: densities,
+        layer_thicknesses: thicknesses
+    };
+
+    fetch('/extrusion/calculate-composite-density/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayCompositeDensityResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayCompositeDensityError('Network error: ' + error);
+    });
+}
+
+function calculateYieldBasisWeight() {
+    const formData = new FormData(document.getElementById('yieldBasisForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/extrusion/calculate-yield-basis-weight/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayYieldBasisResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayYieldBasisError('Network error: ' + error);
+    });
+}
+
+// Dynamic Form Functions
+function addDartTestRow() {
+    const container = document.getElementById('dartTestContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-6">
+            <input type="number" step="1" class="form-control" name="weights_g[]" placeholder="Weight in grams">
+        </div>
+        <div class="col-md-6">
+            <select class="form-select" name="results_pass_fail[]">
+                <option value="true">Pass</option>
+                <option value="false">Fail</option>
+            </select>
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeDartTestRow() {
+    const container = document.getElementById('dartTestContainer');
+    if (container.children.length > 2) {
+        container.removeChild(container.lastChild);
+    }
+}
+
+function addGaugeMeasurementRow() {
+    const container = document.getElementById('gaugeMeasurementsContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-8">
+            <input type="text" class="form-control" name="positions[]" placeholder="Measurement position">
+        </div>
+        <div class="col-md-4">
+            <input type="number" step="0.1" class="form-control" name="thickness_measurements[]" placeholder="Thickness">
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeGaugeMeasurementRow() {
+    const container = document.getElementById('gaugeMeasurementsContainer');
+    if (container.children.length > 2) {
+        container.removeChild(container.lastChild);
+    }
+}
+
+function addCompositeLayerRow() {
+    const container = document.getElementById('compositeLayersContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-6">
+            <input type="number" step="0.001" class="form-control" name="layer_densities[]" placeholder="Layer density g/cm³">
+        </div>
+        <div class="col-md-6">
+            <input type="number" step="0.1" class="form-control" name="layer_thicknesses[]" placeholder="Thickness in microns">
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeCompositeLayerRow() {
+    const container = document.getElementById('compositeLayersContainer');
+    if (container.children.length > 2) {
+        container.removeChild(container.lastChild);
+    }
+}
+
+// Result Display Functions
+function displayPiecesWeightResult(result) {
+    const resultDiv = document.getElementById('piecesWeightResult');
+    if (result.success) {
+        const res = result.result;
+        const form = document.getElementById('piecesWeightForm');
+
+        // Use the correct radio button name
+        const calculationType = form.querySelector('input[name="pieces_calculation_type"]:checked').value;
+
+        if (res.calculation_type === 'pieces_to_mass') {
+            const piecesInput = form.querySelector('input[name="total_pieces"]').value;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Pieces to Weight Results:</h6>
+                    <h6>For tube pieces:</h6>
+                    <p><strong>Mass per Piece:</strong> ${res.mass_per_piece_kg} kg (${res.mass_per_piece_g} g)</p>
+                    <p><strong>Total Mass for ${piecesInput} pieces:</strong> ${res.total_mass_kg} kg (${res.total_mass_g} g)</p>
+                    <h6>For sheet pieces:</h6>
+                    <p><strong>Mass per Piece:</strong> ${res.mass_per_piece_kg / 2} kg (${res.mass_per_piece_g / 2} g)</p>
+                    <p><strong>Total Mass for ${piecesInput} pieces:</strong> ${res.total_mass_kg  / 2} kg (${res.total_mass_g / 2} g)</p>
+                </div>
+            `;
+        } else {
+            const massInput = form.querySelector('input[name="total_mass"]').value;
+            const massUnit = form.querySelector('select[name="total_mass_unit"]').value;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Weight to Pieces Results:</h6>
+                    <h6>For Tube Pieces:</h6>
+                    <p><strong>Mass per Piece:</strong> ${res.mass_per_piece_kg} kg (${res.mass_per_piece_g} g)</p>
+                    <p><strong>Number of Pieces from ${massInput} ${massUnit}:</strong> ${res.total_pieces} pieces</p>
+                    <h6>For Sheet Pieces:</h6>
+                    <p><strong>Mass per Piece:</strong> ${res.mass_per_piece_kg / 2} kg (${res.mass_per_piece_g / 2} g)</p>
+                    <p><strong>Number of Pieces from ${massInput} ${massUnit}:</strong> ${res.total_pieces * 2} pieces</p>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayPiecesWeightError(error) {
+    const resultDiv = document.getElementById('piecesWeightResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayThicknessResult(result) {
+    const resultDiv = document.getElementById('thicknessResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Thickness Results:</h6>
+                <p><strong>Calculated Thickness:</strong> ${res.thickness_microns} microns</p>
+                <p><strong>Equivalent:</strong> ${res.thickness_mm} mm | ${res.thickness_mil} mil</p>
+                <p><small class="text-muted">Method: ${res.method === 'cut_weigh' ? 'Cut & Weigh' : 'Extrusion Rate'}</small></p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayThicknessError(error) {
+    const resultDiv = document.getElementById('thicknessResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayTakeupResult(result) {
+    const resultDiv = document.getElementById('takeupResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Take-up Speed Results:</h6>
+                <p><strong>New Speed:</strong> ${res.new_speed_m_min} m/min</p>
+                <p><strong>Equivalent:</strong> ${res.new_speed_m_hr} m/hr | ${res.new_speed_ft_min} ft/min</p>
+                <p><strong>Speed Change:</strong> ${res.speed_change_percent}% ${res.speed_change_percent > 0 ? 'increase' : 'decrease'}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayTakeupError(error) {
+    const resultDiv = document.getElementById('takeupResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayRollPropertiesResult(result) {
+    const resultDiv = document.getElementById('rollResult');
+    if (result.success) {
+        const res = result.result;
+        if (res.calculation_type === 'length') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Roll Length Results:</h6>
+                    <p><strong>Roll Length:</strong> ${res.roll_length_m} meters</p>
+                    <p><strong>Equivalent:</strong> ${res.roll_length_ft} feet | ${res.roll_length_yd} yards</p>
+                    <p><strong>Total Roll Mass:</strong> ${res.roll_mass_kg} kg (${res.roll_mass_lb} lb)</p>
+                    <p><strong>Net Film Mass:</strong> ${res.net_film_mass_kg} kg</p>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Roll Mass Results:</h6>
+                    <p><strong>Total Roll Mass:</strong> ${res.roll_mass_kg} kg (${res.roll_mass_lb} lb)</p>
+                    <p><strong>Net Film Mass:</strong> ${res.net_film_mass_kg} kg</p>
+                    <h6><i class="fas fa-check-circle"></i> Roll Length Results:</h6>
+                    <p><strong>Roll Length:</strong> ${res.roll_length_m} meters</p>
+                    <p><strong>Equivalent:</strong> ${res.roll_length_ft} feet | ${res.roll_length_yd} yards</p>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayRollRadiusFromMassResult(result) {
+    const resultDiv = document.getElementById('rollResult');
+    if (result.success) {
+        const res = result.result;
+
+        const form = document.getElementById('rollForm');
+        const coreDiameter = form.querySelector('input[name="core_diameter_mass"]').value;
+        const coreDiameterUnit = form.querySelector('select[name="core_diameter_unit_mass"]').options[form.querySelector('select[name="core_diameter_unit_mass"]').selectedIndex].text;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Roll Radius from Mass Results:</h6>
+                <p><strong>Core Radius:</strong> ${coreDiameter / 2} ${coreDiameterUnit}</p>
+                <p><strong>Outer Radius:</strong> ${res.outer_radius_mm} mm (${res.outer_radius_cm} cm | ${res.outer_radius_inch} inches)</p>
+                <p><strong>Outer Diameter:</strong> ${res.outer_diameter_mm} mm (${res.outer_diameter_cm} cm | ${res.outer_diameter_inch} inches)</p>
+                <p><strong>Roll Length:</strong> ${res.roll_length_m} meters</p>
+                <p><strong>Outer Radius:</strong> ${res.outer_radius_mm} mm (${res.outer_radius_cm} cm | ${res.outer_radius_inch} inches)</p>
+                <p><strong>Film Radius from core from the film:</strong> ${res.outer_radius_mm - coreDiameter / 2} mm</p>
+
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayRollError(error) {
+    const resultDiv = document.getElementById('rollResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayTensileResult(result) {
+    const resultDiv = document.getElementById('tensileResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Tensile Strength Results:</h6>
+                <p><strong>Tensile Strength:</strong> ${res.tensile_strength_mpa} MPa (${res.tensile_strength_psi} psi)</p>
+                <p><strong>Category:</strong> ${res.strength_category}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayTensileError(error) {
+    const resultDiv = document.getElementById('tensileResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayElongationResult(result) {
+    const resultDiv = document.getElementById('elongationResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Elongation Results:</h6>
+                <p><strong>Percent Elongation:</strong> ${res.elongation_percent}%</p>
+                <p><strong>Elongation Ratio:</strong> ${res.elongation_ratio}</p>
+                <p><strong>Category:</strong> ${res.elongation_category}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayElongationError(error) {
+    const resultDiv = document.getElementById('elongationResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayCOFResult(result) {
+    const resultDiv = document.getElementById('cofResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> COF Results:</h6>
+                <p><strong>Coefficient of Friction:</strong> ${res.coefficient_of_friction}</p>
+                <p><strong>Friction Type:</strong> ${res.friction_type}</p>
+                <p><strong>Interpretation:</strong> ${res.interpretation}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayCOFError(error) {
+    const resultDiv = document.getElementById('cofResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayFilmLengthResult(result) {
+    const resultDiv = document.getElementById('filmLengthResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Film Length Results:</h6>
+                <p><strong>Film Length:</strong> ${res.film_length_m} meters</p>
+                <p><strong>Equivalent:</strong> ${res.film_length_ft} feet | ${res.film_length_yd} yards</p>
+                <p><strong>In Kilometers:</strong> ${res.film_length_km} km</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayFilmLengthError(error) {
+    const resultDiv = document.getElementById('filmLengthResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayWeightFromLengthResult(result) {
+    const resultDiv = document.getElementById('weightFromLengthResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Weight from Length Results:</h6>
+                <p><strong>Calculated Weight:</strong> ${res.weight_kg} kg</p>
+                <p><strong>Equivalent:</strong> ${res.weight_g} g | ${res.weight_lb} lb</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayWeightFromLengthError(error) {
+    const resultDiv = document.getElementById('weightFromLengthResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayProductionTimeResult(result) {
+    const resultDiv = document.getElementById('productionTimeResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Production Time Results:</h6>
+                <p><strong>Production Time:</strong> ${res.production_time_hr} hours</p>
+                <p><strong>Equivalent:</strong> ${res.production_time_min} minutes | ${res.production_days} days</p>
+                <p><strong>Note:</strong> ${res.efficiency_note}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayProductionTimeError(error) {
+    const resultDiv = document.getElementById('productionTimeResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayBURDDRResult(result) {
+    const resultDiv = document.getElementById('burDdrResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Blown Film Ratios:</h6>
+                <p><strong>Blow Up Ratio (BUR):</strong> ${res.blow_up_ratio}</p>
+                <p><strong>Draw Down Ratio (DDR):</strong> ${res.draw_down_ratio}</p>
+                <p><strong>Bubble Diameter:</strong> ${res.bubble_diameter_m} meters</p>
+                <p><strong>Recommendation:</strong> ${res.recommendation}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayBURDDRError(error) {
+    const resultDiv = document.getElementById('burDdrResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayDartImpactResult(result) {
+    const resultDiv = document.getElementById('dartImpactResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Dart Impact Results:</h6>
+                <p><strong>M50 Value:</strong> ${res.dart_impact_m50_g} grams</p>
+                <p><strong>Tests Conducted:</strong> ${res.test_count} (Pass: ${res.pass_count}, Fail: ${res.fail_count})</p>
+                <p><strong>Impact Category:</strong> ${res.impact_category}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayDartImpactError(error) {
+    const resultDiv = document.getElementById('dartImpactResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayGaugeVariationResult(result) {
+    const resultDiv = document.getElementById('gaugeVariationResult');
+    if (result.success) {
+        const res = result.result;
+        const stats = res.statistics;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Gauge Variation Results:</h6>
+                <p><strong>Coefficient of Variation:</strong> ${res.coefficient_variation_percent}%</p>
+                <p><strong>Uniformity Rating:</strong> ${res.uniformity_rating}</p>
+                <p><strong>Statistics:</strong></p>
+                <ul>
+                    <li>Mean: ${stats.mean} microns</li>
+                    <li>Standard Deviation: ${stats.stdev} microns</li>
+                    <li>Range: ${stats.min} - ${stats.max} microns (${stats.range} microns)</li>
+                </ul>
+                <p><small>Based on ${res.measurement_count} measurements</small></p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayGaugeVariationError(error) {
+    const resultDiv = document.getElementById('gaugeVariationResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayCompositeDensityResult(result) {
+    const resultDiv = document.getElementById('compositeDensityResult');
+    if (result.success) {
+        const res = result.result;
+        let layersHtml = '';
+        res.layers.forEach(layer => {
+            layersHtml += `
+                <li>Layer ${layer.layer}: Density ${layer.density_g_cm3} g/cm³,
+                    Thickness ${layer.thickness_microns} microns (${layer.weight_percent}%)</li>
+            `;
+        });
+
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Composite Density Results:</h6>
+                <p><strong>Composite Density:</strong> ${res.composite_density_g_cm3} g/cm³</p>
+                <p><strong>Total Thickness:</strong> ${res.total_thickness_microns} microns</p>
+                <p><strong>Layer Composition (${res.layer_count} layers):</strong></p>
+                <ul>${layersHtml}</ul>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayCompositeDensityError(error) {
+    const resultDiv = document.getElementById('compositeDensityResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayYieldBasisResult(result) {
+    const resultDiv = document.getElementById('yieldBasisResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Yield & Basis Weight Results:</h6>
+                <p><strong>Yield:</strong> ${res.yield_m2_kg} m²/kg (${res.yield_m2_lb} m²/lb)</p>
+                <p><strong>Basis Weight:</strong> ${res.basis_weight_g_m2} g/m² (${res.basis_weight_lb_1000ft2} lb/1000ft²)</p>
+                <p><strong>Film Thickness:</strong> ${res.thickness_microns} microns</p>
+                <p><strong>Material Density:</strong> ${res.material_density} g/cm³</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayYieldBasisError(error) {
+    const resultDiv = document.getElementById('yieldBasisResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Initialize default values on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const piecesField = document.querySelector('input[name="total_pieces"]');
+    const massField = document.querySelector('input[name="total_mass"]');
+    if (piecesField && !piecesField.value) {
+        piecesField.value = '1000';
+    }
+    if (massField && !massField.value) {
+        massField.value = '10';
+    }
+
+    // Smooth scrolling for navigation
+    const navLinks = document.querySelectorAll('.list-group-item');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

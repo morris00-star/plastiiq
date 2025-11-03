@@ -1,0 +1,247 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body text-center">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-tachometer-alt"></i> User Dashboard
+                </h2>
+                <p class="mb-0 mt-2">Welcome back, {{ user.get_full_name }}!</p>
+            </div>
+        </div>
+
+        <!-- User Status Card -->
+        {% if not user.is_approved %}
+        <div class="alert alert-warning">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5><i class="fas fa-clock"></i> Account Pending Approval</h5>
+                    <p class="mb-0">Your account is awaiting admin approval. You'll have full access once approved.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-warning text-dark fs-6">Pending Review</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ total_calculations }}</h3>
+                        <p class="card-text">Total Calculations</p>
+                        <small>All time</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ user.get_role_display_name }}</h3>
+                        <p class="card-text">Your Role</p>
+                        <small>{{ user.get_section_display_name }} Section</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">
+                            {% if user.is_approved %}
+                            <i class="fas fa-check-circle"></i>
+                            {% else %}
+                            <i class="fas fa-clock"></i>
+                            {% endif %}
+                        </h3>
+                        <p class="card-text">Account Status</p>
+                        <small>
+                            {% if user.is_approved %}
+                            Approved
+                            {% else %}
+                            Pending
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Quick Access -->
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-rocket"></i> Quick Access
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-primary w-100 h-100 py-3">
+                                    <i class="fas fa-industry fa-2x mb-2"></i><br>
+                                    Extrusion
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'home' %}" class="btn btn-success w-100 h-100 py-3">
+                                    <i class="fas fa-calculator fa-2x mb-2"></i><br>
+                                    Calculators
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'material_reference' %}" class="btn btn-info w-100 h-100 py-3">
+                                    <i class="fas fa-database fa-2x mb-2"></i><br>
+                                    Materials
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'calculation_history' %}" class="btn btn-warning w-100 h-100 py-3">
+                                    <i class="fas fa-history fa-2x mb-2"></i><br>
+                                    History
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history"></i> Recent Calculations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_calculations %}
+                        <div class="list-group list-group-flush">
+                            {% for calc in recent_calculations %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        {% if calc.calculation_type %}
+                                            {{ calc.get_calculation_type_display }}
+                                        {% else %}
+                                            Density Calculation
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">{{ calc.timestamp|timesince }} ago</small>
+                                </div>
+                                <p class="mb-1 small text-muted">
+                                    {% if calc.material %}
+                                        Material: {{ calc.material.name }}
+                                    {% endif %}
+                                </p>
+                                <small class="text-muted">
+                                    {% if calc.calculated_density %}
+                                        Result: {{ calc.calculated_density }} g/cm³
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-calculator fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent calculations</p>
+                            <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Start Calculating
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="card shadow mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Your Account Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Username:</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Full Name:</th>
+                                <td>{{ user.get_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phone:</th>
+                                <td>{{ user.phone_number|default:"Not provided" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Company Role:</th>
+                                <td><span class="badge bg-primary">{{ user.get_role_display_name }}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Section:</th>
+                                <td><span class="badge bg-secondary">{{ user.get_section_display_name }}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Branch:</th>
+                                <td>{{ user.get_company_branch_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Member Since:</th>
+                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-edit"></i> Edit Profile
+                    </a>
+                </div>
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-key"></i> Password Management
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <a href="{% url 'accounts:password_reset_request' %}" class="btn btn-warning w-100 h-100 py-3">
+                                    <i class="fas fa-unlock-alt fa-2x mb-2"></i><br>
+                                    Request Password Reset
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="btn btn-outline-secondary w-100 h-100 py-3">
+                                    <i class="fas fa-history fa-2x mb-2"></i><br>
+                                    Change Password
+                                    <small class="d-block text-muted">(Coming Soon)</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

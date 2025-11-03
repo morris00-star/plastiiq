@@ -1,0 +1,276 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                        </h2>
+                        <p class="mb-0 mt-2">System administration and user management</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group">
+                            <a href="{% url 'accounts:admin_user_approval_list' %}" class="btn btn-light">
+                                <i class="fas fa-user-check"></i> Pending Approvals
+                                {% if pending_approvals > 0 %}
+                                <span class="badge bg-danger ms-1">{{ pending_approvals }}</span>
+                                {% endif %}
+                            </a>
+                            <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-outline-light">
+                                <i class="fas fa-users-cog"></i> User Management
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ total_users }}</h3>
+                        <p class="card-text">Total Users</p>
+                        <small>Registered in system</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ pending_approvals }}</h3>
+                        <p class="card-text">Pending Approval</p>
+                        <small>Awaiting review</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ approved_users }}</h3>
+                        <p class="card-text">Approved Users</p>
+                        <small>Active accounts</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ recent_registrations|length }}</h3>
+                        <p class="card-text">Recent Signups</p>
+                        <small>Last 7 days</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ pending_password_resets }}</h3>
+                    <p class="card-text">Pending Password Resets</p>
+                    <small>Awaiting approval</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this to Quick Actions -->
+        <div class="col-md-6">
+            <a href="{% url 'accounts:admin_password_reset_list' %}" class="btn btn-danger w-100 h-100 py-3">
+                <i class="fas fa-key fa-2x mb-2"></i><br>
+                Manage Password Resets
+                {% if pending_password_resets > 0 %}
+                <span class="badge bg-warning text-dark ms-1">{{ pending_password_resets }} pending</span>
+                {% endif %}
+            </a>
+        </div>
+        </div>
+
+        <div class="row">
+            <!-- Quick Actions -->
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt"></i> Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <a href="{% url 'accounts:admin_user_approval_list' %}" class="btn btn-warning w-100 h-100 py-3">
+                                    <i class="fas fa-user-check fa-2x mb-2"></i><br>
+                                    Review Pending Users
+                                    {% if pending_approvals > 0 %}
+                                    <span class="badge bg-danger ms-1">{{ pending_approvals }} pending</span>
+                                    {% endif %}
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-info w-100 h-100 py-3">
+                                    <i class="fas fa-users-cog fa-2x mb-2"></i><br>
+                                    Manage All Users
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="/admin/" class="btn btn-secondary w-100 h-100 py-3">
+                                    <i class="fas fa-cog fa-2x mb-2"></i><br>
+                                    Django Admin
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'calculation_history' %}" class="btn btn-success w-100 h-100 py-3">
+                                    <i class="fas fa-chart-bar fa-2x mb-2"></i><br>
+                                    View System Analytics
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Registrations -->
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-plus"></i> Recent Registrations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_registrations %}
+                        <div class="list-group list-group-flush">
+                            {% for user in recent_registrations %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ user.get_full_name }}</h6>
+                                    <small class="text-muted">
+                                        {{ user.username }} • {{ user.get_role_display_name }}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">{{ user.get_section_display_name }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">{{ user.date_joined|timesince }} ago</small>
+                                    {% if not user.is_approved %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent registrations</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Statistics -->
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie"></i> User Role Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if role_distribution %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Role</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for role in role_distribution %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary">{{ role.company_role|title }}</span>
+                                        </td>
+                                        <td>{{ role.count }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                {% widthratio role.count approved_users 100 as percentage %}
+                                                <div class="progress-bar" role="progressbar"
+                                                     style="width: {{ percentage }}%">
+                                                    {{ percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No user data available</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Section Distribution -->
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sitemap"></i> Section Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if section_distribution %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Section</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for section in section_distribution %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ section.section|title }}</span>
+                                        </td>
+                                        <td>{{ section.count }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                {% widthratio section.count approved_users 100 as percentage %}
+                                                <div class="progress-bar bg-info" role="progressbar"
+                                                     style="width: {{ percentage }}%">
+                                                    {{ percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-sitemap fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No section data available</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

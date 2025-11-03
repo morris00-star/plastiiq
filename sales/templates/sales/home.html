@@ -1,0 +1,1220 @@
+{% extends 'calculator/section_base.html' %}
+{% load static %}
+
+{% block section_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body text-center">
+                <h2 class="card-title">
+                    <i class="fas fa-money-bill-wave"></i> Sales & Pricing Calculators
+                </h2>
+                <p class="mb-0">Pricing, cost analysis, and order quantity calculations for sales team</p>
+                <p class="mb-0"><strong>Default Currency: {{ currency }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Material Cost per kg Calculator -->
+<div class="card shadow mb-4" id="material_cost_kg">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-weight-hanging"></i> Material Cost per kg
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="materialCostKgForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select class="form-select" name="material_id" required>
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Total Material Cost ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="total_material_cost" required placeholder="Enter total cost">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Output Mass (kg)</label>
+                        <input type="number" step="0.001" class="form-control" name="output_mass_kg" required placeholder="Enter output mass in kg">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Currency</label>
+                        <select class="form-select" name="currency">
+                            <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="KES">KES - Kenyan Shilling</option>
+                            <option value="TZS">TZS - Tanzanian Shilling</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calculator"></i> Calculate Cost per kg
+            </button>
+        </form>
+
+        <div id="materialCostKgResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Material Cost per Meter Calculator -->
+<div class="card shadow mb-4" id="material_cost_meter">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-ruler"></i> Material Cost per Meter
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="materialCostMeterForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select class="form-select" name="material_id" required>
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Total Material Cost ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="total_material_cost" required placeholder="Enter total cost">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Output Length (meters)</label>
+                        <input type="number" step="0.001" class="form-control" name="output_length_m" required placeholder="Enter output length in meters">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Currency</label>
+                        <select class="form-select" name="currency">
+                            <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="KES">KES - Kenyan Shilling</option>
+                            <option value="TZS">TZS - Tanzanian Shilling</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Calculate Cost per Meter
+            </button>
+        </form>
+
+        <div id="materialCostMeterResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Material Cost per Piece Calculator -->
+<div class="card shadow mb-4" id="material_cost_piece">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-cube"></i> Material Cost per Piece
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="materialCostPieceForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select class="form-select" name="material_id" required>
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Total Material Cost ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="total_material_cost" required placeholder="Enter total cost">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Number of Pieces</label>
+                        <input type="number" class="form-control" name="output_pieces" required placeholder="Enter number of pieces">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Currency</label>
+                        <select class="form-select" name="currency">
+                            <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="KES">KES - Kenyan Shilling</option>
+                            <option value="TZS">TZS - Tanzanian Shilling</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-calculator"></i> Calculate Cost per Piece
+            </button>
+        </form>
+
+        <div id="materialCostPieceResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Order Quantity from kg Calculator -->
+<div class="card shadow mb-4" id="order_quantity_kg">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-shopping-cart"></i> Order Quantity from kg
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="orderQuantityKgForm">
+            <div class="mb-3">
+                <label class="form-label">Calculation Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="quantity_from_budget" checked>
+                    <label class="form-check-label">Calculate Quantity from Budget</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="cost_from_quantity">
+                    <label class="form-check-label">Calculate Total Cost from Quantity</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Cost per kg ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="cost_per_kg" required placeholder="Enter cost per kg">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="budgetInputKg">
+                    <div class="mb-3">
+                        <label class="form-label">Total Budget ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="total_budget" placeholder="Enter total budget">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="quantityInputKg" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Quantity (kg)</label>
+                        <input type="number" step="0.001" class="form-control" name="quantity_kg" placeholder="Enter quantity in kg">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Currency</label>
+                <select class="form-select" name="currency">
+                    <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="KES">KES - Kenyan Shilling</option>
+                    <option value="TZS">TZS - Tanzanian Shilling</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="orderQuantityKgResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Order Quantity from Meters Calculator -->
+<div class="card shadow mb-4" id="order_quantity_meter">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-ruler-combined"></i> Order Quantity from Meters
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="orderQuantityMeterForm">
+            <div class="mb-3">
+                <label class="form-label">Calculation Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="quantity_from_budget" checked>
+                    <label class="form-check-label">Calculate Quantity from Budget</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="cost_from_quantity">
+                    <label class="form-check-label">Calculate Total Cost from Quantity</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Cost per Meter ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="cost_per_meter" required placeholder="Enter cost per meter">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="budgetInputMeter">
+                    <div class="mb-3">
+                        <label class="form-label">Total Budget ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="total_budget" placeholder="Enter total budget">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="quantityInputMeter" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Quantity (meters)</label>
+                        <input type="number" step="0.001" class="form-control" name="quantity_meters" placeholder="Enter quantity in meters">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Currency</label>
+                <select class="form-select" name="currency">
+                    <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="KES">KES - Kenyan Shilling</option>
+                    <option value="TZS">TZS - Tanzanian Shilling</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="orderQuantityMeterResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Order Quantity from Pieces Calculator -->
+<div class="card shadow mb-4" id="order_quantity_piece">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-boxes"></i> Order Quantity from Pieces
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="orderQuantityPieceForm">
+            <div class="mb-3">
+                <label class="form-label">Calculation Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="quantity_from_budget" checked>
+                    <label class="form-check-label">Calculate Quantity from Budget</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="cost_from_quantity">
+                    <label class="form-check-label">Calculate Total Cost from Quantity</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Cost per Piece ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="cost_per_piece" required placeholder="Enter cost per piece">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="budgetInputPiece">
+                    <div class="mb-3">
+                        <label class="form-label">Total Budget ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="total_budget" placeholder="Enter total budget">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="quantityInputPiece" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Quantity (pieces)</label>
+                        <input type="number" class="form-control" name="quantity_pieces" placeholder="Enter quantity in pieces">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Currency</label>
+                <select class="form-select" name="currency">
+                    <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="KES">KES - Kenyan Shilling</option>
+                    <option value="TZS">TZS - Tanzanian Shilling</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-dark">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="orderQuantityPieceResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Roll Cost Calculator -->
+<div class="card shadow mb-4" id="roll_cost">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-dharmachakra"></i> Roll Cost Calculation
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="rollCostForm">
+            <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}" data-density="{{ material.density }}">
+                        {{ material.name }} ({{ material.density }} g/cm³)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Calculation Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="cost_per_kg" checked>
+                    <label class="form-check-label">Calculate Cost per kg from Roll Cost</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="total_cost">
+                    <label class="form-check-label">Calculate Total Roll Cost from Cost per kg</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Weight (kg)</label>
+                        <input type="number" step="0.001" class="form-control" name="roll_weight_kg" required placeholder="Enter roll weight">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="rollCostInput">
+                    <div class="mb-3">
+                        <label class="form-label">Total Roll Cost ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="roll_cost" placeholder="Enter total roll cost">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="costPerKgInput" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Cost per kg ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="cost_per_kg" placeholder="Enter cost per kg">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Currency</label>
+                <select class="form-select" name="currency">
+                    <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="KES">KES - Kenyan Shilling</option>
+                    <option value="TZS">TZS - Tanzanian Shilling</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="rollCostResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Laminated Material Cost Calculator -->
+<div class="card shadow mb-4" id="laminated_cost">
+    <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+        <h5 class="mb-0">
+            <i class="fas fa-layer-group"></i> Laminated Material Cost
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="laminatedCostForm">
+            <div class="mb-3">
+                <label class="form-label">Calculation Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="cost_per_kg" checked>
+                    <label class="form-check-label">Calculate Cost per kg from Total Cost</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="calculation_type" value="total_cost">
+                    <label class="form-check-label">Calculate Total Cost from Cost per kg</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Total Laminated Quantity (kg)</label>
+                        <input type="number" step="0.001" class="form-control" name="total_weight_kg" required placeholder="Enter total quantity">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="laminationTotalCostInput">
+                    <div class="mb-3">
+                        <label class="form-label">Total Cost ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="total_cost" placeholder="Enter total cost">
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="laminationCostPerKgInput" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Cost per kg ({{ currency }})</label>
+                        <input type="number" step="0.01" class="form-control" name="cost_per_kg" placeholder="Enter cost per kg">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Selection from Database -->
+            <div class="mb-3">
+                <label class="form-label">Lamination Materials</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label small">Primary Material *</label>
+                            <select class="form-select" name="primary_material_id" required>
+                                <option value="">Select Primary Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label small">Secondary Material *</label>
+                            <select class="form-select" name="secondary_material_id" required>
+                                <option value="">Select Secondary Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label small">Third Material (Optional)</label>
+                            <select class="form-select" name="third_material_id">
+                                <option value="">Select Third Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label small">Fourth Material (Optional)</label>
+                            <select class="form-select" name="fourth_material_id">
+                                <option value="">Select Fourth Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Number of Layers</label>
+                <select class="form-select" name="number_of_layers">
+                    <option value="2">2 Layers</option>
+                    <option value="3">3 Layers</option>
+                    <option value="4">4 Layers</option>
+                    <option value="5">5 Layers</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Currency</label>
+                <select class="form-select" name="currency">
+                    <option value="UGX" selected>UGX - Ugandan Shilling</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="KES">KES - Kenyan Shilling</option>
+                    <option value="TZS">TZS - Tanzanian Shilling</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-purple" style="background-color: #6f42c1; border-color: #6f42c1; color: white;">
+                <i class="fas fa-calculator"></i> Calculate Laminated Cost
+            </button>
+        </form>
+
+        <div id="laminatedCostResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+
+<div class="alert alert-info mt-4">
+    <h6><i class="fas fa-info-circle"></i> Sales Calculator Notes:</h6>
+    <ul class="mb-0">
+        <li>All calculations use the selected currency (default: UGX - Ugandan Shillings)</li>
+        <li>Material selection is available for single-material cost calculations</li>
+        <li>Laminated material calculator is bidirectional (cost per kg ↔ total cost)</li>
+        <li>Material selection and number of layers in lamination are for reference only</li>
+        <li>Order quantity calculations are bidirectional (quantity from budget or cost from quantity)</li>
+        <li>Results are rounded to 2 decimal places for currency and appropriate precision for quantities</li>
+        <li>Calculations are saved to your history when logged in</li>
+    </ul>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Material Cost per kg Calculator
+document.getElementById('materialCostKgForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateMaterialCostKg();
+});
+
+// Material Cost per Meter Calculator
+document.getElementById('materialCostMeterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateMaterialCostMeter();
+});
+
+// Material Cost per Piece Calculator
+document.getElementById('materialCostPieceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateMaterialCostPiece();
+});
+
+// Order Quantity from kg Calculator
+document.getElementById('orderQuantityKgForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateOrderQuantityKg();
+});
+
+// Order Quantity from Meters Calculator
+document.getElementById('orderQuantityMeterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateOrderQuantityMeter();
+});
+
+// Order Quantity from Pieces Calculator
+document.getElementById('orderQuantityPieceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateOrderQuantityPiece();
+});
+
+// Roll Cost Calculator
+document.getElementById('rollCostForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateRollCost();
+});
+
+// Laminated Cost Calculator
+document.getElementById('laminatedCostForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateLaminatedCost();
+});
+
+// Toggle calculation types for order quantity
+document.querySelectorAll('input[name="calculation_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const form = this.closest('form');
+        const calculationType = this.value;
+
+        if (form.id === 'orderQuantityKgForm') {
+            if (calculationType === 'quantity_from_budget') {
+                document.getElementById('budgetInputKg').style.display = 'block';
+                document.getElementById('quantityInputKg').style.display = 'none';
+            } else {
+                document.getElementById('budgetInputKg').style.display = 'none';
+                document.getElementById('quantityInputKg').style.display = 'block';
+            }
+        } else if (form.id === 'orderQuantityMeterForm') {
+            if (calculationType === 'quantity_from_budget') {
+                document.getElementById('budgetInputMeter').style.display = 'block';
+                document.getElementById('quantityInputMeter').style.display = 'none';
+            } else {
+                document.getElementById('budgetInputMeter').style.display = 'none';
+                document.getElementById('quantityInputMeter').style.display = 'block';
+            }
+        } else if (form.id === 'orderQuantityPieceForm') {
+            if (calculationType === 'quantity_from_budget') {
+                document.getElementById('budgetInputPiece').style.display = 'block';
+                document.getElementById('quantityInputPiece').style.display = 'none';
+            } else {
+                document.getElementById('budgetInputPiece').style.display = 'none';
+                document.getElementById('quantityInputPiece').style.display = 'block';
+            }
+        } else if (form.id === 'rollCostForm') {
+            if (calculationType === 'cost_per_kg') {
+                document.getElementById('rollCostInput').style.display = 'block';
+                document.getElementById('costPerKgInput').style.display = 'none';
+            } else {
+                document.getElementById('rollCostInput').style.display = 'none';
+                document.getElementById('costPerKgInput').style.display = 'block';
+            }
+        } else if (form.id === 'laminatedCostForm') {
+            if (calculationType === 'cost_per_kg') {
+                document.getElementById('laminationTotalCostInput').style.display = 'block';
+                document.getElementById('laminationCostPerKgInput').style.display = 'none';
+            } else {
+                document.getElementById('laminationTotalCostInput').style.display = 'none';
+                document.getElementById('laminationCostPerKgInput').style.display = 'block';
+            }
+        }
+    });
+});
+
+// Calculation functions
+function calculateMaterialCostKg() {
+    const formData = new FormData(document.getElementById('materialCostKgForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/sales/calculate-material-cost-kg/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayMaterialCostKgResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function calculateMaterialCostMeter() {
+    const formData = new FormData(document.getElementById('materialCostMeterForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/sales/calculate-material-cost-meter/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayMaterialCostMeterResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function calculateMaterialCostPiece() {
+    const formData = new FormData(document.getElementById('materialCostPieceForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/sales/calculate-material-cost-piece/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayMaterialCostPieceResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function calculateOrderQuantityKg() {
+    const formData = new FormData(document.getElementById('orderQuantityKgForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/sales/calculate-order-quantity-kg/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayOrderQuantityKgResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function calculateOrderQuantityMeter() {
+    const formData = new FormData(document.getElementById('orderQuantityMeterForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/sales/calculate-order-quantity-meter/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayOrderQuantityMeterResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function calculateOrderQuantityPiece() {
+    const formData = new FormData(document.getElementById('orderQuantityPieceForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/sales/calculate-order-quantity-piece/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayOrderQuantityPieceResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function calculateRollCost() {
+    const formData = new FormData(document.getElementById('rollCostForm'));
+    const data = Object.fromEntries(formData);
+
+    console.log('Roll form data:', data);
+
+    // Get material information from database selection
+    let materialDetail = null;
+    const materialId = data.material_id;
+    if (materialId) {
+        const materialSelect = document.querySelector('select[name="material_id"]');
+        const materialName = materialSelect.options[materialSelect.selectedIndex].text;
+        const materialDensity = materialSelect.options[materialSelect.selectedIndex].getAttribute('data-density');
+        materialDetail = {
+            id: materialId,
+            name: materialName,
+            density: parseFloat(materialDensity)
+        };
+    }
+
+    // Prepare the data for the backend
+    const requestData = {
+        calculation_type: data.calculation_type,
+        roll_weight_kg: parseFloat(data.roll_weight_kg) || 0,
+        currency: data.currency || 'UGX',
+        material_detail: materialDetail
+    };
+
+    // Add the appropriate cost field based on calculation type
+    if (data.calculation_type === 'cost_per_kg') {
+        requestData.roll_cost = parseFloat(data.roll_cost) || 0;
+    } else {
+        requestData.cost_per_kg = parseFloat(data.cost_per_kg) || 0;
+    }
+
+    console.log('Roll request data:', requestData);
+
+    fetch('/sales/calculate-roll-cost/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Roll response:', result);
+        displayRollCostResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('rollCostResult').innerHTML =
+            `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Network Error: ${error}</div>`;
+        document.getElementById('rollCostResult').style.display = 'block';
+    });
+}
+
+function calculateLaminatedCost() {
+    const formData = new FormData(document.getElementById('laminatedCostForm'));
+    const data = Object.fromEntries(formData);
+
+    console.log('Lamination form data:', data);
+
+    // Get material information from database selections
+    const materialDetails = [];
+
+    // Primary material (required)
+    const primaryMaterialId = data.primary_material_id;
+    if (primaryMaterialId) {
+        const primarySelect = document.querySelector('select[name="primary_material_id"]');
+        const primaryMaterialName = primarySelect.options[primarySelect.selectedIndex].text;
+        const primaryDensity = primarySelect.options[primarySelect.selectedIndex].getAttribute('data-density');
+        materialDetails.push({
+            id: primaryMaterialId,
+            name: primaryMaterialName,
+            density: parseFloat(primaryDensity),
+            type: 'primary'
+        });
+    }
+
+    // Secondary material (required)
+    const secondaryMaterialId = data.secondary_material_id;
+    if (secondaryMaterialId) {
+        const secondarySelect = document.querySelector('select[name="secondary_material_id"]');
+        const secondaryMaterialName = secondarySelect.options[secondarySelect.selectedIndex].text;
+        const secondaryDensity = secondarySelect.options[secondarySelect.selectedIndex].getAttribute('data-density');
+        materialDetails.push({
+            id: secondaryMaterialId,
+            name: secondaryMaterialName,
+            density: parseFloat(secondaryDensity),
+            type: 'secondary'
+        });
+    }
+
+    // Third material (optional)
+    const thirdMaterialId = data.third_material_id;
+    if (thirdMaterialId) {
+        const thirdSelect = document.querySelector('select[name="third_material_id"]');
+        const thirdMaterialName = thirdSelect.options[thirdSelect.selectedIndex].text;
+        const thirdDensity = thirdSelect.options[thirdSelect.selectedIndex].getAttribute('data-density');
+        materialDetails.push({
+            id: thirdMaterialId,
+            name: thirdMaterialName,
+            density: parseFloat(thirdDensity),
+            type: 'third'
+        });
+    }
+
+    // Fourth material (optional)
+    const fourthMaterialId = data.fourth_material_id;
+    if (fourthMaterialId) {
+        const fourthSelect = document.querySelector('select[name="fourth_material_id"]');
+        const fourthMaterialName = fourthSelect.options[fourthSelect.selectedIndex].text;
+        const fourthDensity = fourthSelect.options[fourthSelect.selectedIndex].getAttribute('data-density');
+        materialDetails.push({
+            id: fourthMaterialId,
+            name: fourthMaterialName,
+            density: parseFloat(fourthDensity),
+            type: 'fourth'
+        });
+    }
+
+    // Prepare the data for the backend
+    const requestData = {
+        calculation_type: data.calculation_type,
+        total_weight_kg: parseFloat(data.total_weight_kg) || 0,
+        currency: data.currency || 'UGX',
+        number_of_layers: parseInt(data.number_of_layers) || 2,
+        material_details: materialDetails
+    };
+
+    // Add the appropriate cost field based on calculation type
+    if (data.calculation_type === 'cost_per_kg') {
+        requestData.total_cost = parseFloat(data.total_cost) || 0;
+    } else {
+        requestData.cost_per_kg = parseFloat(data.cost_per_kg) || 0;
+    }
+
+    console.log('Lamination request data:', requestData);
+
+    fetch('/sales/calculate-laminated-cost/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Lamination response:', result);
+        displayLaminatedCostResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('laminatedCostResult').innerHTML =
+            `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Network Error: ${error}</div>`;
+        document.getElementById('laminatedCostResult').style.display = 'block';
+    });
+}
+
+// Result display functions
+function displayMaterialCostKgResult(result) {
+    const resultDiv = document.getElementById('materialCostKgResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Material Cost per kg Results:</h6>
+                <p><strong>Material:</strong> ${res.material_name}</p>
+                <p><strong>Cost per kg:</strong> ${res.cost_per_kg} ${res.currency}/kg</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayMaterialCostMeterResult(result) {
+    const resultDiv = document.getElementById('materialCostMeterResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Material Cost per Meter Results:</h6>
+                <p><strong>Material:</strong> ${res.material_name}</p>
+                <p><strong>Cost per meter:</strong> ${res.cost_per_meter} ${res.currency}/m</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayMaterialCostPieceResult(result) {
+    const resultDiv = document.getElementById('materialCostPieceResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Material Cost per Piece Results:</h6>
+                <p><strong>Material:</strong> ${res.material_name}</p>
+                <p><strong>Cost per piece:</strong> ${res.cost_per_piece} ${res.currency}/piece</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayOrderQuantityKgResult(result) {
+    const resultDiv = document.getElementById('orderQuantityKgResult');
+    if (result.success) {
+        const res = result.result;
+        if (res.calculation_type === 'quantity_from_budget') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Order Quantity Results (kg):</h6>
+                    <p><strong>With budget of ${res.total_budget} ${res.currency} at ${res.cost_per_kg} ${res.currency}/kg:</strong></p>
+                    <p><strong>You can purchase:</strong> ${res.quantity_kg} kg</p>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Order Cost Results (kg):</h6>
+                    <p><strong>For ${res.quantity_kg} kg at ${res.cost_per_kg} ${res.currency}/kg:</strong></p>
+                    <p><strong>Total cost:</strong> ${res.total_cost} ${res.currency}</p>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayOrderQuantityMeterResult(result) {
+    const resultDiv = document.getElementById('orderQuantityMeterResult');
+    if (result.success) {
+        const res = result.result;
+        if (res.calculation_type === 'quantity_from_budget') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Order Quantity Results (meters):</h6>
+                    <p><strong>With budget of ${res.total_budget} ${res.currency} at ${res.cost_per_meter} ${res.currency}/m:</strong></p>
+                    <p><strong>You can purchase:</strong> ${res.quantity_meters} meters</p>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Order Cost Results (meters):</h6>
+                    <p><strong>For ${res.quantity_meters} meters at ${res.cost_per_meter} ${res.currency}/m:</strong></p>
+                    <p><strong>Total cost:</strong> ${res.total_cost} ${res.currency}</p>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayOrderQuantityPieceResult(result) {
+    const resultDiv = document.getElementById('orderQuantityPieceResult');
+    if (result.success) {
+        const res = result.result;
+        if (res.calculation_type === 'quantity_from_budget') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Order Quantity Results (pieces):</h6>
+                    <p><strong>With budget of ${res.total_budget} ${res.currency} at ${res.cost_per_piece} ${res.currency}/piece:</strong></p>
+                    <p><strong>You can purchase:</strong> ${res.quantity_pieces} pieces</p>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Order Cost Results (pieces):</h6>
+                    <p><strong>For ${res.quantity_pieces} pieces at ${res.cost_per_piece} ${res.currency}/piece:</strong></p>
+                    <p><strong>Total cost:</strong> ${res.total_cost} ${res.currency}</p>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayRollCostResult(result) {
+    const resultDiv = document.getElementById('rollCostResult');
+    if (result.success) {
+        const res = result.result;
+
+        let materialHtml = '';
+        if (res.material_detail) {
+            materialHtml = `<p><strong>Material:</strong> ${res.material_detail.name} (${res.material_detail.density} g/cm³)</p>`;
+        }
+
+        if (res.calculation_type === 'cost_per_kg') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Roll Cost Results:</h6>
+                    ${materialHtml}
+                    <p><strong>Roll cost:</strong> ${res.roll_cost} ${res.currency}</p>
+                    <p><strong>Roll weight:</strong> ${res.roll_weight_kg} kg</p>
+                    <p><strong>Cost per kg:</strong> ${res.cost_per_kg} ${res.currency}/kg</p>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Roll Cost Results:</h6>
+                    ${materialHtml}
+                    <p><strong>Cost per kg:</strong> ${res.cost_per_kg} ${res.currency}/kg</p>
+                    <p><strong>Roll weight:</strong> ${res.roll_weight_kg} kg</p>
+                    <p><strong>Total roll cost:</strong> ${res.roll_cost} ${res.currency}</p>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayLaminatedCostResult(result) {
+    const resultDiv = document.getElementById('laminatedCostResult');
+    if (result.success) {
+        const res = result.result;
+
+        let materialsHtml = '';
+        if (res.material_details && res.material_details.length > 0) {
+            materialsHtml = `<div class="mt-3"><h6>Material Composition:</h6>`;
+            res.material_details.forEach(material => {
+                materialsHtml += `
+                    <div class="border-bottom pb-1 mb-1">
+                        <strong>${material.name}</strong> - Density: ${material.density} g/cm³
+                    </div>
+                `;
+            });
+            materialsHtml += `</div>`;
+        }
+
+        if (res.calculation_type === 'cost_per_kg') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Laminated Material Cost Results:</h6>
+                    <p><strong>Total quantity:</strong> ${res.total_weight_kg} kg</p>
+                    <p><strong>Total cost:</strong> ${res.total_cost} ${res.currency}</p>
+                    <p><strong>Cost per kg:</strong> ${res.cost_per_kg} ${res.currency}/kg</p>
+                    <p><strong>Number of layers:</strong> ${res.number_of_layers}</p>
+                    ${materialsHtml}
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Laminated Material Cost Results:</h6>
+                    <p><strong>Total quantity:</strong> ${res.total_weight_kg} kg</p>
+                    <p><strong>Cost per kg:</strong> ${res.cost_per_kg} ${res.currency}/kg</p>
+                    <p><strong>Total cost:</strong> ${res.total_cost} ${res.currency}</p>
+                    <p><strong>Number of layers:</strong> ${res.number_of_layers}</p>
+                    ${materialsHtml}
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+</script>
+
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.btn-purple {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+.btn-purple:hover {
+    background-color: #5a359c;
+    border-color: #5a359c;
+    color: white;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white text-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-user-times"></i> Delete User Account
+                </h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-exclamation-triangle fa-5x text-danger mb-3"></i>
+                    <h4>Delete User Account</h4>
+                    <p class="lead text-danger">This action cannot be undone!</p>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5>{{ user.get_full_name }}</h5>
+                        <p class="mb-1"><strong>Username:</strong> {{ user.username }}</p>
+                        <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
+                        <p class="mb-1"><strong>Role:</strong> {{ user.get_role_display_name }}</p>
+                        <p class="mb-0"><strong>Section:</strong> {{ user.get_section_display_name }}</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-circle"></i> Warning</h6>
+                    <p class="mb-0">
+                        Deleting this user account will permanently deactivate it. 
+                        The user will no longer be able to login and all their personal data will be removed from active systems.
+                    </p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-block">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash"></i> Confirm Delete
+                        </button>
+                        <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

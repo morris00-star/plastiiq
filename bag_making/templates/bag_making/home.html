@@ -1,0 +1,1561 @@
+{% extends 'calculator/section_base.html' %}
+{% load static %}
+
+{% block section_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body text-center">
+                <h2 class="card-title">
+                    <i class="fas fa-shopping-bag"></i> Bag Making Calculators
+                </h2>
+                <p class="mb-0">Comprehensive calculations for all bag types - Flat, Tubular, Gusseted & Laminated</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pieces ↔ Weight Converter -->
+<div class="card shadow mb-4" id="pieces_weight">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-exchange-alt"></i> Pieces ↔ Weight Converter
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="piecesWeightForm">
+            <!-- Bag Type Selection -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Bag Type</label>
+                    <select class="form-select" name="bag_type" id="bagType" required>
+                        <option value="FLAT_SHEET">Flat Sheet Bag</option>
+                        <option value="TUBULAR">Tubular Bag</option>
+                        <option value="GUSSETED">Gusseted Bag</option>
+                        <option value="LAMINATED_FLAT">Laminated Flat Bag</option>
+                        <option value="LAMINATED_TUBULAR">Laminated Tubular Bag</option>
+                        <option value="LAMINATED_GUSSETED">Laminated Gusseted Bag</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Calculation Direction</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="calculation_direction" value="pieces_to_weight" checked>
+                            <label class="form-check-label">Pieces → Weight</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="calculation_direction" value="weight_to_pieces">
+                            <label class="form-check-label">Weight → Pieces</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bag Dimensions -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Width</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="width" required placeholder="e.g., 30">
+                        <select class="form-select" name="width_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Height/Length</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="height" required placeholder="e.g., 40">
+                        <select class="form-select" name="height_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Gusset Width (if applicable)</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="gusset_width" value="0" placeholder="e.g., 5">
+                        <select class="form-select" name="gusset_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Section - Single Layer -->
+            <div id="singleLayerSection">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Material</label>
+                        <select class="form-select" name="material_id" id="materialSelect">
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                {{ material.name }} ({{ material.density }} g/cm³)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" placeholder="e.g., 50">
+                            <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                                <option value="gauge">Gauge</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Section - Laminated -->
+            <div id="laminatedSection" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Laminated Layers</label>
+                    <div id="layerContainer">
+                        <div class="layer-row row mb-2">
+                            <div class="col-md-5">
+                                <select class="form-select layer-material" name="layer_material_0">
+                                    <option value="">Select Material</option>
+                                    {% for material in materials %}
+                                    <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                        {{ material.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <input type="number" step="0.1" class="form-control layer-thickness" name="layer_thickness_0" placeholder="Thickness">
+                                    <select class="form-select" name="layer_thickness_unit_0" style="max-width: 100px;">
+                                        <option value="micron">Microns</option>
+                                        <option value="mm">mm</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-danger btn-sm remove-layer" disabled>
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addLayer">
+                        <i class="fas fa-plus"></i> Add Another Layer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calculation Inputs -->
+            <div class="row mb-3">
+                <div class="col-md-6" id="piecesInput">
+                    <label class="form-label">Number of Pieces</label>
+                    <input type="number" class="form-control" name="num_pieces" value="1000" min="1">
+                </div>
+                <div class="col-md-6" id="weightInput" style="display: none;">
+                    <label class="form-label">Total Weight</label>
+                    <div class="input-group">
+                        <input type="number" step="0.001" class="form-control" name="total_weight" placeholder="e.g., 10">
+                        <select class="form-select" name="weight_unit" style="max-width: 100px;">
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="lb">lb</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6" id="outputUnitSection">
+                    <label class="form-label">Output Unit</label>
+                    <select class="form-select" name="output_unit">
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="lb">lb</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calculator"></i> Calculate
+            </button>
+        </form>
+
+        <div id="piecesWeightResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Packet Weight Calculator -->
+<div class="card shadow mb-4" id="packet_weight">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-box"></i> Packet Weight Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="packetWeightForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Calculation Direction</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="calculation_direction" value="forward" checked>
+                            <label class="form-check-label">Piece Weight → Packet Weight</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="calculation_direction" value="reverse">
+                            <label class="form-check-label">Packet Weight → Piece Weight</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Input Method</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="input_method" value="direct_weight" checked>
+                            <label class="form-check-label">Direct Weight Input</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="input_method" value="dimensions">
+                            <label class="form-check-label">Calculate from Dimensions</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direct Weight Input -->
+            <div id="directWeightPacketSection">
+                <div id="forwardPacketFields">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Single Piece Weight (grams)</label>
+                            <input type="number" step="0.001" class="form-control" name="single_piece_weight_g" placeholder="e.g., 5.25">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Pieces per Packet</label>
+                            <input type="number" class="form-control" name="pieces_per_packet" value="100" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Packet Packaging Weight</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="packet_packaging_weight" value="0" placeholder="e.g., 2.5">
+                                <select class="form-select" name="packaging_unit" style="max-width: 100px;">
+                                    <option value="g">g</option>
+                                    <option value="kg">kg</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reversePacketFields" style="display: none;">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Packet Weight</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="packet_weight" placeholder="e.g., 0.525">
+                                <select class="form-select" name="weight_unit" style="max-width: 100px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Pieces per Packet</label>
+                            <input type="number" class="form-control" name="pieces_per_packet" value="100" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Packet Packaging Weight</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="packet_packaging_weight" value="0" placeholder="e.g., 2.5">
+                                <select class="form-select" name="packaging_unit" style="max-width: 100px;">
+                                    <option value="g">g</option>
+                                    <option value="kg">kg</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dimensions Input -->
+            <div id="dimensionsPacketSection" style="display: none;">
+                <!-- Bag Type Selection -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Bag Type</label>
+                        <select class="form-select" name="dimensions_bag_type">
+                            <option value="FLAT_SHEET">Flat Sheet Bag</option>
+                            <option value="TUBULAR">Tubular Bag</option>
+                            <option value="GUSSETED">Gusseted Bag</option>
+                            <option value="LAMINATED_FLAT">Laminated Flat Bag</option>
+                            <option value="LAMINATED_TUBULAR">Laminated Tubular Bag</option>
+                            <option value="LAMINATED_GUSSETED">Laminated Gusseted Bag</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bag Dimensions -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_width" placeholder="e.g., 30">
+                            <select class="form-select" name="dimensions_width_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Height/Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_height" placeholder="e.g., 40">
+                            <select class="form-select" name="dimensions_height_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Gusset Width (if applicable)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_gusset_width" value="0" placeholder="e.g., 5">
+                            <select class="form-select" name="dimensions_gusset_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Material Section for Dimensions -->
+                <div id="dimensionsSingleLayerSection">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Material</label>
+                            <select class="form-select" name="dimensions_material_id">
+                                <option value="">Select Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Thickness</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="dimensions_thickness" placeholder="e.g., 50">
+                                <select class="form-select" name="dimensions_thickness_unit" style="max-width: 120px;">
+                                    <option value="micron">Microns</option>
+                                    <option value="mm">mm</option>
+                                    <option value="mil">Mil</option>
+                                    <option value="gauge">Gauge</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dimensionsLaminatedSection" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Laminated Layers</label>
+                        <div id="dimensionsLayerContainer">
+                            <div class="layer-row row mb-2">
+                                <div class="col-md-5">
+                                    <select class="form-select dimensions-layer-material" name="dimensions_layer_material_0">
+                                        <option value="">Select Material</option>
+                                        {% for material in materials %}
+                                        <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                            {{ material.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control dimensions-layer-thickness" name="dimensions_layer_thickness_0" placeholder="Thickness">
+                                        <select class="form-select" name="dimensions_layer_thickness_unit_0" style="max-width: 100px;">
+                                            <option value="micron">Microns</option>
+                                            <option value="mm">mm</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger btn-sm dimensions-remove-layer" disabled>
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="dimensionsAddLayer">
+                            <i class="fas fa-plus"></i> Add Another Layer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pieces per Packet -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Pieces per Packet</label>
+                        <input type="number" class="form-control" name="dimensions_pieces_per_packet" value="100" min="1">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Packet Packaging Weight</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="dimensions_packet_packaging_weight" value="0" placeholder="e.g., 2.5">
+                            <select class="form-select" name="dimensions_packaging_unit" style="max-width: 100px;">
+                                <option value="g">g</option>
+                                <option value="kg">kg</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Output Unit</label>
+                    <select class="form-select" name="output_unit">
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="lb">lb</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-calculator"></i> Calculate Packet Weight
+            </button>
+        </form>
+
+        <div id="packetWeightResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Bundle/Bale Weight Calculator -->
+<div class="card shadow mb-4" id="bundle_weight">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-pallet"></i> Bundle/Bale Weight Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="bundleWeightForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Calculation Direction</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="calculation_direction" value="forward" checked>
+                            <label class="form-check-label">Packet Weight → Bundle Weight</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="calculation_direction" value="reverse">
+                            <label class="form-check-label">Bundle Weight → Packet Weight</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Input Method</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="input_method" value="direct_weight" checked>
+                            <label class="form-check-label">Direct Weight Input</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="input_method" value="dimensions">
+                            <label class="form-check-label">Calculate from Dimensions</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direct Weight Input -->
+            <div id="directWeightBundleSection">
+                <div id="forwardBundleFields">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Packet Weight (kg)</label>
+                            <input type="number" step="0.001" class="form-control" name="packet_weight_kg" placeholder="e.g., 0.525">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Packets per Bundle</label>
+                            <input type="number" class="form-control" name="packets_per_bundle" value="20" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Bundle Packaging Weight</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight" value="0" placeholder="e.g., 0.5">
+                                <select class="form-select" name="packaging_unit" style="max-width: 100px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reverseBundleFields" style="display: none;">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Bundle Weight</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="bundle_weight" placeholder="e.g., 10.5">
+                                <select class="form-select" name="weight_unit" style="max-width: 100px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Packets per Bundle</label>
+                            <input type="number" class="form-control" name="packets_per_bundle" value="20" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Bundle Packaging Weight</label>
+                            <div class="input-group">
+                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight" value="0" placeholder="e.g., 0.5">
+                                <select class="form-select" name="packaging_unit" style="max-width: 100px;">
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dimensions Input -->
+            <div id="dimensionsBundleSection" style="display: none;">
+                <!-- Bag Type Selection -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Bag Type</label>
+                        <select class="form-select" name="dimensions_bag_type" id="bundleBagType">
+                            <option value="FLAT_SHEET">Flat Sheet Bag</option>
+                            <option value="TUBULAR">Tubular Bag</option>
+                            <option value="GUSSETED">Gusseted Bag</option>
+                            <option value="LAMINATED_FLAT">Laminated Flat Bag</option>
+                            <option value="LAMINATED_TUBULAR">Laminated Tubular Bag</option>
+                            <option value="LAMINATED_GUSSETED">Laminated Gusseted Bag</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bag Dimensions -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_width" placeholder="e.g., 30">
+                            <select class="form-select" name="dimensions_width_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Height/Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_height" placeholder="e.g., 40">
+                            <select class="form-select" name="dimensions_height_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Gusset Width (if applicable)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_gusset_width" value="0" placeholder="e.g., 5">
+                            <select class="form-select" name="dimensions_gusset_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Material Section for Dimensions -->
+                <div id="bundleDimensionsSingleLayerSection">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Material</label>
+                            <select class="form-select" name="dimensions_material_id" id="bundleMaterialSelect">
+                                <option value="">Select Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Thickness</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="dimensions_thickness" placeholder="e.g., 50">
+                                <select class="form-select" name="dimensions_thickness_unit" style="max-width: 120px;">
+                                    <option value="micron">Microns</option>
+                                    <option value="mm">mm</option>
+                                    <option value="mil">Mil</option>
+                                    <option value="gauge">Gauge</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bundleDimensionsLaminatedSection" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Laminated Layers</label>
+                        <div id="bundleDimensionsLayerContainer">
+                            <div class="layer-row row mb-2">
+                                <div class="col-md-5">
+                                    <select class="form-select bundle-dimensions-layer-material" name="bundle_dimensions_layer_material_0">
+                                        <option value="">Select Material</option>
+                                        {% for material in materials %}
+                                        <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                            {{ material.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control bundle-dimensions-layer-thickness" name="bundle_dimensions_layer_thickness_0" placeholder="Thickness">
+                                        <select class="form-select" name="bundle_dimensions_layer_thickness_unit_0" style="max-width: 100px;">
+                                            <option value="micron">Microns</option>
+                                            <option value="mm">mm</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger btn-sm bundle-dimensions-remove-layer" disabled>
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="bundleDimensionsAddLayer">
+                            <i class="fas fa-plus"></i> Add Another Layer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Packets Configuration -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Pieces per Packet</label>
+                        <input type="number" class="form-control" name="dimensions_pieces_per_packet" value="100" min="1">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Packets per Bundle</label>
+                        <input type="number" class="form-control" name="dimensions_packets_per_bundle" value="20" min="1">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Bundle Packaging Weight</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="dimensions_bundle_packaging_weight" value="0" placeholder="e.g., 0.5">
+                            <select class="form-select" name="dimensions_packaging_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Output Unit</label>
+                    <select class="form-select" name="output_unit">
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="lb">lb</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-calculator"></i> Calculate Bundle Weight
+            </button>
+        </form>
+
+        <div id="bundleWeightResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Production Time & Efficiency Calculator -->
+<div class="card shadow mb-4" id="production_time">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-clock"></i> Production Time & Efficiency Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="productionMetricsForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Total Pieces to Produce</label>
+                    <input type="number" class="form-control" name="total_pieces" value="10000" min="1">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Machine Speed</label>
+                    <div class="input-group">
+                        <input type="number" step="0.1" class="form-control" name="machine_speed" value="120" min="1">
+                        <select class="form-select" name="machine_speed_unit" style="max-width: 120px;">
+                            <option value="pcs_min">pcs/min</option>
+                            <option value="pcs_hr">pcs/hr</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Input Film Mass</label>
+                    <div class="input-group">
+                        <input type="number" step="0.001" class="form-control" name="input_film_mass" value="50" min="0.001">
+                        <select class="form-select" name="input_mass_unit" style="max-width: 100px;">
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="lb">lb</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Output Bag Mass</label>
+                    <div class="input-group">
+                        <input type="number" step="0.001" class="form-control" name="output_bag_mass" value="48" min="0.001">
+                        <select class="form-select" name="output_mass_unit" style="max-width: 100px;">
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="lb">lb</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Actual Run Time</label>
+                    <div class="input-group">
+                        <input type="number" step="0.1" class="form-control" name="actual_run_time" value="480" min="0.1">
+                        <select class="form-select" name="actual_time_unit" style="max-width: 100px;">
+                            <option value="min">minutes</option>
+                            <option value="hr">hours</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Total Pieces Produced</label>
+                    <input type="number" class="form-control" name="total_pieces_produced" value="10000" min="1">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Calculate Production Metrics
+            </button>
+        </form>
+
+        <div id="productionMetricsResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Information Section -->
+<div class="alert alert-info mt-4">
+    <h6><i class="fas fa-info-circle"></i> Bag Making Calculator Features:</h6>
+    <div class="row">
+        <div class="col-md-6">
+            <ul>
+                <li><strong>Supported Bag Types:</strong> Flat Sheet, Tubular, Gusseted, Laminated</li>
+                <li><strong>Unit Support:</strong> mm, cm, m, inches, microns, gauge, mil</li>
+                <li><strong>Bidirectional Calculations:</strong> Pieces ↔ Weight conversions</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <ul>
+                <li><strong>Multi-layer Laminates:</strong> Support for complex layered structures</li>
+                <li><strong>Production Metrics:</strong> Yield, efficiency, production rate</li>
+                <li><strong>Real-time Results:</strong> Instant calculations with detailed breakdowns</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Bag Type Toggle for Pieces ↔ Weight Converter
+document.getElementById('bagType').addEventListener('change', function() {
+    const isLaminated = this.value.startsWith('LAMINATED');
+    document.getElementById('singleLayerSection').style.display = isLaminated ? 'none' : 'block';
+    document.getElementById('laminatedSection').style.display = isLaminated ? 'block' : 'none';
+
+    if (isLaminated) {
+        document.getElementById('materialSelect').removeAttribute('required');
+    } else {
+        document.getElementById('materialSelect').setAttribute('required', 'required');
+    }
+});
+
+// Bag Type Toggle for Packet Calculator Dimensions
+document.querySelector('select[name="dimensions_bag_type"]').addEventListener('change', function() {
+    const isLaminated = this.value.startsWith('LAMINATED');
+    document.getElementById('dimensionsSingleLayerSection').style.display = isLaminated ? 'none' : 'block';
+    document.getElementById('dimensionsLaminatedSection').style.display = isLaminated ? 'block' : 'none';
+});
+
+// Bag Type Toggle for Bundle Calculator Dimensions
+document.getElementById('bundleBagType').addEventListener('change', function() {
+    const isLaminated = this.value.startsWith('LAMINATED');
+    document.getElementById('bundleDimensionsSingleLayerSection').style.display = isLaminated ? 'none' : 'block';
+    document.getElementById('bundleDimensionsLaminatedSection').style.display = isLaminated ? 'block' : 'none';
+});
+
+// Pieces ↔ Weight Direction Toggle
+document.querySelectorAll('input[name="calculation_direction"]').forEach(radio => {
+    if (radio.closest('#piecesWeightForm')) {
+        radio.addEventListener('change', function() {
+            if (this.value === 'pieces_to_weight') {
+                document.getElementById('piecesInput').style.display = 'block';
+                document.getElementById('weightInput').style.display = 'none';
+                document.getElementById('outputUnitSection').style.display = 'block';
+            } else {
+                document.getElementById('piecesInput').style.display = 'none';
+                document.getElementById('weightInput').style.display = 'block';
+                document.getElementById('outputUnitSection').style.display = 'none';
+            }
+        });
+    }
+});
+
+// Packet Weight Direction Toggle
+document.querySelectorAll('input[name="calculation_direction"]').forEach(radio => {
+    if (radio.closest('#packetWeightForm')) {
+        radio.addEventListener('change', function() {
+            if (this.value === 'forward') {
+                document.getElementById('forwardPacketFields').style.display = 'block';
+                document.getElementById('reversePacketFields').style.display = 'none';
+            } else {
+                document.getElementById('forwardPacketFields').style.display = 'none';
+                document.getElementById('reversePacketFields').style.display = 'block';
+            }
+        });
+    }
+});
+
+// Bundle Weight Direction Toggle
+document.querySelectorAll('input[name="calculation_direction"]').forEach(radio => {
+    if (radio.closest('#bundleWeightForm')) {
+        radio.addEventListener('change', function() {
+            if (this.value === 'forward') {
+                document.getElementById('forwardBundleFields').style.display = 'block';
+                document.getElementById('reverseBundleFields').style.display = 'none';
+            } else {
+                document.getElementById('forwardBundleFields').style.display = 'none';
+                document.getElementById('reverseBundleFields').style.display = 'block';
+            }
+        });
+    }
+});
+
+// Input Method Toggle for Packet Calculator
+document.querySelectorAll('input[name="input_method"]').forEach(radio => {
+    if (radio.closest('#packetWeightForm')) {
+        radio.addEventListener('change', function() {
+            if (this.value === 'direct_weight') {
+                document.getElementById('directWeightPacketSection').style.display = 'block';
+                document.getElementById('dimensionsPacketSection').style.display = 'none';
+            } else {
+                document.getElementById('directWeightPacketSection').style.display = 'none';
+                document.getElementById('dimensionsPacketSection').style.display = 'block';
+
+                // Toggle laminated section for dimensions
+                const bagType = document.querySelector('select[name="dimensions_bag_type"]').value;
+                const isLaminated = bagType.startsWith('LAMINATED');
+                document.getElementById('dimensionsSingleLayerSection').style.display = isLaminated ? 'none' : 'block';
+                document.getElementById('dimensionsLaminatedSection').style.display = isLaminated ? 'block' : 'none';
+            }
+        });
+    }
+});
+
+// Input Method Toggle for Bundle Calculator
+document.querySelectorAll('input[name="input_method"]').forEach(radio => {
+    if (radio.closest('#bundleWeightForm')) {
+        radio.addEventListener('change', function() {
+            if (this.value === 'direct_weight') {
+                document.getElementById('directWeightBundleSection').style.display = 'block';
+                document.getElementById('dimensionsBundleSection').style.display = 'none';
+            } else {
+                document.getElementById('directWeightBundleSection').style.display = 'none';
+                document.getElementById('dimensionsBundleSection').style.display = 'block';
+            }
+        });
+    }
+});
+
+// Layer Management for Pieces ↔ Weight
+let layerCount = 1;
+document.getElementById('addLayer').addEventListener('click', function() {
+    addLayer('layerContainer', 'layer_material_', 'layer_thickness_', 'layer_thickness_unit_', 'remove-layer', 'layer');
+});
+
+// Layer Management for Packet Dimensions
+let dimensionsLayerCount = 1;
+document.getElementById('dimensionsAddLayer').addEventListener('click', function() {
+    addLayer('dimensionsLayerContainer', 'dimensions_layer_material_', 'dimensions_layer_thickness_', 'dimensions_layer_thickness_unit_', 'dimensions-remove-layer', 'dimensions-layer');
+});
+
+// Layer Management for Bundle Dimensions
+let bundleDimensionsLayerCount = 1;
+document.getElementById('bundleDimensionsAddLayer').addEventListener('click', function() {
+    addLayer('bundleDimensionsLayerContainer', 'bundle_dimensions_layer_material_', 'bundle_dimensions_layer_thickness_', 'bundle_dimensions_layer_thickness_unit_', 'bundle-dimensions-remove-layer', 'bundle-dimensions-layer');
+});
+
+function addLayer(containerId, materialPrefix, thicknessPrefix, thicknessUnitPrefix, removeClass, layerClass) {
+    const container = document.getElementById(containerId);
+    let count;
+
+    if (containerId === 'layerContainer') count = layerCount++;
+    else if (containerId === 'dimensionsLayerContainer') count = dimensionsLayerCount++;
+    else count = bundleDimensionsLayerCount++;
+
+    const newRow = document.createElement('div');
+    newRow.className = 'layer-row row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-5">
+            <select class="form-select ${layerClass}-material" name="${materialPrefix}${count}" required>
+                <option value="">Select Material</option>
+                {% for material in materials %}
+                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                    {{ material.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <div class="input-group">
+                <input type="number" step="0.1" class="form-control ${layerClass}-thickness" name="${thicknessPrefix}${count}" placeholder="Thickness" required>
+                <select class="form-select" name="${thicknessUnitPrefix}${count}" style="max-width: 100px;" required>
+                    <option value="micron">Microns</option>
+                    <option value="mm">mm</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-danger btn-sm ${removeClass}">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(newRow);
+
+    // Enable remove buttons for all but first layer
+    const removeButtons = container.querySelectorAll(`.${removeClass}`);
+    if (removeButtons.length > 1) {
+        removeButtons.forEach(btn => btn.disabled = false);
+    }
+}
+
+// Form Submissions
+document.getElementById('piecesWeightForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculatePiecesWeight();
+});
+
+document.getElementById('packetWeightForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculatePacketWeight();
+});
+
+document.getElementById('bundleWeightForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateBundleWeight();
+});
+
+document.getElementById('productionMetricsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateProductionMetrics();
+});
+
+// Calculation Functions
+function calculatePiecesWeight() {
+    const formData = new FormData(document.getElementById('piecesWeightForm'));
+    const data = Object.fromEntries(formData);
+
+    // Collect layer data for laminated bags
+    if (data.bag_type.startsWith('LAMINATED')) {
+        data.layers = [];
+        const layerRows = document.querySelectorAll('#laminatedSection .layer-row');
+
+        layerRows.forEach((row, index) => {
+            const materialSelect = row.querySelector('.layer-material');
+            const thicknessInput = row.querySelector('.layer-thickness');
+            const thicknessUnitSelect = row.querySelector('select[name*="layer_thickness_unit"]');
+
+            // Check if all required elements exist and have values
+            if (materialSelect && thicknessInput && thicknessUnitSelect &&
+                materialSelect.value && thicknessInput.value) {
+                const materialOption = materialSelect.options[materialSelect.selectedIndex];
+                if (materialOption) {
+                    data.layers.push({
+                        material_id: materialSelect.value,
+                        density_g_cm3: parseFloat(materialOption.getAttribute('data-density')) || 0.92,
+                        thickness_microns: parseFloat(thicknessInput.value),
+                        thickness_unit: thicknessUnitSelect.value
+                    });
+                }
+            }
+        });
+
+        if (data.layers.length === 0) {
+            alert('Please add at least one layer for laminated bag and ensure all fields are filled');
+            return;
+        }
+    } else {
+        // For single layer bags, validate required fields
+        if (!data.material_id || !data.thickness) {
+            alert('Please select material and enter thickness for single layer bag');
+            return;
+        }
+    }
+
+    fetch('/bag-making/calculate-pieces-weight/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayPiecesWeightResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Calculation failed: ' + error);
+    });
+}
+
+function calculatePacketWeight() {
+    const formData = new FormData(document.getElementById('packetWeightForm'));
+    const data = Object.fromEntries(formData);
+
+    console.log('Packet Weight Form Data:', data); // Debug log
+
+    // If using dimensions input, we need to calculate piece weight first
+    if (data.input_method === 'dimensions') {
+        // Prepare dimensions data for piece weight calculation
+        const dimensionsData = {
+            bag_type: data.dimensions_bag_type,
+            width: parseFloat(data.dimensions_width) || 0,
+            height: parseFloat(data.dimensions_height) || 0,
+            gusset_width: parseFloat(data.dimensions_gusset_width) || 0,
+            width_unit: data.dimensions_width_unit,
+            height_unit: data.dimensions_height_unit,
+            gusset_unit: data.dimensions_gusset_unit,
+            calculation_direction: 'pieces_to_weight', // We're calculating weight from dimensions
+            num_pieces: 1 // Calculate for one piece to get single piece weight
+        };
+
+        // Add material data based on bag type
+        if (data.dimensions_bag_type.startsWith('LAMINATED')) {
+            dimensionsData.layers = [];
+            const layerRows = document.querySelectorAll('#dimensionsLayerContainer .layer-row');
+
+            layerRows.forEach((row, index) => {
+                const materialSelect = row.querySelector('.dimensions-layer-material');
+                const thicknessInput = row.querySelector('.dimensions-layer-thickness');
+                const thicknessUnitSelect = row.querySelector('select[name*="dimensions_layer_thickness_unit"]');
+
+                if (materialSelect && thicknessInput && thicknessUnitSelect &&
+                    materialSelect.value && thicknessInput.value) {
+                    const materialOption = materialSelect.options[materialSelect.selectedIndex];
+                    if (materialOption) {
+                        dimensionsData.layers.push({
+                            material_id: materialSelect.value,
+                            density_g_cm3: parseFloat(materialOption.getAttribute('data-density')) || 0.92,
+                            thickness_microns: parseFloat(thicknessInput.value),
+                            thickness_unit: thicknessUnitSelect.value
+                        });
+                    }
+                }
+            });
+
+            if (dimensionsData.layers.length === 0) {
+                alert('Please add at least one layer for laminated bag in dimensions mode');
+                return;
+            }
+        } else {
+            // Single layer bag
+            dimensionsData.material_id = data.dimensions_material_id;
+            dimensionsData.thickness = parseFloat(data.dimensions_thickness) || 0;
+            dimensionsData.thickness_unit = data.dimensions_thickness_unit;
+
+            if (!dimensionsData.material_id || !dimensionsData.thickness) {
+                alert('Please select material and enter thickness for single layer bag in dimensions mode');
+                return;
+            }
+        }
+
+        // First calculate the single piece weight from dimensions
+        fetch('/bag-making/calculate-pieces-weight/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dimensionsData)
+        })
+        .then(response => response.json())
+        .then(pieceResult => {
+            if (pieceResult.success) {
+                // Now calculate packet weight using the single piece weight
+                const singlePieceWeightG = pieceResult.result.single_piece_weight_g;
+                const piecesPerPacket = parseInt(data.dimensions_pieces_per_packet) || 1;
+                const packetPackagingWeight = parseFloat(data.dimensions_packet_packaging_weight) || 0;
+                const packagingUnit = data.dimensions_packaging_unit || 'g';
+
+                // Prepare packet calculation data
+                const packetData = {
+                    calculation_direction: data.calculation_direction,
+                    single_piece_weight_g: singlePieceWeightG,
+                    pieces_per_packet: piecesPerPacket,
+                    packet_packaging_weight: packetPackagingWeight,
+                    packaging_unit: packagingUnit,
+                    output_unit: data.output_unit,
+                    from_dimensions: true,
+                    dimensions_data: dimensionsData,
+                    composite_gsm: pieceResult.result.composite_gsm,
+                    area_m2: pieceResult.result.area_m2
+                };
+
+                // Send to packet weight endpoint
+                fetch('/bag-making/calculate-packet-weight/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(packetData)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    // Add the dimensions data to the result for display
+                    if (result.success) {
+                        result.result.single_piece_weight_g = singlePieceWeightG;
+                        result.result.area_m2 = pieceResult.result.area_m2;
+                        result.result.composite_gsm = pieceResult.result.composite_gsm;
+                        result.result.packaging_weight = packetPackagingWeight;
+                        result.result.packaging_unit = packagingUnit;
+                    }
+                    displayPacketWeightResult(result);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Packet calculation failed: ' + error);
+                });
+
+            } else {
+                alert('Failed to calculate piece weight from dimensions: ' + pieceResult.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Dimensions calculation failed: ' + error);
+        });
+
+    } else {
+        // Direct weight input mode
+        fetch('/bag-making/calculate-packet-weight/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            displayPacketWeightResult(result);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Calculation failed: ' + error);
+        });
+    }
+}
+
+function calculateBundleWeight() {
+    const formData = new FormData(document.getElementById('bundleWeightForm'));
+    const data = Object.fromEntries(formData);
+
+    console.log('Bundle Weight Form Data:', data); // Debug log
+
+    // If using dimensions input, we need to calculate piece and packet weights first
+    if (data.input_method === 'dimensions') {
+        // Prepare dimensions data for piece weight calculation
+        const dimensionsData = {
+            bag_type: data.dimensions_bag_type,
+            width: parseFloat(data.dimensions_width) || 0,
+            height: parseFloat(data.dimensions_height) || 0,
+            gusset_width: parseFloat(data.dimensions_gusset_width) || 0,
+            width_unit: data.dimensions_width_unit,
+            height_unit: data.dimensions_height_unit,
+            gusset_unit: data.dimensions_gusset_unit,
+            calculation_direction: 'pieces_to_weight',
+            num_pieces: 1
+        };
+
+        // Add material data based on bag type
+        if (data.dimensions_bag_type.startsWith('LAMINATED')) {
+            dimensionsData.layers = [];
+            const layerRows = document.querySelectorAll('#bundleDimensionsLayerContainer .layer-row');
+
+            layerRows.forEach((row, index) => {
+                const materialSelect = row.querySelector('.bundle-dimensions-layer-material');
+                const thicknessInput = row.querySelector('.bundle-dimensions-layer-thickness');
+                const thicknessUnitSelect = row.querySelector('select[name*="bundle_dimensions_layer_thickness_unit"]');
+
+                if (materialSelect && thicknessInput && thicknessUnitSelect &&
+                    materialSelect.value && thicknessInput.value) {
+                    const materialOption = materialSelect.options[materialSelect.selectedIndex];
+                    if (materialOption) {
+                        dimensionsData.layers.push({
+                            material_id: materialSelect.value,
+                            density_g_cm3: parseFloat(materialOption.getAttribute('data-density')) || 0.92,
+                            thickness_microns: parseFloat(thicknessInput.value),
+                            thickness_unit: thicknessUnitSelect.value
+                        });
+                    }
+                }
+            });
+
+            if (dimensionsData.layers.length === 0) {
+                alert('Please add at least one layer for laminated bag in dimensions mode');
+                return;
+            }
+        } else {
+            // Single layer bag
+            dimensionsData.material_id = data.dimensions_material_id;
+            dimensionsData.thickness = parseFloat(data.dimensions_thickness) || 0;
+            dimensionsData.thickness_unit = data.dimensions_thickness_unit;
+
+            if (!dimensionsData.material_id || !dimensionsData.thickness) {
+                alert('Please select material and enter thickness for single layer bag in dimensions mode');
+                return;
+            }
+        }
+
+        // First calculate the single piece weight from dimensions
+        fetch('/bag-making/calculate-pieces-weight/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dimensionsData)
+        })
+        .then(response => response.json())
+        .then(pieceResult => {
+            if (pieceResult.success) {
+                const singlePieceWeightG = pieceResult.result.single_piece_weight_g;
+                const piecesPerPacket = parseInt(data.dimensions_pieces_per_packet) || 1;
+                const packetsPerBundle = parseInt(data.dimensions_packets_per_bundle) || 1;
+                const bundlePackagingWeight = parseFloat(data.dimensions_bundle_packaging_weight) || 0;
+                const packagingUnit = data.dimensions_packaging_unit || 'kg';
+
+                // Calculate packet weight first
+                const packetWeightKg = (singlePieceWeightG * piecesPerPacket) / 1000;
+
+                // Prepare bundle calculation data
+                const bundleData = {
+                    calculation_direction: data.calculation_direction,
+                    packet_weight_kg: packetWeightKg,
+                    packets_per_bundle: packetsPerBundle,
+                    bundle_packaging_weight: bundlePackagingWeight,
+                    packaging_unit: packagingUnit,
+                    output_unit: data.output_unit,
+                    from_dimensions: true,
+                    single_piece_weight_g: singlePieceWeightG,
+                    pieces_per_packet: piecesPerPacket,
+                    composite_gsm: pieceResult.result.composite_gsm,
+                    area_m2: pieceResult.result.area_m2
+                };
+
+                // Send to bundle weight endpoint
+                fetch('/bag-making/calculate-bundle-weight/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(bundleData)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    // Add the dimensions data to the result for display
+                    if (result.success) {
+                        result.result.single_piece_weight_g = singlePieceWeightG;
+                        result.result.area_m2 = pieceResult.result.area_m2;
+                        result.result.composite_gsm = pieceResult.result.composite_gsm;
+                        result.result.pieces_per_packet = piecesPerPacket;
+                        result.result.bundle_packaging_weight = bundlePackagingWeight;
+                        result.result.packaging_unit = packagingUnit;
+                    }
+                    displayBundleWeightResult(result);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Bundle calculation failed: ' + error);
+                });
+
+            } else {
+                alert('Failed to calculate piece weight from dimensions: ' + pieceResult.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Dimensions calculation failed: ' + error);
+        });
+
+    } else {
+        // Direct weight input mode
+        fetch('/bag-making/calculate-bundle-weight/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            displayBundleWeightResult(result);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Calculation failed: ' + error);
+        });
+    }
+}
+
+function calculateProductionMetrics() {
+    const formData = new FormData(document.getElementById('productionMetricsForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/bag-making/calculate-production-metrics/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayProductionMetricsResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Calculation failed: ' + error);
+    });
+}
+
+// Result Display Functions (keep the same as before)
+function displayPiecesWeightResult(result) {
+    const resultDiv = document.getElementById('piecesWeightResult');
+    if (result.success) {
+        const res = result.result;
+        if (res.calculation_type === 'pieces_to_weight') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Pieces to Weight Results:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>
+                            <p><strong>Bag Area:</strong> ${res.area_m2} m²</p>
+                            <p><strong>Material GSM:</strong> ${res.composite_gsm} g/m²</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Pieces:</strong> ${res.num_pieces.toLocaleString()}</p>
+                            <p><strong>Total Weight:</strong> ${res.total_weight} ${res.output_unit}</p>
+                            <p><strong>Average per piece:</strong> ${(res.total_weight / res.num_pieces).toFixed(6)} ${res.output_unit}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Weight to Pieces Results:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>
+                            <p><strong>Bag Area:</strong> ${res.area_m2} m²</p>
+                            <p><strong>Material GSM:</strong> ${res.composite_gsm} g/m²</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Weight:</strong> ${res.total_weight} ${res.weight_unit}</p>
+                            <p><strong>Number of Pieces:</strong> ${res.num_pieces.toLocaleString()}</p>
+                            <p><strong>Weight per piece:</strong> ${res.single_piece_weight_g} g</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayPacketWeightResult(result) {
+    const resultDiv = document.getElementById('packetWeightResult');
+    if (result.success) {
+        const res = result.result;
+        if (res.calculation_type === 'forward') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Packet Weight Results:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>
+                            <p><strong>Pieces per Packet:</strong> ${res.pieces_per_packet}</p>
+                            ${res.area_m2 ? `<p><strong>Bag Area:</strong> ${res.area_m2} m²</p>` : ''}
+                            ${res.composite_gsm ? `<p><strong>Material GSM:</strong> ${res.composite_gsm} g/m²</p>` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Packet Weight:</strong> ${res.packet_weight} ${res.output_unit}</p>
+                            <p><strong>Net Bag Weight:</strong> ${(res.pieces_per_packet * res.single_piece_weight_g / 1000).toFixed(4)} kg</p>
+                            <p><strong>Packaging Weight:</strong> ${res.packaging_weight || '0'} ${res.packaging_unit || 'g'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Reverse Calculation Results:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Packet Weight:</strong> ${res.packet_weight} ${res.weight_unit}</p>
+                            <p><strong>Pieces per Packet:</strong> ${res.pieces_per_packet}</p>
+                            ${res.area_m2 ? `<p><strong>Bag Area:</strong> ${res.area_m2} m²</p>` : ''}
+                            ${res.composite_gsm ? `<p><strong>Material GSM:</strong> ${res.composite_gsm} g/m²</p>` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Calculated Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>
+                            <p><strong>Net Bag Weight per Packet:</strong> ${(res.single_piece_weight_g * res.pieces_per_packet / 1000).toFixed(4)} kg</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayBundleWeightResult(result) {
+    const resultDiv = document.getElementById('bundleWeightResult');
+    if (result.success) {
+        const res = result.result;
+        if (res.calculation_type === 'forward') {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Bundle Weight Results:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Packet Weight:</strong> ${res.packet_weight_kg} kg</p>
+                            <p><strong>Packets per Bundle:</strong> ${res.packets_per_bundle}</p>
+                            ${res.single_piece_weight_g ? `<p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>` : ''}
+                            ${res.area_m2 ? `<p><strong>Bag Area:</strong> ${res.area_m2} m²</p>` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Bundle Weight:</strong> ${res.bundle_weight} ${res.output_unit}</p>
+                            <p><strong>Net Packets Weight:</strong> ${(res.packets_per_bundle * res.packet_weight_kg).toFixed(4)} kg</p>
+                            <p><strong>Total Pieces in Bundle:</strong> ${(res.packets_per_bundle * res.pieces_per_packet).toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Reverse Calculation Results:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Bundle Weight:</strong> ${res.bundle_weight} ${res.weight_unit}</p>
+                            <p><strong>Packets per Bundle:</strong> ${res.packets_per_bundle}</p>
+                            ${res.single_piece_weight_g ? `<p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Calculated Packet Weight:</strong> ${res.packet_weight_kg} kg</p>
+                            <p><strong>Net Packets Weight:</strong> ${(res.packet_weight_kg * res.packets_per_bundle).toFixed(4)} kg</p>
+                            <p><strong>Total Pieces in Bundle:</strong> ${(res.packets_per_bundle * res.pieces_per_packet).toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayProductionMetricsResult(result) {
+    const resultDiv = document.getElementById('productionMetricsResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Production Metrics Results:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Theoretical Production Time:</strong> ${res.production_time_min} min (${res.production_time_hr} hr)</p>
+                        <p><strong>Material Yield:</strong> ${res.yield_percent}%</p>
+                        <p><strong>Machine Efficiency:</strong> ${res.efficiency_percent}%</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Production Rate:</strong> ${res.production_rate_pcs_hr} pcs/hr</p>
+                        <p><strong>Recommendations:</strong></p>
+                        <ul>
+                            ${res.recommendations ? res.recommendations.map(rec => `<li>${rec}</li>`).join('') : '<li>No specific recommendations</li>'}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Smooth scrolling for navigation
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.list-group-item');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

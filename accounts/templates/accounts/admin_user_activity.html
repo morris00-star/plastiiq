@@ -1,0 +1,212 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-user-clock"></i> User Activity: {{ target_user.username }}
+                        </h2>
+                        <p class="mb-0 mt-2">Detailed activity logs for {{ target_user.get_full_name }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-light">
+                            <i class="fas fa-arrow-left"></i> Back to Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Summary -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ total_actions }}</h3>
+                        <p class="card-text">Total Actions</p>
+                        <small>All recorded activities</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ action_stats|length }}</h3>
+                        <p class="card-text">Action Types</p>
+                        <small>Different activities</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">
+                            {% if target_user.last_login %}
+                                {{ target_user.last_login|timesince }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </h3>
+                        <p class="card-text">Last Login</p>
+                        <small>Time since last access</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Activity Statistics -->
+            <div class="col-md-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar"></i> Activity Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if action_stats %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Action Type</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stat in action_stats %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary">{{ stat.action_type }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ stat.count }}</strong>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No activity statistics</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- User Information -->
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user"></i> User Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Username:</th>
+                                <td>{{ target_user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Full Name:</th>
+                                <td>{{ target_user.get_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>{{ target_user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Role:</th>
+                                <td>{{ target_user.get_role_display_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Section:</th>
+                                <td>{{ target_user.get_section_display_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    {% if target_user.is_approved %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Member Since:</th>
+                                <td>{{ target_user.date_joined|date:"M d, Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Logs -->
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list"></i> Recent Activity (Last 50 Actions)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if action_logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>Description</th>
+                                        <th>IP Address</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in action_logs %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge
+                                                {% if log.action_type == 'LOGIN' %}bg-success
+                                                {% elif log.action_type == 'LOGOUT' %}bg-secondary
+                                                {% elif 'PASSWORD' in log.action_type %}bg-warning text-dark
+                                                {% elif 'DELETE' in log.action_type %}bg-danger
+                                                {% else %}bg-info{% endif %}">
+                                                {{ log.get_action_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small>{{ log.description }}</small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ log.ip_address|default:"N/A" }}</small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ log.timestamp|date:"M d, Y H:i" }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <h5>No Activity Logs</h5>
+                            <p class="text-muted">This user has no recorded activities yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

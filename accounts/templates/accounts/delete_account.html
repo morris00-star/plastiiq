@@ -1,0 +1,73 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white text-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Delete Account
+                </h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-user-slash fa-5x text-danger mb-3"></i>
+                    <h4>Delete Your Account</h4>
+                    <p class="lead text-danger">This action cannot be undone!</p>
+                </div>
+
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-circle"></i> Warning: Permanent Account Deletion</h6>
+                    <p class="mb-0">
+                        Deleting your account will:
+                    </p>
+                    <ul class="mb-0 text-start">
+                        <li>Permanently remove your account from the system</li>
+                        <li>Delete all your personal information</li>
+                        <li>Remove access to all your calculation history</li>
+                        <li>This action cannot be reversed</li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3 text-start">
+                        <div class="form-check">
+                            {{ form.confirm }}
+                            <label class="form-check-label" for="{{ form.confirm.id_for_label }}">
+                                {{ form.confirm.label }}
+                            </label>
+                        </div>
+                        {% if form.confirm.errors %}
+                            <div class="text-danger small">{{ form.confirm.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-block">
+                        <button type="submit" class="btn btn-danger btn-lg" id="deleteButton" disabled>
+                            <i class="fas fa-trash"></i> Permanently Delete My Account
+                        </button>
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.querySelector('#{{ form.confirm.id_for_label }}');
+    const deleteButton = document.getElementById('deleteButton');
+    
+    confirmCheckbox.addEventListener('change', function() {
+        deleteButton.disabled = !this.checked;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-user-check"></i> User Approval Management
+                        </h2>
+                        <p class="mb-0 mt-2">Approve or reject user registration requests</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-light">
+                            <i class="fas fa-cog"></i> Full User Management
+                        </a>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-light ms-2">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">{{ total_pending }}</h4>
+                        <p class="card-text">Pending Approval</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">{{ total_approved }}</h4>
+                        <p class="card-text">Approved Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">{{ total_pending|add:total_approved }}</h4>
+                        <p class="card-text">Total Users</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Users Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock"></i> Pending Approval ({{ pending_users.count }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if pending_users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role & Section</th>
+                                <th>Registered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in pending_users %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user.username }}</strong>
+                                </td>
+                                <td>{{ user.get_full_name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.phone_number }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ user.get_company_role_display }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ user.get_section_display }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ user.date_joined|date:"M d, Y" }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'accounts:admin_approve_user' user.id %}" class="btn btn-success">
+                                            <i class="fas fa-check"></i> Approve
+                                        </a>
+                                        <a href="{% url 'accounts:admin_reject_user' user.id %}" class="btn btn-danger">
+                                            <i class="fas fa-times"></i> Reject
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5>No Pending Approvals</h5>
+                    <p class="text-muted">All user requests have been processed.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recently Approved Users -->
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle"></i> Recently Approved Users
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if approved_users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Role & Section</th>
+                                <th>Approved By</th>
+                                <th>Approved Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in approved_users|slice:":10" %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user.username }}</strong>
+                                </td>
+                                <td>{{ user.get_full_name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ user.get_company_role_display }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ user.get_section_display }}</small>
+                                </td>
+                                <td>
+                                    {% if user.approved_by %}
+                                        {{ user.approved_by.get_full_name }}
+                                    {% else %}
+                                        <span class="text-muted">System</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if user.approved_date %}
+                                            {{ user.approved_date|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5>No Approved Users</h5>
+                    <p class="text-muted">No users have been approved yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

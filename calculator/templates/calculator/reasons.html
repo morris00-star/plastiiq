@@ -1,0 +1,396 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body">
+                <h2 class="card-title text-center">
+                    <i class="fas fa-lightbulb"></i> Calculation Purposes & Benefits
+                </h2>
+                <p class="text-center mb-0">Understanding the quality control and efficiency reasons behind each calculation</p>
+            </div>
+        </div>
+
+        <!-- Quick Navigation -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <a href="{% url 'home' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-calculator"></i> Main Calculator
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'calculation_history' %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-history"></i> History
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'material_reference' %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-database"></i> Materials
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'calculation_reasons' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-lightbulb"></i> Purposes
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-success w-100">
+                            <i class="fas fa-industry"></i> Extrusion
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'sales:sales_home' %}" class="btn btn-purple w-100">
+                            <i class="fas fa-money-bill-wave"></i> Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Introduction -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Why These Calculations Matter
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle"></i> Quality Control (QC)</h6>
+                            <p class="mb-0">Ensures product specifications, consistency, and reliability meet customer requirements and industry standards.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-chart-line"></i> Operational Efficiency</h6>
+                            <p class="mb-0">Optimizes production processes, reduces waste, increases throughput, and maintains profitability.</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-muted mb-0"><small>Each calculation serves dual purposes: maintaining quality standards while driving operational excellence.</small></p>
+            </div>
+        </div>
+
+        <!-- Extrusion Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-industry"></i> A. Extrusion Calculators (Raw Film Production)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="30%">Calculation</th>
+                                <th>Quality Control Purpose</th>
+                                <th>Efficiency Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Thickness / Gauge Variation</strong></td>
+                                <td>Guarantees material uniformity and consistency</td>
+                                <td>Prevents material cost overruns and machine stops due to poor quality film</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pieces to Weight / Yield & Basis Weight</strong></td>
+                                <td>Verifies basis weight compliance (mass per area) for specifications</td>
+                                <td>Monitors and minimizes expensive polymer waste and scrap material</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tensile Strength / Elongation / Dart Impact</strong></td>
+                                <td>Confirms film durability and puncture resistance</td>
+                                <td>Prevents costly tears and machine downtime during high-speed conversion</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Coefficient of Friction (COF)</strong></td>
+                                <td>Ensures proper surface characteristics for handling</td>
+                                <td>Enables stable material handling and high-speed winding/unwinding</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Roll Radius & Mass / Film Length</strong></td>
+                                <td>Verifies final roll specifications for customer compliance</td>
+                                <td>Ensures accurate inventory and proper machine loading</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Take-up Speed Adjustment / Production Time</strong></td>
+                                <td>Maintains bubble stability and material properties</td>
+                                <td>Optimizes machine throughput while maintaining quality</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Printing Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-print"></i> B. Printing Calculators
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="30%">Calculation</th>
+                                <th>Quality Control Purpose</th>
+                                <th>Efficiency Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Ink Mass Needed / Ink Mixing</strong></td>
+                                <td>Guarantees consistent color density, adhesion, and chemical cure</td>
+                                <td>Minimizes expensive ink waste through precise mixing ratios</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Machine Speed & Time</strong></td>
+                                <td>Ensures accurate color registration and complete ink drying</td>
+                                <td>Balances throughput with technical limits of the press</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Film Mass & Length / GSM</strong></td>
+                                <td>Confirms correct material input (GSM) was used</td>
+                                <td>Accurately tracks material consumption for inventory reconciliation</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Production Time</strong></td>
+                                <td>Benchmarks quality process timing</td>
+                                <td>Identifies opportunities to reduce non-value-added downtime</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lamination Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-layer-group"></i> C. Lamination Calculators
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="30%">Calculation</th>
+                                <th>Quality Control Purpose</th>
+                                <th>Efficiency Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Adhesive Components</strong></td>
+                                <td>Ensures precise adhesive ratios for high bond strength</td>
+                                <td>Prevents total loss due to bond failure and material waste</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GSM / Weight Breakdown</strong></td>
+                                <td>Verifies correct adhesive coating weight to meet specifications</td>
+                                <td>Minimizes adhesive over-application for cost control</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Lamination Time / Production Efficiency</strong></td>
+                                <td>Confirms required process time for quality bond formation</td>
+                                <td>Measures throughput and minimizes non-productive time</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Material Yield</strong></td>
+                                <td>Tracks quality of high-cost material usage</td>
+                                <td>Identifies sources of material loss (trim waste, bad bonds)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slitting Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-cut"></i> D. Slitting Calculators
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="30%">Calculation</th>
+                                <th>Quality Control Purpose</th>
+                                <th>Efficiency Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Roll Mass/Diameter from Mass/Diameter</strong></td>
+                                <td>Verifies final roll specifications for customer compliance</td>
+                                <td>Ensures accurate length/mass tracking and proper equipment fit</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Slitting Time / Production Rate</strong></td>
+                                <td>Confirms consistent winding tension and roll quality</td>
+                                <td>Measures machine throughput and minimizes non-productive time</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Yield Calculation / Film Length from Mass</strong></td>
+                                <td>Ensures length accuracy for labeling and specifications</td>
+                                <td>Monitors minimal material loss from edge trimming</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bag Making Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-shopping-bag"></i> E. Bag Making Calculators
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="30%">Calculation</th>
+                                <th>Quality Control Purpose</th>
+                                <th>Efficiency Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Pieces ↔ Weight Converter</strong></td>
+                                <td>Final QA check on bag dimensions and material thickness</td>
+                                <td>Accurately converts piece orders to required raw material mass</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Packet / Bundle / Bale Weight</strong></td>
+                                <td>Confirms accurate counts and packaging standards</td>
+                                <td>Ensures legal weights for shipping and prevents penalties</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Production Time & Efficiency</strong></td>
+                                <td>Ensures seal integrity and accurate cut-off registration</td>
+                                <td>Measures pieces per hour and optimizes machine speed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-money-bill-wave"></i> F. Sales & Pricing Calculators
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="30%">Calculation</th>
+                                <th>Quality Control Purpose</th>
+                                <th>Efficiency Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Material Cost per kg/meter/piece</strong></td>
+                                <td>Ensures cost basis reflects quality requirements</td>
+                                <td>Guarantees quotes cover all material expenses and maintain profitability</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Order Quantity from kg/meters/pieces</strong></td>
+                                <td>Ensures specifications match production capabilities</td>
+                                <td>Minimizes order errors and prevents production delays</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Roll Cost / Laminated Material Cost</strong></td>
+                                <td>Provides accurate cost basis for quality materials</td>
+                                <td>Allows sales to justify price points before adding margin</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 text-dark">
+                    <i class="fas fa-chart-bar text-primary"></i> Key Benefits Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-bullseye text-success"></i> Quality Outcomes</h6>
+                        <ul>
+                            <li>Consistent product specifications</li>
+                            <li>Reduced customer complaints</li>
+                            <li>Improved brand reputation</li>
+                            <li>Compliance with industry standards</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-rocket text-info"></i> Efficiency Gains</h6>
+                        <ul>
+                            <li>Reduced material waste</li>
+                            <li>Increased machine utilization</li>
+                            <li>Lower production costs</li>
+                            <li>Faster order fulfillment</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert alert-primary mt-3">
+                    <h6 class="alert-heading"><i class="fas fa-handshake"></i> The Bottom Line</h6>
+                    <p class="mb-0">These calculations bridge the gap between technical quality requirements and business efficiency goals, ensuring both product excellence and operational profitability.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.calculator-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: translateX(5px);
+    transition: all 0.2s ease-in-out;
+}
+
+.card-header {
+    font-weight: 600;
+}
+</style>
+{% endblock %}

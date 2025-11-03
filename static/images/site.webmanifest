@@ -1,0 +1,40 @@
+{
+    "name": "Plastic QC Calculator",
+    "short_name": "Plastic QC",
+    "description": "Quality Control Calculator for Plastic Manufacturing",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#343a40",
+    "theme_color": "#667eea",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "categories": ["business", "productivity", "utilities"],
+    "icons": [
+        {
+            "src": "/static/images/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/images/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/static/images/screenshot-wide.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/static/images/screenshot-narrow.png",
+            "sizes": "720x1280",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ]
+}

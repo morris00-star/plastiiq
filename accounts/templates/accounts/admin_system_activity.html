@@ -1,0 +1,146 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-chart-line"></i> System Activity Monitor
+                        </h2>
+                        <p class="mb-0 mt-2">Comprehensive system-wide activity tracking</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-light">
+                            <i class="fas fa-users"></i> User Management
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter"></i> Filter Activity Logs
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Action Type</label>
+                        <select name="action_type" class="form-select">
+                            <option value="">All Actions</option>
+                            {% for action_code, action_name in action_types %}
+                            <option value="{{ action_code }}" {% if filters.action_type == action_code %}selected{% endif %}>
+                                {{ action_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">User</label>
+                        <select name="user_id" class="form-select">
+                            <option value="">All Users</option>
+                            {% for user in active_users %}
+                            <option value="{{ user.id }}" {% if filters.user_id == user.id|stringformat:"i" %}selected{% endif %}>
+                                {{ user.username }} ({{ user.get_full_name }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Date From</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ filters.date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Date To</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ filters.date_to }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Activity Logs -->
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-list-alt"></i> System Activity Logs (Last 100 Records)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if action_logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Description</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in action_logs %}
+                            <tr>
+                                <td>
+                                    <small class="text-muted">{{ log.timestamp|date:"M d, Y H:i" }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ log.user.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ log.user.get_role_display_name }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if log.action_type == 'LOGIN' %}bg-success
+                                        {% elif log.action_type == 'LOGOUT' %}bg-secondary
+                                        {% elif 'PASSWORD' in log.action_type %}bg-warning text-dark
+                                        {% elif 'DELETE' in log.action_type %}bg-danger
+                                        {% elif 'CREATE' in log.action_type %}bg-info
+                                        {% else %}bg-primary{% endif %}">
+                                        {{ log.get_action_type_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>{{ log.description }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ log.ip_address|default:"N/A" }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                    <h5>No Activity Logs Found</h5>
+                    <p class="text-muted">
+                        {% if filters.action_type or filters.user_id or filters.date_from or filters.date_to %}
+                        No logs match your filter criteria. Try adjusting your filters.
+                        {% else %}
+                        No system activity logs have been recorded yet.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1400 @@
+{% extends 'calculator/section_base.html' %}
+{% load static %}
+
+{% block section_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card calculator-card text-white mb-4">
+            <div class="card-body text-center">
+                <h2 class="card-title">
+                    <i class="fas fa-cut"></i> Slitting Calculators
+                </h2>
+                <p class="mb-0">Comprehensive calculations for film slitting operations and production optimization</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Roll Mass Calculator -->
+<div class="card shadow mb-4" id="roll_mass">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-weight-hanging"></i> Roll Mass from Diameter
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="rollMassForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Outer Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="outer_diameter" required min="0.001">
+                            <select class="form-select" name="outer_diameter_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Core Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="core_diameter" required min="0.001">
+                            <select class="form-select" name="core_diameter_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="width" required min="0.001">
+                            <select class="form-select" name="width_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer Configuration -->
+            <div class="mb-3">
+                <label class="form-label">Material Configuration</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mass_material_type" value="single" id="massSingleLayer" checked>
+                    <label class="form-check-label" for="massSingleLayer">Single Layer</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mass_material_type" value="multi" id="massMultiLayer">
+                    <label class="form-check-label" for="massMultiLayer">Multi-Layer</label>
+                </div>
+            </div>
+
+            <!-- Single Layer Fields -->
+            <div id="massSingleLayerFields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Material</label>
+                            <select class="form-select" name="material_id" id="massSingleMaterial" required>
+                                <option value="">Select Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Thickness</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="thickness" required min="0.1">
+                                <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                    <option value="micron">Microns</option>
+                                    <option value="mm">mm</option>
+                                    <option value="mil">Mil</option>
+                                    <option value="gauge">Gauge</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Layer Fields -->
+            <div id="massMultiLayerFields" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Layers</label>
+                    <div id="massLayerContainer">
+                        <div class="layer-entry card mb-2">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <label class="form-label">Material</label>
+                                        <select class="form-select layer-material" name="mass_layers[0][material_id]">
+                                            <option value="">Select Material</option>
+                                            {% for material in materials %}
+                                            <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                                {{ material.name }} ({{ material.density }} g/cm³)
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label">Thickness</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control layer-thickness" name="mass_layers[0][thickness]" min="0.1">
+                                            <select class="form-select" name="mass_layers[0][thickness_unit]" style="max-width: 100px;">
+                                                <option value="micron">Microns</option>
+                                                <option value="mm">mm</option>
+                                                <option value="mil">Mil</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="button" class="btn btn-danger btn-sm remove-mass-layer" style="display: none;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="addMassLayer">
+                        <i class="fas fa-plus"></i> Add Layer
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="calculateRollMassBtn">
+                <i class="fas fa-calculator"></i> Calculate Roll Mass
+            </button>
+        </form>
+
+        <div id="rollMassResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Roll Diameter Calculator -->
+<div class="card shadow mb-4" id="roll_diameter">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-circle"></i> Roll Diameter from Mass
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="rollDiameterForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="roll_mass" required min="0.1">
+                            <select class="form-select" name="roll_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Core Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="core_diameter" required min="0.001">
+                            <select class="form-select" name="core_diameter_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="width" required min="0.001">
+                            <select class="form-select" name="width_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Configuration -->
+            <div class="mb-3">
+                <label class="form-label">Material Configuration</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="diameter_material_type" value="single" id="diameterSingleLayer" checked>
+                    <label class="form-check-label" for="diameterSingleLayer">Single Layer</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="diameter_material_type" value="multi" id="diameterMultiLayer">
+                    <label class="form-check-label" for="diameterMultiLayer">Multi-Layer</label>
+                </div>
+            </div>
+
+            <!-- Single Layer Fields -->
+            <div id="diameterSingleLayerFields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Material</label>
+                            <select class="form-select" name="material_id" id="diameterSingleMaterial" required>
+                                <option value="">Select Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                    {{ material.name }} ({{ material.density }} g/cm³)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Thickness</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="thickness" required min="0.1">
+                                <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                    <option value="micron">Microns</option>
+                                    <option value="mm">mm</option>
+                                    <option value="mil">Mil</option>
+                                    <option value="gauge">Gauge</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Layer Fields -->
+            <div id="diameterMultiLayerFields" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Layers</label>
+                    <div id="diameterLayerContainer">
+                        <div class="layer-entry card mb-2">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <label class="form-label">Material</label>
+                                        <select class="form-select layer-material" name="diameter_layers[0][material_id]">
+                                            <option value="">Select Material</option>
+                                            {% for material in materials %}
+                                            <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                                {{ material.name }} ({{ material.density }} g/cm³)
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label">Thickness</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control layer-thickness" name="diameter_layers[0][thickness]" min="0.1">
+                                            <select class="form-select" name="diameter_layers[0][thickness_unit]" style="max-width: 100px;">
+                                                <option value="micron">Microns</option>
+                                                <option value="mm">mm</option>
+                                                <option value="mil">Mil</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="button" class="btn btn-danger btn-sm remove-diameter-layer" style="display: none;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="addDiameterLayer">
+                        <i class="fas fa-plus"></i> Add Layer
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success" id="calculateRollDiameterBtn">
+                <i class="fas fa-calculator"></i> Calculate Roll Diameter
+            </button>
+        </form>
+
+        <div id="rollDiameterResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Slitting Time Calculator -->
+<div class="card shadow mb-4" id="slitting_time">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-clock"></i> Slitting Time Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="slittingTimeForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="roll_length" required min="0.1">
+                            <select class="form-select" name="roll_length_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="ft">ft</option>
+                                <option value="yd">yd</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Slitting Speed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="slitting_speed" required min="0.1">
+                            <select class="form-select" name="slitting_speed_unit" style="max-width: 100px;">
+                                <option value="m_min">m/min</option>
+                                <option value="m_hr">m/hr</option>
+                                <option value="ft_min">ft/min</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-calculator"></i> Calculate Slitting Time
+            </button>
+        </form>
+
+        <div id="slittingTimeResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Production Efficiency Calculator -->
+<div class="card shadow mb-4" id="production_efficiency">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-line"></i> Production Efficiency Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="efficiencyForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Theoretical Slitting Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="slitting_time" required min="0.1">
+                            <select class="form-select" name="slitting_time_unit" style="max-width: 100px;">
+                                <option value="min">min</option>
+                                <option value="hr">hr</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Actual Total Run Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="total_run_time" required min="0.1">
+                            <select class="form-select" name="total_run_time_unit" style="max-width: 100px;">
+                                <option value="min">min</option>
+                                <option value="hr">hr</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-calculator"></i> Calculate Efficiency
+            </button>
+        </form>
+
+        <div id="efficiencyResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Production Rate Calculator -->
+<div class="card shadow mb-4" id="production_rate">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-tachometer-alt"></i> Production Rate Calculator
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="productionRateForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Roll Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="roll_mass" required min="0.1">
+                            <select class="form-select" name="roll_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Run Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="total_run_time" required min="0.1">
+                            <select class="form-select" name="total_run_time_unit" style="max-width: 100px;">
+                                <option value="min">min</option>
+                                <option value="hr">hr</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-calculator"></i> Calculate Production Rate
+            </button>
+        </form>
+
+        <div id="productionRateResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Yield Calculator -->
+<div class="card shadow mb-4" id="yield_calculation">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-percentage"></i> Yield Calculation
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="yieldForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Input Material</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="total_input" required min="0.1">
+                            <select class="form-select" name="total_input_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Good Output</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="good_output" required min="0">
+                            <select class="form-select" name="good_output_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-calculator"></i> Calculate Yield
+            </button>
+        </form>
+
+        <div id="yieldResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Film Length Calculator -->
+<div class="card shadow mb-4" id="film_length">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-ruler"></i> Film Length from Mass
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="filmLengthForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="mass" required min="0.001">
+                            <select class="form-select" name="mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="width" required min="0.001">
+                            <select class="form-select" name="width_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select class="form-select" name="material_id" required>
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                {{ material.name }} ({{ material.density }} g/cm³)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Thickness</label>
+                <div class="input-group">
+                    <input type="number" step="0.1" class="form-control" name="thickness" required min="0.1">
+                    <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                        <option value="micron">Microns</option>
+                        <option value="mm">mm</option>
+                        <option value="mil">Mil</option>
+                        <option value="gauge">Gauge</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark">
+                <i class="fas fa-calculator"></i> Calculate Film Length
+            </button>
+        </form>
+
+        <div id="filmLengthResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <h6><i class="fas fa-info-circle"></i> Features:</h6>
+    <ul class="mb-0">
+        <li><strong>Multi-layer support:</strong> Calculate effective density and thickness for laminated materials</li>
+        <li><strong>Note: For a tube multiply outer diameter as well as weight doubles (multiplied by 2).</strong></li>
+        <li><strong>Material database:</strong> Automatic density selection from material database</li>
+        <li><strong>GSM calculation:</strong> GSM = Thickness (microns) × Density (g/cm³)</li>
+        <li><strong>Unit flexibility:</strong> Support for metric and imperial units</li>
+        <li><strong>Performance ratings:</strong> Get efficiency and yield ratings with recommendations</li>
+    </ul>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Layer management for Roll Mass Calculator
+let massLayerCount = 0;
+let diameterLayerCount = 0;
+
+// Initialize first layers
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize layer counts
+    massLayerCount = 0;
+    diameterLayerCount = 0;
+
+    // Set up initial layer validation
+    updateLayerValidation();
+});
+
+// Roll Mass Layer Management
+document.getElementById('addMassLayer').addEventListener('click', function() {
+    massLayerCount++;
+    const layerHtml = `
+        <div class="layer-entry card mb-2">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label">Material</label>
+                        <select class="form-select layer-material" name="mass_layers[${massLayerCount}][material_id]">
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                {{ material.name }} ({{ material.density }} g/cm³)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control layer-thickness" name="mass_layers[${massLayerCount}][thickness]" min="0.1">
+                            <select class="form-select" name="mass_layers[${massLayerCount}][thickness_unit]" style="max-width: 100px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-sm remove-mass-layer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('massLayerContainer').insertAdjacentHTML('beforeend', layerHtml);
+
+    // Show remove buttons on all layers
+    document.querySelectorAll('.remove-mass-layer').forEach(btn => {
+        btn.style.display = 'block';
+    });
+
+    updateLayerValidation();
+});
+
+// Roll Diameter Layer Management
+document.getElementById('addDiameterLayer').addEventListener('click', function() {
+    diameterLayerCount++;
+    const layerHtml = `
+        <div class="layer-entry card mb-2">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label">Material</label>
+                        <select class="form-select layer-material" name="diameter_layers[${diameterLayerCount}][material_id]">
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}" data-density="{{ material.density }}">
+                                {{ material.name }} ({{ material.density }} g/cm³)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control layer-thickness" name="diameter_layers[${diameterLayerCount}][thickness]" min="0.1">
+                            <select class="form-select" name="diameter_layers[${diameterLayerCount}][thickness_unit]" style="max-width: 100px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-sm remove-diameter-layer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('diameterLayerContainer').insertAdjacentHTML('beforeend', layerHtml);
+
+    // Show remove buttons on all layers
+    document.querySelectorAll('.remove-diameter-layer').forEach(btn => {
+        btn.style.display = 'block';
+    });
+
+    updateLayerValidation();
+});
+
+// Remove layer handlers
+document.addEventListener('click', function(e) {
+    // Roll Mass layer removal
+    if (e.target.classList.contains('remove-mass-layer') || e.target.closest('.remove-mass-layer')) {
+        const btn = e.target.classList.contains('remove-mass-layer') ? e.target : e.target.closest('.remove-mass-layer');
+        const layerEntry = btn.closest('.layer-entry');
+        layerEntry.remove();
+
+        // Hide remove button if only one layer remains
+        const massLayers = document.querySelectorAll('#massLayerContainer .layer-entry');
+        if (massLayers.length === 1) {
+            document.querySelector('.remove-mass-layer').style.display = 'none';
+        }
+
+        updateLayerValidation();
+    }
+
+    // Roll Diameter layer removal
+    if (e.target.classList.contains('remove-diameter-layer') || e.target.closest('.remove-diameter-layer')) {
+        const btn = e.target.classList.contains('remove-diameter-layer') ? e.target : e.target.closest('.remove-diameter-layer');
+        const layerEntry = btn.closest('.layer-entry');
+        layerEntry.remove();
+
+        // Hide remove button if only one layer remains
+        const diameterLayers = document.querySelectorAll('#diameterLayerContainer .layer-entry');
+        if (diameterLayers.length === 1) {
+            document.querySelector('.remove-diameter-layer').style.display = 'none';
+        }
+
+        updateLayerValidation();
+    }
+});
+
+// Update layer validation based on current configuration
+function updateLayerValidation() {
+    const massType = document.querySelector('input[name="mass_material_type"]:checked').value;
+    const diameterType = document.querySelector('input[name="diameter_material_type"]:checked').value;
+
+    // Handle Roll Mass form
+    if (massType === 'single') {
+        // Enable single layer fields
+        document.querySelectorAll('#massSingleLayerFields select, #massSingleLayerFields input').forEach(field => {
+            field.disabled = false;
+            field.required = true;
+        });
+        // Disable multi-layer fields
+        document.querySelectorAll('#massMultiLayerFields select, #massMultiLayerFields input').forEach(field => {
+            field.disabled = true;
+            field.required = false;
+        });
+    } else {
+        // Enable multi-layer fields
+        document.querySelectorAll('#massMultiLayerFields select, #massMultiLayerFields input').forEach(field => {
+            field.disabled = false;
+            field.required = false; // Don't require individual fields, we'll validate manually
+        });
+        // Disable single layer fields
+        document.querySelectorAll('#massSingleLayerFields select, #massSingleLayerFields input').forEach(field => {
+            field.disabled = true;
+            field.required = false;
+        });
+    }
+
+    // Handle Roll Diameter form
+    if (diameterType === 'single') {
+        // Enable single layer fields
+        document.querySelectorAll('#diameterSingleLayerFields select, #diameterSingleLayerFields input').forEach(field => {
+            field.disabled = false;
+            field.required = true;
+        });
+        // Disable multi-layer fields
+        document.querySelectorAll('#diameterMultiLayerFields select, #diameterMultiLayerFields input').forEach(field => {
+            field.disabled = true;
+            field.required = false;
+        });
+    } else {
+        // Enable multi-layer fields
+        document.querySelectorAll('#diameterMultiLayerFields select, #diameterMultiLayerFields input').forEach(field => {
+            field.disabled = false;
+            field.required = false; // Don't require individual fields, we'll validate manually
+        });
+        // Disable single layer fields
+        document.querySelectorAll('#diameterSingleLayerFields select, #diameterSingleLayerFields input').forEach(field => {
+            field.disabled = true;
+            field.required = false;
+        });
+    }
+}
+
+// Toggle between single and multi-layer for Roll Mass
+document.querySelectorAll('input[name="mass_material_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        if (this.value === 'single') {
+            document.getElementById('massSingleLayerFields').style.display = 'block';
+            document.getElementById('massMultiLayerFields').style.display = 'none';
+        } else {
+            document.getElementById('massSingleLayerFields').style.display = 'none';
+            document.getElementById('massMultiLayerFields').style.display = 'block';
+        }
+        updateLayerValidation();
+    });
+});
+
+// Toggle between single and multi-layer for Roll Diameter
+document.querySelectorAll('input[name="diameter_material_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        if (this.value === 'single') {
+            document.getElementById('diameterSingleLayerFields').style.display = 'block';
+            document.getElementById('diameterMultiLayerFields').style.display = 'none';
+        } else {
+            document.getElementById('diameterSingleLayerFields').style.display = 'none';
+            document.getElementById('diameterMultiLayerFields').style.display = 'block';
+        }
+        updateLayerValidation();
+    });
+});
+
+// Form submissions with proper validation
+document.getElementById('rollMassForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateRollMassForm()) {
+        calculateRollMass();
+    }
+});
+
+document.getElementById('rollDiameterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateRollDiameterForm()) {
+        calculateRollDiameter();
+    }
+});
+
+document.getElementById('slittingTimeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateForm(this)) {
+        calculateSlittingTime();
+    }
+});
+
+document.getElementById('efficiencyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateForm(this)) {
+        calculateEfficiency();
+    }
+});
+
+document.getElementById('productionRateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateForm(this)) {
+        calculateProductionRate();
+    }
+});
+
+document.getElementById('yieldForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateForm(this)) {
+        calculateYield();
+    }
+});
+
+document.getElementById('filmLengthForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateForm(this)) {
+        calculateFilmLength();
+    }
+});
+
+// Custom validation for Roll Mass form
+function validateRollMassForm() {
+    const form = document.getElementById('rollMassForm');
+    const massType = document.querySelector('input[name="mass_material_type"]:checked').value;
+    let isValid = true;
+
+    // Clear previous validation
+    form.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+    });
+
+    // Validate common fields
+    const commonFields = form.querySelectorAll('input[name="outer_diameter"], input[name="core_diameter"], input[name="width"]');
+    commonFields.forEach(field => {
+        if (!field.value || parseFloat(field.value) <= 0) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        }
+    });
+
+    if (massType === 'single') {
+        // Validate single layer fields
+        const materialField = form.querySelector('#massSingleMaterial');
+        const thicknessField = form.querySelector('input[name="thickness"]');
+
+        if (!materialField.value) {
+            materialField.classList.add('is-invalid');
+            isValid = false;
+        }
+        if (!thicknessField.value || parseFloat(thicknessField.value) <= 0) {
+            thicknessField.classList.add('is-invalid');
+            isValid = false;
+        }
+    } else {
+        // Validate multi-layer fields
+        const layers = form.querySelectorAll('#massLayerContainer .layer-entry');
+        let hasValidLayer = false;
+
+        layers.forEach(layer => {
+            const materialField = layer.querySelector('.layer-material');
+            const thicknessField = layer.querySelector('.layer-thickness');
+
+            // Only validate if at least one field has a value
+            if (materialField.value || thicknessField.value) {
+                if (!materialField.value) {
+                    materialField.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if (!thicknessField.value || parseFloat(thicknessField.value) <= 0) {
+                    thicknessField.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if (materialField.value && thicknessField.value && parseFloat(thicknessField.value) > 0) {
+                    hasValidLayer = true;
+                }
+            }
+        });
+
+        if (!hasValidLayer && layers.length > 0) {
+            alert('Please fill in at least one complete layer with material and thickness.');
+            isValid = false;
+        }
+    }
+
+    if (!isValid) {
+        alert('Please fill in all required fields with valid positive values.');
+    }
+
+    return isValid;
+}
+
+// Custom validation for Roll Diameter form
+function validateRollDiameterForm() {
+    const form = document.getElementById('rollDiameterForm');
+    const diameterType = document.querySelector('input[name="diameter_material_type"]:checked').value;
+    let isValid = true;
+
+    // Clear previous validation
+    form.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+    });
+
+    // Validate common fields
+    const commonFields = form.querySelectorAll('input[name="roll_mass"], input[name="core_diameter"], input[name="width"]');
+    commonFields.forEach(field => {
+        if (!field.value || parseFloat(field.value) <= 0) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        }
+    });
+
+    if (diameterType === 'single') {
+        // Validate single layer fields
+        const materialField = form.querySelector('#diameterSingleMaterial');
+        const thicknessField = form.querySelector('input[name="thickness"]');
+
+        if (!materialField.value) {
+            materialField.classList.add('is-invalid');
+            isValid = false;
+        }
+        if (!thicknessField.value || parseFloat(thicknessField.value) <= 0) {
+            thicknessField.classList.add('is-invalid');
+            isValid = false;
+        }
+    } else {
+        // Validate multi-layer fields
+        const layers = form.querySelectorAll('#diameterLayerContainer .layer-entry');
+        let hasValidLayer = false;
+
+        layers.forEach(layer => {
+            const materialField = layer.querySelector('.layer-material');
+            const thicknessField = layer.querySelector('.layer-thickness');
+
+            // Only validate if at least one field has a value
+            if (materialField.value || thicknessField.value) {
+                if (!materialField.value) {
+                    materialField.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if (!thicknessField.value || parseFloat(thicknessField.value) <= 0) {
+                    thicknessField.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if (materialField.value && thicknessField.value && parseFloat(thicknessField.value) > 0) {
+                    hasValidLayer = true;
+                }
+            }
+        });
+
+        if (!hasValidLayer && layers.length > 0) {
+            alert('Please fill in at least one complete layer with material and thickness.');
+            isValid = false;
+        }
+    }
+
+    if (!isValid) {
+        alert('Please fill in all required fields with valid positive values.');
+    }
+
+    return isValid;
+}
+
+// Generic form validation function
+function validateForm(form) {
+    const inputs = form.querySelectorAll('input[required]:not([disabled]), select[required]:not([disabled])');
+    let isValid = true;
+
+    inputs.forEach(input => {
+        if (!input.value || (input.type === 'number' && parseFloat(input.value) <= 0)) {
+            input.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+
+    if (!isValid) {
+        alert('Please fill in all required fields with valid positive values.');
+    }
+
+    return isValid;
+}
+
+// Calculation functions
+function calculateRollMass() {
+    const formData = new FormData(document.getElementById('rollMassForm'));
+    const data = Object.fromEntries(formData);
+
+    // Remove multi-layer data if single layer is selected
+    if (data.mass_material_type === 'single') {
+        // Remove any multi-layer related fields from the data
+        Object.keys(data).forEach(key => {
+            if (key.startsWith('mass_layers')) {
+                delete data[key];
+            }
+        });
+    } else {
+        // Remove single layer fields when multi-layer is selected
+        delete data.material_id;
+        delete data.thickness;
+        delete data.thickness_unit;
+
+        // Handle layers for multi-layer configuration
+        data.layers = [];
+        document.querySelectorAll('#massLayerContainer .layer-entry').forEach((entry, index) => {
+            const materialSelect = entry.querySelector('.layer-material');
+            const thicknessInput = entry.querySelector('.layer-thickness');
+            const thicknessUnit = entry.querySelector('select[name*="thickness_unit"]');
+
+            if (materialSelect.value && thicknessInput.value && parseFloat(thicknessInput.value) > 0) {
+                data.layers.push({
+                    material_id: materialSelect.value,
+                    thickness: parseFloat(thicknessInput.value),
+                    thickness_unit: thicknessUnit.value
+                });
+            }
+        });
+
+        // Ensure we have at least one valid layer
+        if (data.layers.length === 0) {
+            alert('Please add at least one valid layer for multi-layer calculation.');
+            return;
+        }
+    }
+
+    console.log('Roll Mass Data:', data);
+
+    fetch('/slitting/calculate-roll-mass/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayRollMassResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('rollMassResult', 'Network error: ' + error);
+    });
+}
+
+function calculateRollDiameter() {
+    const formData = new FormData(document.getElementById('rollDiameterForm'));
+    const data = Object.fromEntries(formData);
+
+    // Handle layers for multi-layer configuration
+    if (data.diameter_material_type === 'multi') {
+        data.layers = [];
+        document.querySelectorAll('#diameterLayerContainer .layer-entry').forEach((entry, index) => {
+            const materialSelect = entry.querySelector('.layer-material');
+            const thicknessInput = entry.querySelector('.layer-thickness');
+            const thicknessUnit = entry.querySelector('select[name*="thickness_unit"]');
+
+            if (materialSelect.value && thicknessInput.value && parseFloat(thicknessInput.value) > 0) {
+                data.layers.push({
+                    material_id: materialSelect.value,
+                    thickness: parseFloat(thicknessInput.value),
+                    thickness_unit: thicknessUnit.value
+                });
+            }
+        });
+
+        // Ensure we have at least one valid layer
+        if (data.layers.length === 0) {
+            alert('Please add at least one valid layer for multi-layer calculation.');
+            return;
+        }
+    }
+
+    console.log('Roll Diameter Data:', data);
+
+    fetch('/slitting/calculate-roll-diameter/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayRollDiameterResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('rollDiameterResult', 'Network error: ' + error);
+    });
+}
+
+function calculateSlittingTime() {
+    const formData = new FormData(document.getElementById('slittingTimeForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/slitting/calculate-slitting-time/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displaySlittingTimeResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('slittingTimeResult', 'Network error: ' + error);
+    });
+}
+
+function calculateEfficiency() {
+    const formData = new FormData(document.getElementById('efficiencyForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/slitting/calculate-production-efficiency/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayEfficiencyResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('efficiencyResult', 'Network error: ' + error);
+    });
+}
+
+function calculateProductionRate() {
+    const formData = new FormData(document.getElementById('productionRateForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/slitting/calculate-production-rate/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayProductionRateResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('productionRateResult', 'Network error: ' + error);
+    });
+}
+
+function calculateYield() {
+    const formData = new FormData(document.getElementById('yieldForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/slitting/calculate-yield/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayYieldResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('yieldResult', 'Network error: ' + error);
+    });
+}
+
+function calculateFilmLength() {
+    const formData = new FormData(document.getElementById('filmLengthForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/slitting/calculate-film-length/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayFilmLengthResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayError('filmLengthResult', 'Network error: ' + error);
+    });
+}
+
+// Generic error display function
+function displayError(resultDivId, message) {
+    const resultDiv = document.getElementById(resultDivId);
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${message}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Result display functions
+function displayRollMassResult(result) {
+    const resultDiv = document.getElementById('rollMassResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Roll Mass Results:</h6>
+                <p><strong>Roll Mass:</strong> ${res.roll_mass_kg} kg (${res.roll_mass_lb} lb)</p>
+                <p><strong>Effective Density:</strong> ${res.effective_density_g_cm3} g/cm³</p>
+                <p><strong>Total Thickness:</strong> ${res.total_thickness_um} microns</p>
+                <p><strong>GSM:</strong> ${res.gsm} g/m²</p>
+                <p><strong>Layers:</strong> ${res.layer_count}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayRollDiameterResult(result) {
+    const resultDiv = document.getElementById('rollDiameterResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Roll Diameter Results:</h6>
+                <p><strong>Outer Diameter:</strong> ${res.outer_diameter_mm} mm (${res.outer_diameter_m} m | ${res.outer_diameter_inch} inch)</p>
+                <p><strong>Effective Density:</strong> ${res.effective_density_g_cm3} g/cm³</p>
+                <p><strong>Total Thickness:</strong> ${res.total_thickness_um} microns</p>
+                <p><strong>GSM:</strong> ${res.gsm} g/m²</p>
+                <p><strong>Layers:</strong> ${res.layer_count}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displaySlittingTimeResult(result) {
+    const resultDiv = document.getElementById('slittingTimeResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Slitting Time Results:</h6>
+                <p><strong>Slitting Time:</strong> ${res.slitting_time_min} min (${res.slitting_time_hr} hr | ${res.slitting_time_sec} sec)</p>
+                <p><strong>Note:</strong> ${res.efficiency_note}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayEfficiencyResult(result) {
+    const resultDiv = document.getElementById('efficiencyResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Efficiency Results:</h6>
+                <p><strong>Production Efficiency:</strong> ${res.efficiency_percent}%</p>
+                <p><strong>Rating:</strong> ${res.efficiency_rating}</p>
+                <p><strong>Downtime:</strong> ${res.downtime_min} min</p>
+                <p><strong>Recommendation:</strong> ${res.recommendation}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayProductionRateResult(result) {
+    const resultDiv = document.getElementById('productionRateResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Production Rate Results:</h6>
+                <p><strong>Production Rate:</strong> ${res.production_rate_kg_hr} kg/hr (${res.production_rate_lb_hr} lb/hr)</p>
+                <p><strong>Per Minute:</strong> ${res.production_rate_kg_min} kg/min</p>
+                <p><strong>Performance:</strong> ${res.performance_rating}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayYieldResult(result) {
+    const resultDiv = document.getElementById('yieldResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Yield Results:</h6>
+                <p><strong>Yield:</strong> ${res.yield_percent}%</p>
+                <p><strong>Scrap:</strong> ${res.scrap_percent}% (${res.scrap_mass_kg} kg | ${res.scrap_mass_lb} lb)</p>
+                <p><strong>Rating:</strong> ${res.yield_rating}</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayFilmLengthResult(result) {
+    const resultDiv = document.getElementById('filmLengthResult');
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Film Length Results:</h6>
+                <p><strong>Film Length:</strong> ${res.film_length_m} m (${res.film_length_ft} ft | ${res.film_length_yd} yd)</p>
+                <p><strong>Effective Density:</strong> ${res.effective_density_g_cm3} g/cm³</p>
+                <p><strong>Total Thickness:</strong> ${res.total_thickness_um} microns</p>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Smooth scrolling for navigation
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.list-group-item');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
+    // Initialize form validation
+    updateLayerValidation();
+});
+</script>
+{% endblock %}
