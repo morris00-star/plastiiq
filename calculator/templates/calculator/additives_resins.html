@@ -1,10 +1,537 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card material-card text-white mb-4">
+            <div class="card-body">
+                <h2 class="card-title text-center">
+                    <i class="fas fa-flask"></i> Additives & Resins in Blown Film Extrusion
+                </h2>
+                <p class="text-center mb-0">Complete guide to additives, their functions, mechanisms, and optimal usage in plastic film production</p>
+            </div>
+        </div>
+
+        <!-- Quick Navigation -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <a href="{% url 'home' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-calculator"></i> Main Calculator
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'calculation_history' %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-history"></i> History
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'material_reference' %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-database"></i> Materials
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'calculation_reasons' %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-lightbulb"></i> Purposes
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'material_properties' %}" class="btn btn-outline-dark w-100">
+                            <i class="fas fa-box-open"></i> Applications
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'additives_resins' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-flask"></i> Additives
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Introduction -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Understanding Additives in Blown Film Extrusion
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-tachometer-alt fa-2x mb-2"></i>
+                                <h6>Processing Aids</h6>
+                                <p class="small mb-0">Improve extrusion efficiency and film quality</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-sliders-h fa-2x mb-2"></i>
+                                <h6>Surface Modifiers</h6>
+                                <p class="small mb-0">Control friction, blocking, and surface properties</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-dark h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-layer-group fa-2x mb-2"></i>
+                                <h6>Structural Enhancers</h6>
+                                <p class="small mb-0">Improve adhesion, strength, and barrier properties</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-muted mt-3 mb-0">
+                    <small>Additives are essential components that modify polymer properties to achieve desired processing characteristics and end-use performance.</small>
+                </p>
+            </div>
+        </div>
+
+        <!-- Processing Aids Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-tachometer-alt"></i> A) Polymer Processing Aid (PPA)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Function & Properties</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Eliminates melt fracture (sharkskin) and reduces die build-up (DLBU), enabling:</p>
+                                <ul>
+                                    <li>Higher output rates</li>
+                                    <li>Lower extrusion temperatures/pressures</li>
+                                    <li>Improved film clarity and gloss</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Mechanism</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Typically a fluoropolymer that migrates to the metal surface of the extruder die, creating a lubricating layer that lowers shear stress at the wall.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Concentration Effects</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <strong>Low Rate:</strong> Requires "conditioning" time but ultimately eliminates defects
+                                </div>
+                                <div class="alert alert-danger">
+                                    <strong>High Rate:</strong> May increase film haze due to light scattering
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Focus Polymers</strong>
+                            </div>
+                            <div class="card-body">
+                                <span class="badge bg-primary">LLDPE</span>
+                                <span class="badge bg-primary">HDPE</span>
+                                <span class="badge bg-primary">PP</span>
+                                <p class="mt-2 mb-0">Used to overcome high shear stresses in high-molecular-weight resins</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slip Additive Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-sliders-h"></i> B) Slip Additive
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Function & Properties</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Reduces Coefficient of Friction (COF) to prevent:</p>
+                                <ul>
+                                    <li>Sticking to processing equipment</li>
+                                    <li>Blocking during converting</li>
+                                    <li>Difficulty opening bags</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Mechanism</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Fatty acid amides (e.g., Erucamide) bloom to the film surface over time, forming a thin lubricating layer.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Concentration Effects</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <strong>Low Rate:</strong> High COF, severe blocking issues
+                                </div>
+                                <div class="alert alert-danger">
+                                    <strong>High Rate:</strong> Too slippery, reduced heat seal strength, weak boundary layer
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Focus Polymers</strong>
+                            </div>
+                            <div class="card-body">
+                                <span class="badge bg-primary">LDPE</span>
+                                <span class="badge bg-primary">LLDPE</span>
+                                <span class="badge bg-primary">PP</span>
+                                <span class="badge bg-primary">HDPE</span>
+                                <p class="mt-2 mb-0">Essential for packaging film handling and conversion</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anti-Block Additive Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-layer-group"></i> C) Anti-Block Additive
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Function & Properties</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Prevents blocking (film layers sticking together) and improves:</p>
+                                <ul>
+                                    <li>Film handling</li>
+                                    <li>Roll unwinding</li>
+                                    <li>Processing efficiency</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Mechanism</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Inorganic minerals (silica, talc) create micro-roughness allowing air cushion between film layers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Concentration Effects</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <strong>Low Rate:</strong> Poor anti-blocking, film adhesion issues
+                                </div>
+                                <div class="alert alert-danger">
+                                    <strong>High Rate:</strong> Drastic haze increase, reduced clarity, potential tear strength reduction
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Focus Polymers</strong>
+                            </div>
+                            <div class="card-body">
+                                <span class="badge bg-primary">LDPE</span>
+                                <span class="badge bg-primary">LLDPE</span>
+                                <span class="badge bg-primary">HDPE</span>
+                                <span class="badge bg-primary">PP</span>
+                                <p class="mt-2 mb-0">Critical for high-clarity and thin-gauge packaging</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tie Layers Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-link"></i> D/J/K) Tie Layers for Nylon Coextrusion (PE-g-MA and BYNEL)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Function & Properties</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Provides strong interlayer adhesion between incompatible polymers:</p>
+                                <ul>
+                                    <li>Nylon (PA) to Polyethylene (PE)</li>
+                                    <li>Critical for structural integrity</li>
+                                    <li>Enables multilayer barrier films</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Mechanism</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Maleic anhydride groups react chemically with amine groups on Nylon backbone, forming covalent bonds during coextrusion.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Concentration Effects</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <strong>Low Rate:</strong> Poor adhesion, delamination issues
+                                </div>
+                                <div class="alert alert-danger">
+                                    <strong>High Rate:</strong> Economically wasteful, potential rheological imbalances
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Focus Applications</strong>
+                            </div>
+                            <div class="card-body">
+                                <span class="badge bg-primary">Nylon Coextrusion</span>
+                                <span class="badge bg-primary">Meat Packaging</span>
+                                <span class="badge bg-primary">High-Barrier Films</span>
+                                <p class="mt-2 mb-0">Essential for Nylon/PE multilayer structures</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Additives Section -->
+        <div class="row">
+            <!-- Filler -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0"><i class="fas fa-weight"></i> G) Filler</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Function:</strong> Cost reduction and stiffness modification</p>
+                        <p><strong>Mechanism:</strong> Fine solid particles (CaCO₃) dispersed in polymer matrix</p>
+                        <div class="alert alert-warning">
+                            <strong>High Rate Consequences:</strong> Reduced mechanical properties, increased melt viscosity
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-primary">HDPE</span>
+                            <span class="badge bg-primary">LDPE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metallocene LDPE -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-purple text-white">
+                        <h6 class="mb-0"><i class="fas fa-atom"></i> I) Metallocene LDPE (mLDPE)</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Function:</strong> Superior strength, toughness, and clarity</p>
+                        <p><strong>Mechanism:</strong> Narrow molecular weight distribution for balanced properties</p>
+                        <div class="alert alert-info">
+                            <strong>Note:</strong> Often requires PPA due to high melt fracture tendency
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-primary">LDPE Upgrade</span>
+                            <span class="badge bg-primary">LLDPE Upgrade</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Masterbatches -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0"><i class="fas fa-vial"></i> E) Masterbatches</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Function:</strong> Concentrated additive/pigment carriers</p>
+                        <p><strong>Mechanism:</strong> Let down with virgin resin for accurate dosing</p>
+                        <div class="alert alert-warning">
+                            <strong>High Inclusion:</strong> Carrier resin may affect final film properties
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-primary">All Polymers</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desiccant -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-tint"></i> F) Desiccant</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Function:</strong> Moisture absorption for hygroscopic materials</p>
+                        <p><strong>Mechanism:</strong> Calcium Oxide or molecular sieves bind water</p>
+                        <div class="alert alert-danger">
+                            <strong>High Rate:</strong> Reduced clarity, potential porosity if moisture remains
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-primary">Nylon</span>
+                            <span class="badge bg-primary">Recycled Materials</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 text-dark">
+                    <i class="fas fa-graduation-cap text-primary"></i> Key Takeaways
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-balance-scale text-success"></i> Optimal Concentration Principles</h6>
+                        <ul>
+                            <li>Use minimum effective concentration for cost efficiency</li>
+                            <li>Balance additive benefits against potential drawbacks</li>
+                            <li>Consider interactions between multiple additives</li>
+                            <li>Test formulations under actual processing conditions</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-exclamation-triangle text-danger"></i> Common Pitfalls</h6>
+                        <ul>
+                            <li>Over-use leading to haze and clarity issues</li>
+                            <li>Under-use causing processing problems</li>
+                            <li>Incompatible additive combinations</li>
+                            <li>Poor dispersion in masterbatch systems</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert alert-primary mt-3">
+                    <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> Professional Insight</h6>
+                    <p class="mb-0">Successful additive formulation requires understanding both chemical interactions and practical processing constraints. Always conduct trials to optimize additive levels for your specific equipment and product requirements.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.material-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.alert {
+    border-left: 4px solid;
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+
+.alert-danger {
+    border-left-color: #dc3545;
+}
+
+.alert-info {
+    border-left-color: #0dcaf0;
+}
+
+.alert-primary {
+    border-left-color: #0d6efd;
+}
+</style>
+{% endblock %}

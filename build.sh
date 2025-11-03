@@ -8,7 +8,6 @@ python --version
 pip --version
 
 echo "=== Installing dependencies ==="
-pip install gunicorn
 pip install --upgrade pip
 pip install -r requirements.txt
 

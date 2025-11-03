@@ -370,7 +370,19 @@ def calculation_reasons(request):
     """Display the purposes and benefits of all calculations"""
     return render(request, 'calculator/reasons.html')
 
+
 def material_properties(request):
     """Display material properties and applications guide"""
     return render(request, 'calculator/material_properties.html')
+
+
+def additives_resins(request):
+    """
+    View for displaying additives and resins information
+    """
+    context = {
+        'title': 'Additives & Resins',
+        'description': 'Complete guide to additives, their functions, mechanisms, and optimal usage in plastic film production'
+    }
+    return render(request, 'calculator/additives_resins.html', context)
 
