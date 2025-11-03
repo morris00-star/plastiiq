@@ -3,18 +3,21 @@
 
 set -o errexit
 
-# cd plastic_qc_calculator
+echo "=== Setting up Python environment ==="
+python --version
+pip --version
 
-# Install dependencies
+echo "=== Installing dependencies ==="
 pip install --upgrade pip
-
 pip install -r requirements.txt
 
-# Collect static files
-python manage.py collectstatic --noinput
-
-# Apply database migrations
+echo "=== Running migrations ==="
 python manage.py migrate
 
-# Load initial data
+echo "=== Collecting static files ==="
+python manage.py collectstatic --noinput --clear
+
+echo "=== Loading initial data ==="
 python manage.py load_initial_data
+
+echo "=== Build completed successfully! ==="
