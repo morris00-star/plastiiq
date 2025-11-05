@@ -366,16 +366,19 @@ def export_selected_calculations(request):
     return download_csv_history(all_calculations, f"{request.user.username}_selected")
 
 
+@login_required
 def calculation_reasons(request):
     """Display the purposes and benefits of all calculations"""
     return render(request, 'calculator/reasons.html')
 
 
+@login_required
 def material_properties(request):
     """Display material properties and applications guide"""
     return render(request, 'calculator/material_properties.html')
 
 
+@login_required
 def additives_resins(request):
     """
     View for displaying additives and resins information
@@ -385,4 +388,28 @@ def additives_resins(request):
         'description': 'Complete guide to additives, their functions, mechanisms, and optimal usage in plastic film production'
     }
     return render(request, 'calculator/additives_resins.html', context)
+
+
+@login_required
+def tolerances(request):
+    """
+    View for displaying typical tolerances in plastic film production
+    """
+    context = {
+        'title': 'Production Tolerances',
+        'description': 'Industry-standard tolerances for quality control and process optimization in plastic film manufacturing'
+    }
+    return render(request, 'calculator/tolerances.html', context)
+
+
+@login_required
+def troubleshooting(request):
+    """
+    View for displaying production troubleshooting guide
+    """
+    context = {
+        'title': 'Troubleshooting Guide',
+        'description': 'Comprehensive defect analysis and solutions for plastic film manufacturing'
+    }
+    return render(request, 'calculator/troubleshooting.html', context)
 

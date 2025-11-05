@@ -9,6 +9,8 @@ urlpatterns = [
     path('calculation-reasons/', views.calculation_reasons, name='calculation_reasons'),
     path('material-properties/', views.material_properties, name='material_properties'),
     path('additives-resins/', views.additives_resins, name='additives_resins'),
+    path('tolerances/', views.tolerances, name='tolerances'),
+    path('troubleshooting/', views.troubleshooting, name='troubleshooting'),
 
     # History and downloads - CORRECTED URL PATTERN
     path('calculation-history/', calculation_history, name='calculation_history'),
