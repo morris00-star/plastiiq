@@ -8,6 +8,7 @@ from .sales_calculator import SalesCalculator
 import json
 
 
+@login_required
 def sales_home(request):
     calculators = [
         {'id': 'material_cost_kg', 'name': 'Material Cost per kg', 'icon': 'fas fa-weight-hanging'},

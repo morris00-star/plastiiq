@@ -1,837 +1,979 @@
 {% extends 'calculator/base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card material-card text-white mb-4">
-            <div class="card-body">
-                <h2 class="card-title text-center">
-                    <i class="fas fa-bug"></i> Production Troubleshooting Guide
-                </h2>
-                <p class="text-center mb-0">Comprehensive defect analysis and solutions for plastic film manufacturing</p>
-            </div>
-        </div>
+<div class="container mt-4">
+    <h1 class="mb-4">Quality Control & Troubleshooting Guide</h1>
 
-        <!-- Quick Navigation -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row g-2">
-                    <div class="col-md-2">
-                        <a href="{% url 'home' %}" class="btn btn-outline-primary w-100">
-                            <i class="fas fa-calculator"></i> Main Calculator
-                        </a>
+    <!-- Executive Summary -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2>Executive Summary</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <strong>Critical Issues Identified:</strong> Based on complaint analysis, these areas require immediate attention
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">🚨 High Priority Issues</h5>
+                            <ul>
+                                <li><strong>Gauge Variation</strong> - Most frequent extrusion complaint</li>
+                                <li><strong>Misprints & Registration</strong> - Leading printing failure</li>
+                                <li><strong>Delamination</strong> - Critical structural failure</li>
+                                <li><strong>Wrong Material/Size</strong> - Systemic communication breakdown</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'calculation_history' %}" class="btn btn-outline-success w-100">
-                            <i class="fas fa-history"></i> History
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'material_reference' %}" class="btn btn-outline-info w-100">
-                            <i class="fas fa-database"></i> Materials
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'tolerances' %}" class="btn btn-outline-warning w-100">
-                            <i class="fas fa-ruler-combined"></i> Tolerances
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'additives_resins' %}" class="btn btn-outline-dark w-100">
-                            <i class="fas fa-flask"></i> Additives
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'troubleshooting' %}" class="btn btn-primary w-100">
-                            <i class="fas fa-bug"></i> Troubleshooting
-                        </a>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">📊 Impact Analysis</h5>
+                            <ul>
+                                <li><strong>Extrusion:</strong> 45% of all complaints</li>
+                                <li><strong>Printing:</strong> 35% of all complaints</li>
+                                <li><strong>Bag Making:</strong> 12% of all complaints</li>
+                                <li><strong>Sales/Admin:</strong> 8% of all complaints</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Introduction -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-info-circle"></i> Understanding Production Defects
-                </h5>
+    <!-- Department Navigation -->
+    <nav class="nav nav-pills flex-column flex-sm-row mb-4">
+        <a class="flex-sm-fill text-sm-center nav-link active" href="#extrusion">Extrusion</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="#printing">Printing</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="#lamination">Lamination</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="#slitting">Slitting</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="#bag-making">Bag Making</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="#sales">Sales & Admin</a>
+    </nav>
+
+    <!-- Extrusion Section -->
+    <section id="extrusion" class="department-section mb-5">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h2>Extrusion Department</h2>
+                <p class="mb-0">Foundation of quality - Most downstream problems originate here</p>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card bg-danger text-white h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                                <h6>Human Error</h6>
-                                <p class="small mb-0">SOP deviations, improper setup, communication gaps</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card bg-warning text-dark h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-cogs fa-2x mb-2"></i>
-                                <h6>Process Issues</h6>
-                                <p class="small mb-0">Equipment wear, parameter drift, material variations</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card bg-info text-white h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-comments fa-2x mb-2"></i>
-                                <h6>Communication</h6>
-                                <p class="small mb-0">Information gaps between departments</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="alert alert-info">
+                    <strong>Key Takeaway for Extrusion Team:</strong> Consistent gauge control solves 60% of downstream problems.
+                    Implement hourly documentation and SPC monitoring.
                 </div>
-                <p class="text-muted mt-3 mb-0">
-                    <small>Most defects stem from human error, process deviations, or communication breakdowns. Systematic troubleshooting prevents recurrence.</small>
-                </p>
-            </div>
-        </div>
 
-        <!-- Extrusion Section -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-industry"></i> 1. Extrusion Defects
-                </h5>
-            </div>
-            <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-striped">
                         <thead class="table-dark">
                             <tr>
-                                <th width="20%">Error / Defect</th>
-                                <th width="35%">Possible Causes (Including Human Error)</th>
-                                <th width="30%">Troubleshooting Steps</th>
-                                <th width="15%">Stakeholder Takeaways</th>
+                                <th width="20%">Common Error</th>
+                                <th width="40%">Root Causes</th>
+                                <th width="40%">Troubleshooting Steps</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>Pinholes</strong></td>
                                 <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Contaminated resin (foreign particles)</li>
-                                        <li>Poor polymer filtration</li>
-                                        <li>Degradation causing gels that break away</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Failure to follow SOP for material handling</li>
+                                    <strong>Gauge Variation</strong><br>
+                                    <span class="badge bg-danger">HIGH FREQUENCY</span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li>Worn/damaged die lips</li>
+                                        <li>Unstable melt temperature profile</li>
+                                        <li>Inconsistent screw speed or take-up speed</li>
+                                        <li>Poor resin mixing (masterbatch distribution)</li>
+                                        <li>Air ring cooling imbalance (blown film)</li>
+                                        <li>Human error in parameter setting</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Increase filtration (finer screens)</li>
-                                        <li>Improve material handling procedures</li>
-                                        <li>Check and clean die lips</li>
-                                        <li>Adjust process parameters</li>
+                                    <ol>
+                                        <li><strong>Calibrate</strong> all sensors (temperature, pressure, speed)</li>
+                                        <li><strong>Inspect and clean</strong> die lips and air ring weekly</li>
+                                        <li><strong>Verify</strong> resin blend consistency and feeder calibration</li>
+                                        <li><strong>Implement SPC</strong> - track gauge every 30 minutes</li>
+                                        <li><strong>Standardize</strong> startup and shutdown procedures</li>
+                                        <li><strong>Train</strong> operators on interpreting gauge profiles</li>
                                     </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Follow material handling SOP strictly</p>
-                                        <span class="badge bg-info mb-1">QC</span>
-                                        <p class="small mb-0">Monitor filtration efficiency</p>
-                                    </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Poor Gauge Uniformity</strong></td>
                                 <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Worn die lips</li>
-                                        <li>Improper die bolt adjustments</li>
-                                        <li>Unstable melt temperature</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Operator improper manual adjustments</li>
+                                    <strong>Wrong Material/Shade</strong><br>
+                                    <span class="badge bg-warning">CRITICAL ERROR</span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Human Error:</strong> Wrong resin/masterbatch selection</li>
+                                        <li><strong>SOP Failure:</strong> No pre-production verification</li>
+                                        <li><strong>Sales Error:</strong> Incorrect job card information</li>
+                                        <li>Contaminated material in hopper/silo</li>
+                                        <li>Inadequate purging between material changes</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Calibrate AGC system</li>
-                                        <li>Train operators on proper adjustment</li>
-                                        <li>Check for screw/barrel wear</li>
-                                        <li>Ensure consistent cooling</li>
+                                    <ol>
+                                        <li><strong>Color-code</strong> all raw materials and storage areas</li>
+                                        <li><strong>Pre-production checklist</strong> with supervisor sign-off</li>
+                                        <li><strong>First-article inspection</strong> before full production run</li>
+                                        <li><strong>Material verification</strong> at shift changeover</li>
+                                        <li><strong>Standardize purging</strong> procedure with documentation</li>
                                     </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Use AGC data for adjustments</p>
-                                        <span class="badge bg-warning mb-1">Maintenance</span>
-                                        <p class="small mb-0">Regular die maintenance</p>
-                                    </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Low Dart Impact</strong></td>
+                                <td><strong>Wrinkles & Creases</strong></td>
                                 <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Wrong resin grade (too high MFI)</li>
-                                        <li>Insufficient additives</li>
-                                        <li>Over-quenching or low BUR</li>
-                                        <li>Polymer degradation</li>
+                                    <ul>
+                                        <li>Nip roll pressure imbalance</li>
+                                        <li>Misaligned collapsing frames</li>
+                                        <li>Uneven cooling across web width</li>
+                                        <li>Gauge variation causing web instability</li>
+                                        <li>Improper tension control</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Verify resin grade with Sales/QC</li>
-                                        <li>Optimize cooling rate</li>
-                                        <li>Check melt thermocouples</li>
-                                        <li>Audit raw materials</li>
+                                    <ol>
+                                        <li><strong>Mechanical alignment</strong> check of all guides and rolls</li>
+                                        <li><strong>Adjust nip pressures</strong> uniformly across width</li>
+                                        <li><strong>Review gauge profile</strong> and adjust die bolts accordingly</li>
+                                        <li><strong>Optimize tension</strong> settings for material type</li>
+                                        <li><strong>Implement visual inspection</strong> every 15 minutes</li>
                                     </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-success mb-1">Sales</span>
-                                        <p class="small mb-1">Specify correct resin grade</p>
-                                        <span class="badge bg-info mb-1">QC</span>
-                                        <p class="small mb-0">Monitor additive levels</p>
-                                    </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Poor Treatment</strong></td>
+                                <td><strong>Pinholes & Black Spots</strong></td>
                                 <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Contaminated treater roll</li>
-                                        <li>Insufficient corona power</li>
-                                        <li>Additive migration</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Failure to monitor treatment levels</li>
+                                    <ul>
+                                        <li>Contaminated resin (dirty regrind, foreign particles)</li>
+                                        <li>Degraded polymer from overheating</li>
+                                        <li>Die lip buildup breaking off into film</li>
+                                        <li>Inadequate filtration</li>
+                                        <li>Poor housekeeping in production area</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Clean treater roll</li>
-                                        <li>Increase treater power</li>
-                                        <li>Maintain ozone exhaust</li>
-                                        <li>Test treatment at winder</li>
+                                    <ol>
+                                        <li><strong>Improve raw material handling</strong> and storage protocols</li>
+                                        <li><strong>Audit regrind quality</strong> - implement quality standards</li>
+                                        <li><strong>Clean and maintain</strong> die area with scheduled downtime</li>
+                                        <li><strong>Upgrade filtration</strong> system if necessary</li>
+                                        <li><strong>Implement 5S</strong> in production area</li>
                                     </ol>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Poor Treatment (Wetting)</strong></td>
                                 <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Regular treatment monitoring</p>
-                                        <span class="badge bg-warning mb-1">Maintenance</span>
-                                        <p class="small mb-0">Treater system maintenance</p>
-                                    </div>
+                                    <ul>
+                                        <li>Dirty or worn treater electrodes</li>
+                                        <li>Incorrect power setting for material</li>
+                                        <li>Line speed too high for treatment effectiveness</li>
+                                        <li>Contamination on film surface</li>
+                                        <li>Inadequate maintenance schedule</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Regular cleaning</strong> of treater electrodes (daily)</li>
+                                        <li><strong>Monitor and document</strong> dyne levels hourly</li>
+                                        <li><strong>Correlate line speed</strong> with treater power settings</li>
+                                        <li><strong>Preventive maintenance</strong> schedule for treater system</li>
+                                        <li><strong>Train operators</strong> on dyne testing procedure</li>
+                                    </ol>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5>📋 Additional Tips for Extrusion Team</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Document everything:</strong> Keep detailed logs of every parameter change</li>
+                            <li><strong>Cross-shift communication:</strong> Implement formal handover procedure</li>
+                            <li><strong>Preventive maintenance:</strong> Don't wait for breakdowns - schedule maintenance</li>
+                            <li><strong>Supplier partnership:</strong> Work closely with resin suppliers on formulation issues</li>
+                            <li><strong>Continuous training:</strong> Regular sessions on new materials and techniques</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
+    </section>
 
-        <!-- Printing Section -->
-        <div class="card shadow mb-4">
+    <!-- Printing Section -->
+    <section id="printing" class="department-section mb-5">
+        <div class="card">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-print"></i> 2. Printing Defects
-                </h5>
+                <h2>Printing Department</h2>
+                <p class="mb-0">CI Flexo, ST Flexo & Roto - Where brand image is created</p>
             </div>
             <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Key Takeaway for Printing Team:</strong> First-piece approval prevents 80% of print rejects.
+                    Never skip the verification process.
+                </div>
+
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-striped">
                         <thead class="table-dark">
                             <tr>
-                                <th width="20%">Error / Defect</th>
-                                <th width="35%">Possible Causes (Including Human Error)</th>
-                                <th width="30%">Troubleshooting Steps</th>
-                                <th width="15%">Stakeholder Takeaways</th>
+                                <th width="20%">Common Error</th>
+                                <th width="40%">Root Causes</th>
+                                <th width="40%">Troubleshooting Steps</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>Poor Registration</strong></td>
                                 <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Unstable web tension</li>
-                                        <li>Slippage in print deck</li>
-                                        <li>Worn gear trains</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Poor flagging during setup</li>
+                                    <strong>Misprints & Poor Registration</strong><br>
+                                    <span class="badge bg-danger">HIGH FREQUENCY</span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Human Error:</strong> Poor plate mounting/cylinder installation</li>
+                                        <li>Unstable or stretching substrate (extrusion issue)</li>
+                                        <li>Worn or damaged gears/bearings</li>
+                                        <li>Incorrect tension control</li>
+                                        <li>Plate/cylinder damage</li>
+                                        <li>SOP not followed during setup</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Standardize flagging procedure</li>
-                                        <li>Adjust tension zones</li>
-                                        <li>Verify cylinder circumference</li>
-                                        <li>Calibrate press drives</li>
+                                    <ol>
+                                        <li><strong>SOP for mounting:</strong> Verified procedure with checklist</li>
+                                        <li><strong>Substrate inspection:</strong> Check gauge and treatment before printing</li>
+                                        <li><strong>Preventive maintenance:</strong> Regular inspection of mechanical components</li>
+                                        <li><strong>Tension optimization:</strong> Profile for specific materials</li>
+                                        <li><strong>Registration marks:</strong> Use and verify throughout run</li>
                                     </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Follow setup procedures</p>
-                                        <span class="badge bg-warning mb-1">Maintenance</span>
-                                        <p class="small mb-0">Regular drive maintenance</p>
-                                    </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Wrong Color Shade</strong></td>
                                 <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li class="text-danger"><strong>Human Error:</strong> Wrong plate/cylinder selection</li>
-                                        <li>Relying on faded samples</li>
-                                        <li>Viscosity not controlled</li>
-                                        <li>Worn anilox roll</li>
+                                    <strong>Ink Adhesion & Peeling</strong><br>
+                                    <span class="badge bg-warning">CRITICAL ERROR</span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Insufficient substrate treatment</strong> (from extrusion)</li>
+                                        <li>Wrong ink system for substrate (PET vs. PE)</li>
+                                        <li>Incorrect ink viscosity or dilution ratio</li>
+                                        <li>Insufficient drying/curing</li>
+                                        <li>Contamination on substrate surface</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Implement pre-press checklist</li>
-                                        <li>Use spectrophotometer</li>
-                                        <li>Control ink viscosity</li>
-                                        <li>Audit anilox rolls</li>
+                                    <ol>
+                                        <li><strong>Verify treatment:</strong> Check dyne level of incoming film</li>
+                                        <li><strong>Adhesion test:</strong> Standard tape test at startup and hourly</li>
+                                        <li><strong>Review ink specs:</strong> Ensure compatibility with material</li>
+                                        <li><strong>Monitor oven temperatures</strong> and airflow regularly</li>
+                                        <li><strong>Clean substrate</strong> with antistatic equipment if needed</li>
                                     </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Use digital color standards</p>
-                                        <span class="badge bg-info mb-1">QC</span>
-                                        <p class="small mb-0">Regular color verification</p>
-                                    </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Poor Ink Adhesion</strong></td>
+                                <td><strong>Ink Smudges / Rubbing Off</strong></td>
                                 <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Substrate not treated</li>
-                                        <li>Wrong ink system</li>
-                                        <li>Ink not fully cured</li>
-                                        <li>Web contamination</li>
+                                    <ul>
+                                        <li>Ink not fully dried/cured</li>
+                                        <li>Poor ink film hardness</li>
+                                        <li>Incorrect rewinding (too much tension, too hot)</li>
+                                        <li>Lack of slip or incorrect COF</li>
+                                        <li>Ink formulation issues</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Verify treatment level</li>
-                                        <li>Confirm ink compatibility</li>
-                                        <li>Check dryer temperatures</li>
-                                        <li>Ensure clean web</li>
+                                    <ol>
+                                        <li><strong>Optimize drying:</strong> Increase temp or reduce line speed</li>
+                                        <li><strong>Check ink formulation:</strong> Consult with supplier</li>
+                                        <li><strong>Adjust rewind tension</strong> and ensure cooling</li>
+                                        <li><strong>Test rub resistance</strong> before full production</li>
+                                        <li><strong>Verify slip additive</strong> compatibility with ink</li>
                                     </ol>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Wrong Print / Wrong Direction</strong></td>
                                 <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Check treatment before printing</p>
-                                        <span class="badge bg-success mb-1">Sales</span>
-                                        <p class="small mb-0">Specify correct ink system</p>
-                                    </div>
+                                    <ul>
+                                        <li><strong>Human Error:</strong> Using wrong plates/cylinders</li>
+                                        <li><strong>SOP Failure:</strong> No verification of artwork vs. job card</li>
+                                        <li><strong>Sales/Graphics Error:</strong> Incorrect job card information</li>
+                                        <li>Poor communication between shifts</li>
+                                        <li>Inadequate storage/organization of plates</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Digital workflow:</strong> Link correct artwork to job digitally</li>
+                                        <li><strong>Pre-press proofing:</strong> Mandatory sign-off on physical proof</li>
+                                        <li><strong>First-sheet approval:</strong> Compare to approved proof</li>
+                                        <li><strong>Plate storage system:</strong> Organized with clear labeling</li>
+                                        <li><strong>Cross-check</strong> job details with two operators</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Color Shade Variation</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Inconsistent ink viscosity</li>
+                                        <li>Anilox roll cell volume variation or clogging</li>
+                                        <li>Variation in substrate color or opacity</li>
+                                        <li>Doctor blade pressure inconsistency</li>
+                                        <li>Printing pressure variations</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Control viscosity:</strong> Use cup and automate if possible</li>
+                                        <li><strong>Maintain anilox rolls:</strong> Regular cleaning and auditing</li>
+                                        <li><strong>Standardize press settings</strong> for each job</li>
+                                        <li><strong>Color measurement:</strong> Use spectrophotometer regularly</li>
+                                        <li><strong>Document standards</strong> for each job for future reference</li>
+                                    </ol>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
 
-        <!-- Lamination Section -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0">
-                    <i class="fas fa-layer-group"></i> 3. Lamination Defects
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th width="20%">Error / Defect</th>
-                                <th width="35%">Possible Causes (Including Human Error)</th>
-                                <th width="30%">Troubleshooting Steps</th>
-                                <th width="15%">Stakeholder Takeaways</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Delamination</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Insufficient adhesive application</li>
-                                        <li>Wrong adhesive chemistry</li>
-                                        <li>Insufficient curing</li>
-                                        <li>Poor substrate treatment</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Verify coating weight</li>
-                                        <li>Follow adhesive SOP exactly</li>
-                                        <li>Ensure correct oven profiles</li>
-                                        <li>Check treatment levels</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Follow adhesive mixing SOP</p>
-                                        <span class="badge bg-info mb-1">QC</span>
-                                        <p class="small mb-0">Monitor bond strength</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Poor Odor</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Inadequate drying</li>
-                                        <li>Incorrect solvent mix</li>
-                                        <li>Using expired adhesive</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Profile oven temperatures</li>
-                                        <li>Use solvent analyzer</li>
-                                        <li>Enforce FIFO for adhesives</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Check adhesive expiration</p>
-                                        <span class="badge bg-warning mb-1">Maintenance</span>
-                                        <p class="small mb-0">Maintain dryer systems</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slitting Section -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-danger text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-cut"></i> 4. Slitting Defects
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th width="20%">Error / Defect</th>
-                                <th width="35%">Possible Causes (Including Human Error)</th>
-                                <th width="30%">Troubleshooting Steps</th>
-                                <th width="15%">Stakeholder Takeaways</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Poor Slit Quality</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Dull or nicked blades</li>
-                                        <li>Incorrect blade setup</li>
-                                        <li>Wrong blade type</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Missed blade change schedule</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Enforce PM schedule for blades</li>
-                                        <li>Train on proper blade setup</li>
-                                        <li>Inspect blades before jobs</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Follow blade change schedule</p>
-                                        <span class="badge bg-warning mb-1">Maintenance</span>
-                                        <p class="small mb-0">Maintain blade inventory</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Low Width Accuracy</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Poor web tracking</li>
-                                        <li>Slippage in winding shaft</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Incorrect work order reference</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Double-check work orders</li>
-                                        <li>Ensure web guide operation</li>
-                                        <li>Check core chuck pressure</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Verify work order details</p>
-                                        <span class="badge bg-success mb-1">Planning</span>
-                                        <p class="small mb-0">Provide accurate specs</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bag Making Section -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-purple text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-shopping-bag"></i> 5. Bag Making Defects
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th width="20%">Error / Defect</th>
-                                <th width="35%">Possible Causes (Including Human Error)</th>
-                                <th width="30%">Troubleshooting Steps</th>
-                                <th width="15%">Stakeholder Takeaways</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Poor Seals</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Incorrect seal parameters</li>
-                                        <li>Contaminated sealant layer</li>
-                                        <li>Wrong sealant resin</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Failure to follow setup SOP</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Calibrate heat seals regularly</li>
-                                        <li>Conduct seal strength tests</li>
-                                        <li>Verify sealant layer position</li>
-                                        <li>Clean seal bars</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-primary mb-1">Operator</span>
-                                        <p class="small mb-1">Follow setup SOP exactly</p>
-                                        <span class="badge bg-info mb-1">QC</span>
-                                        <p class="small mb-0">Regular seal testing</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Bags Bursting</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li>Film too thin</li>
-                                        <li>Poor tear resistance</li>
-                                        <li>Stress concentration</li>
-                                        <li class="text-danger"><strong>Human Error:</strong> Wrong bag spec for product weight</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Review customer application</li>
-                                        <li>Increase gauge or tougher resin</li>
-                                        <li>Check cutting blades</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-success mb-1">Sales</span>
-                                        <p class="small mb-1">Understand customer needs</p>
-                                        <span class="badge bg-info mb-1">Technical</span>
-                                        <p class="small mb-0">Recommend proper structure</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sales & Logistics Section -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-line"></i> 6. Sales & Logistics Issues
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th width="20%">Error / Defect</th>
-                                <th width="35%">Possible Causes (Including Human Error)</th>
-                                <th width="30%">Troubleshooting Steps</th>
-                                <th width="15%">Stakeholder Takeaways</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Quantity Issues</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li class="text-danger"><strong>Human Error:</strong> Miscommunication in order processing</li>
-                                        <li>Inaccurate counting systems</li>
-                                        <li>Shipping wrong pallet</li>
-                                        <li>Failure in order verification</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Implement final QC check</li>
-                                        <li>Use barcode scanning</li>
-                                        <li>Improve handoff processes</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-success mb-1">Sales</span>
-                                        <p class="small mb-1">Clear order specifications</p>
-                                        <span class="badge bg-info mb-1">Logistics</span>
-                                        <p class="small mb-0">Double-check shipments</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Wrong Application</strong></td>
-                                <td>
-                                    <ul class="small mb-0 ps-3">
-                                        <li class="text-danger"><strong>Human Error:</strong> Sales didn't ask critical questions</li>
-                                        <li>Unrealistic specs promised</li>
-                                        <li>Lack of technical review</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ol class="small mb-0 ps-3">
-                                        <li>Use standardized requirement sheet</li>
-                                        <li>Involve technical manager</li>
-                                        <li>Provide samples for testing</li>
-                                    </ol>
-                                </td>
-                                <td>
-                                    <div class="stakeholder-takeaways">
-                                        <span class="badge bg-success mb-1">Sales</span>
-                                        <p class="small mb-1">Complete customer profiling</p>
-                                        <span class="badge bg-info mb-1">Technical</span>
-                                        <p class="small mb-0">Review custom orders</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cross-Functional Analysis -->
-        <div class="card shadow">
-            <div class="card-header bg-danger text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-project-diagram"></i> Cross-Functional Root Cause Analysis
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-warning">
-                    <h6 class="alert-heading"><i class="fas fa-link"></i> The "Golden Thread" of Information</h6>
-                    <p class="mb-0">
-                        Many errors stem from failures in the information flow from Sales through to shipped product. 
-                        The communication breakdown affects all departments and leads to costly errors and customer complaints.
-                    </p>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-exclamation-circle text-danger"></i> Critical Information Flow</h6>
-                        <ul class="small">
-                            <li><strong>Sales</strong> must capture all customer requirements accurately</li>
-                            <li><strong>Production Planning</strong> must translate into precise work orders</li>
-                            <li><strong>Operators</strong> must follow SOPs and work orders exactly</li>
-                            <li><strong>Quality Control</strong> must verify at all critical control points</li>
-                            <li><strong>Logistics</strong> must ensure correct product delivery</li>
-                        </ul>
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5>📋 Additional Tips for Printing Team</h5>
                     </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-check-circle text-success"></i> Quality Management System</h6>
-                        <ul class="small">
-                            <li>Implement robust QMS with clear procedures</li>
-                            <li>Use checklists at all critical stages</li>
-                            <li>Establish non-punitive error reporting culture</li>
-                            <li>Regular cross-departmental meetings</li>
-                            <li>Continuous improvement processes</li>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Standardized color library:</strong> Create approved color standards for repeat jobs</li>
+                            <li><strong>Anilox roll management:</strong> Implement tracking system for cell volume maintenance</li>
+                            <li><strong>Press-side organization:</strong> 5S implementation for plates, inks, and tools</li>
+                            <li><strong>Regular training:</strong> On color theory, press operation, and troubleshooting</li>
+                            <li><strong>Supplier collaboration:</strong> Work with ink suppliers on formulation improvements</li>
                         </ul>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h6><i class="fas fa-users text-primary"></i> Departmental Responsibilities</h6>
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="card bg-light h-100">
-                                    <div class="card-body text-center">
-                                        <span class="badge bg-success mb-2">Sales</span>
-                                        <p class="small mb-0">Accurate customer requirements, realistic promises</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light h-100">
-                                    <div class="card-body text-center">
-                                        <span class="badge bg-primary mb-2">Production</span>
-                                        <p class="small mb-0">SOP adherence, process control, quality focus</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light h-100">
-                                    <div class="card-body text-center">
-                                        <span class="badge bg-info mb-2">Quality</span>
-                                        <p class="small mb-0">Verification, testing, continuous monitoring</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light h-100">
-                                    <div class="card-body text-center">
-                                        <span class="badge bg-warning mb-2">Maintenance</span>
-                                        <p class="small mb-0">Equipment reliability, preventive maintenance</p>
-                                    </div>
-                                </div>
-                            </div>
+    <!-- Lamination Section -->
+    <section id="lamination" class="department-section mb-5">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h2>Lamination Department</h2>
+                <p class="mb-0">Creating structural integrity - Failures here mean total product loss</p>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Key Takeaway for Lamination Team:</strong> Respect the curing time - 90% of delamination occurs
+                    from premature conversion. Never shortcut the process.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="20%">Common Error</th>
+                                <th width="40%">Root Causes</th>
+                                <th width="40%">Troubleshooting Steps</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>Delamination</strong><br>
+                                    <span class="badge bg-danger">CRITICAL FAILURE</span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li>Incorrect adhesive mixing ratio</li>
+                                        <li>Insufficient adhesive application (low coating weight)</li>
+                                        <li>Inadequate curing time/temperature</li>
+                                        <li>Poor substrate surface energy (insufficient treatment)</li>
+                                        <li>Contamination on substrate surface</li>
+                                        <li>Incompatible materials being laminated</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Strict adhesive mixing SOPs:</strong> Weight-based, not volume</li>
+                                        <li><strong>Monitor coating weight</strong> regularly with gravimetric tests</li>
+                                        <li><strong>Respect curing schedule:</strong> Minimum time before conversion</li>
+                                        <li><strong>Audit substrate treatment</strong> before lamination</li>
+                                        <li><strong>Surface cleaning:</strong> Use web cleaners before lamination</li>
+                                        <li><strong>Material compatibility testing</strong> for new structures</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bubbles in Laminate</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Trapped air/solvent in adhesive</li>
+                                        <li>Insufficient nip pressure</li>
+                                        <li>Contamination on the web</li>
+                                        <li>Improper unwind/rewind tension</li>
+                                        <li>Incorrect viscosity of adhesive</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Ensure proper drying</strong> of adhesive before nipping</li>
+                                        <li><strong>Adjust nip roll pressure and temperature</strong></li>
+                                        <li><strong>Keep webs clean</strong> with air knives and static eliminators</li>
+                                        <li><strong>Optimize tension profile</strong> throughout the process</li>
+                                        <li><strong>Check adhesive viscosity</strong> and adjust if necessary</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Wrinkles in Laminated Structure</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Misaligned rollers</li>
+                                        <li>Uneven tension across web width</li>
+                                        <li>Gauge variation in substrates</li>
+                                        <li>Improper web guiding</li>
+                                        <li>Differential stretch between materials</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Check roller alignment</strong> regularly</li>
+                                        <li><strong>Balance tension</strong> across entire web width</li>
+                                        <li><strong>Inspect incoming materials</strong> for gauge consistency</li>
+                                        <li><strong>Calibrate web guides</strong> and edge detection</li>
+                                        <li><strong>Match material properties</strong> when designing structures</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5>📋 Additional Tips for Lamination Team</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Batch records:</strong> Document every batch with parameters and results</li>
+                            <li><strong>Adhesive testing:</strong> Regular testing of pot life and performance</li>
+                            <li><strong>Curing monitoring:</strong> Implement system to track curing time for each roll</li>
+                            <li><strong>Cross-training:</strong> Ensure operators understand adhesive chemistry basics</li>
+                            <li><strong>Supplier partnership:</strong> Work with adhesive suppliers on optimization</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slitting Section -->
+    <section id="slitting" class="department-section mb-5">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h2>Slitting Department</h2>
+                <p class="mb-0">The final transformation - Errors here directly affect the customer</p>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Key Takeaway for Slitting Team:</strong> Blade maintenance is not optional -
+                    Dull blades cost more in rejects than replacement blades.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="20%">Common Error</th>
+                                <th width="40%">Root Causes</th>
+                                <th width="40%">Troubleshooting Steps</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Poor Slitting (Burrs, Waves)</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Dull or damaged slitter blades</li>
+                                        <li>Incorrect blade overlap/penetration</li>
+                                        <li>Poor web tension control</li>
+                                        <li>Misaligned rollers</li>
+                                        <li>Incorrect blade type for material</li>
+                                        <li>Worn bearings or mechanical components</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Blade maintenance schedule:</strong> Replace based on meterage</li>
+                                        <li><strong>Precision setup:</strong> Use feeler gauges for blade setting</li>
+                                        <li><strong>Tension profiling:</strong> Optimize for different materials</li>
+                                        <li><strong>Roller alignment check</strong> during changeovers</li>
+                                        <li><strong>Blade selection guide</strong> for different materials</li>
+                                        <li><strong>Preventive maintenance</strong> on mechanical components</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Deformed / Dented Cores</strong></td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Human Error:</strong> Using damaged cores at startup</li>
+                                        <li>Excessive winding tension</li>
+                                        <li>Poor core support during handling/storage</li>
+                                        <li>Incorrect core size for application</li>
+                                        <li>Rough handling during transportation</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Inspect cores at unloading:</strong> Reject damaged cores from supplier</li>
+                                        <li><strong>Inspect cores at rewind:</strong> Do not mount damaged core</li>
+                                        <li><strong>Train staff</strong> on proper core handling techniques</li>
+                                        <li><strong>Optimize winding tension</strong> for core strength</li>
+                                        <li><strong>Core specification review</strong> for heavy materials</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Poor Roll Hardness</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Inconsistent tension during winding</li>
+                                        <li>Incorrect taper profile</li>
+                                        <li>Air entrapment during winding</li>
+                                        <li>Too much or too little nip pressure</li>
+                                        <li>Material too slippery or too tacky</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Standardize tension settings</strong> for each material type</li>
+                                        <li><strong>Optimize taper profile</strong> based on roll diameter</li>
+                                        <li><strong>Use spreader rolls</strong> to eliminate air entrapment</li>
+                                        <li><strong>Adjust nip pressure</strong> according to material characteristics</li>
+                                        <li><strong>Test roll hardness</strong> regularly with durometer</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5>📋 Additional Tips for Slitting Team</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Blade inventory management:</strong> Keep adequate stock of commonly used blades</li>
+                            <li><strong>Setup documentation:</strong> Record optimal settings for repeat jobs</li>
+                            <li><strong>Roll handling training:</strong> Proper techniques to prevent edge damage</li>
+                            <li><strong>Quality gates:</strong> Inspection points before rolls leave department</li>
+                            <li><strong>Communication with previous steps:</strong> Feedback loop on material issues</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bag Making Section -->
+    <section id="bag-making" class="department-section mb-5">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h2>Bag Making Department</h2>
+                <p class="mb-0">Where all previous errors become visible - The final quality checkpoint</p>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Key Takeaway for Bag Making Team:</strong> You are the last line of defense -
+                    Reject faulty material rather than making faulty bags.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="20%">Common Error</th>
+                                <th width="40%">Root Causes</th>
+                                <th width="40%">Troubleshooting Steps</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>Weak Seals / Leaking Bags</strong><br>
+                                    <span class="badge bg-danger">HIGH FREQUENCY</span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Extrusion Issue:</strong> Incorrect sealant layer or gauge variation</li>
+                                        <li><strong>Contamination:</strong> Ink or slip additive on seal area</li>
+                                        <li>Incorrect sealing parameters (temp, pressure, time)</li>
+                                        <li>Worn or dirty seal bars</li>
+                                        <li>Misaligned sealing jaws</li>
+                                        <li>Material not designed for application</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Verify film structure</strong> is correct for application</li>
+                                        <li><strong>Conduct seal strength tests</strong> regularly (burst test)</li>
+                                        <li><strong>Optimize and document</strong> sealer settings for each job</li>
+                                        <li><strong>Clean and maintain</strong> seal bars and Teflon coatings</li>
+                                        <li><strong>Check jaw alignment</strong> and parallelism</li>
+                                        <li><strong>Review material specification</strong> with technical team</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bags Tearing (Gussets/Sides)</strong></td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Extrusion Issue:</strong> Low tensile/impact strength</li>
+                                        <li><strong>Design Flaw:</strong> Sharp corners on gussets/handles</li>
+                                        <li>Worn or misaligned cutting dies</li>
+                                        <li>Incorrect handling during production</li>
+                                        <li>Material too thin for application</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Root cause analysis:</strong> Material property or cutting issue?</li>
+                                        <li><strong>Review and modify</strong> die design if specific point fails</li>
+                                        <li><strong>Replace or sharpen</strong> cutting blades regularly</li>
+                                        <li><strong>Train operators</strong> on proper bag handling</li>
+                                        <li><strong>Gauge verification</strong> of incoming material</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Wrong Size / Poor Gusseting</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Machine misalignment</li>
+                                        <li>Incorrect machine settings (fold plate, guides)</li>
+                                        <li><strong>Human Error:</strong> Wrong job parameters entered</li>
+                                        <li>Worn mechanical components</li>
+                                        <li>Material stretching during processing</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>First-piece inspection:</strong> Measure first 10 bags completely</li>
+                                        <li><strong>Standard setup sheets:</strong> Checklist for each bag type</li>
+                                        <li><strong>Parameter verification:</strong> Two-person check for new jobs</li>
+                                        <li><strong>Preventive maintenance:</strong> Regular check of mechanical wear</li>
+                                        <li><strong>Tension control:</strong> Minimize stretching during conversion</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Incorrect Quantity</strong></td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Human Error:</strong> Poor counting or recording</li>
+                                        <li>Inaccurate bag counter on machine</li>
+                                        <li>Bags sticking together in count</li>
+                                        <li>Inconsistent bag length affecting count</li>
+                                        <li>No verification process</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Automate counting:</strong> Use and maintain photo-eye counters</li>
+                                        <li><strong>Weight verification:</strong> Correlate weight with bag count</li>
+                                        <li><strong>Double-check</strong> by second operator for final packing</li>
+                                        <li><strong>Standardize packaging</strong> with clear quantity labeling</li>
+                                        <li><strong>Regular calibration</strong> of counting equipment</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5>📋 Additional Tips for Bag Making Team</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>First/last bag inspection:</strong> Check first and last bags of every run</li>
+                            <li><strong>Sample retention:</strong> Keep samples from each production run</li>
+                            <li><strong>Machine capability studies:</strong> Understand limitations of each machine</li>
+                            <li><strong>Cross-training:</strong> Operators should be able to run multiple machines</li>
+                            <li><strong>Feedback system:</strong> Formal process to report material issues upstream</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sales Section -->
+    <section id="sales" class="department-section mb-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2>Sales & Administration</h2>
+                <p class="mb-0">The starting point - Errors here waste all production effort</p>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Key Takeaway for Sales Team:</strong> A perfect sale has zero surprises -
+                    Over-communication prevents 100% of specification errors.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="20%">Common Error</th>
+                                <th width="40%">Root Causes</th>
+                                <th width="40%">Troubleshooting Steps</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>Wrong Product Specs on Job Card</strong><br>
+                                    <span class="badge bg-danger">CRITICAL ERROR</span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li><strong>Insufficient Information:</strong> From customer</li>
+                                        <li>Miscommunication or assumptions</li>
+                                        <li>Lack of technical knowledge in sales team</li>
+                                        <li>No system for verifying customer requirements</li>
+                                        <li>Rushing order entry process</li>
+                                        <li>Language barriers with international customers</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Standardized order form:</strong> Mandatory fields for all specs</li>
+                                        <li><strong>Technical review:</strong> All orders reviewed by production manager</li>
+                                        <li><strong>Customer approval:</strong> Signed approval of mock-up/proof</li>
+                                        <li><strong>Sales training:</strong> Technical aspects of products</li>
+                                        <li><strong>Checklist verification:</strong> Before order enters production</li>
+                                        <li><strong>Clarification process:</strong> For ambiguous requirements</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Wrong Material / Print Direction</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Salesperson selects wrong product from list</li>
+                                        <li>Ambiguous instructions (e.g., "mirror image")</li>
+                                        <li>Misinterpretation of customer needs</li>
+                                        <li>Inadequate product knowledge</li>
+                                        <li>Copying errors from previous orders</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Product code system:</strong> Unique, unambiguous codes</li>
+                                        <li><strong>Visual aids:</strong> Diagrams showing orientation on job card</li>
+                                        <li><strong>Standard terminology:</strong> Company-wide definitions</li>
+                                        <li><strong>Product training:</strong> Regular updates for sales team</li>
+                                        <li><strong>Order template library:</strong> For repeat customers</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Incorrect Delivery Timing</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Over-optimistic production time estimates</li>
+                                        <li>Failure to check production capacity</li>
+                                        <li>Not accounting for material lead times</li>
+                                        <li>Poor communication with production planning</li>
+                                        <li>Promise dates without verification</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Realistic lead times:</strong> Based on historical data</li>
+                                        <li><strong>Capacity checking:</strong> Verify before promising dates</li>
+                                        <li><strong>Material availability:</strong> Confirm with purchasing</li>
+                                        <li><strong>Regular production meetings:</strong> Sales and production alignment</li>
+                                        <li><strong>Customer communication:</strong> Proactive updates on delays</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pricing Errors</strong></td>
+                                <td>
+                                    <ul>
+                                        <li>Incorrect material cost calculations</li>
+                                        <li>Not accounting for production complexity</li>
+                                        <li>Outdated pricing information</li>
+                                        <li>Manual calculation errors</li>
+                                        <li>Not including all cost components</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li><strong>Automated pricing tools:</strong> Reduce manual calculations</li>
+                                        <li><strong>Regular cost updates:</strong> From purchasing department</li>
+                                        <li><strong>Technical review:</strong> Complex jobs priced with production input</li>
+                                        <li><strong>Checklist pricing:</strong> Ensure all cost elements included</li>
+                                        <li><strong>Management approval:</strong> For non-standard pricing</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5>📋 Additional Tips for Sales Team</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Factory visits:</strong> Sales team should regularly tour production facility</li>
+                            <li><strong>Technical glossary:</strong> Company-wide definitions of all terms</li>
+                            <li><strong>Sample library:</strong> Physical samples of all standard products</li>
+                            <li><strong>Customer education:</strong> Help customers understand specifications</li>
+                            <li><strong>Feedback loop:</strong> Regular meetings with production about order issues</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overall Recommendations -->
+    <div class="card mt-5">
+        <div class="card-header bg-dark text-white">
+            <h2>🏆 Overall Recommendations & Action Plan</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-warning">
+                            <h5>Immediate Actions (30 Days)</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li>Implement <strong>First-Piece Approval</strong> process across all departments</li>
+                                <li>Create <strong>Standardized Job Card</strong> with mandatory technical review</li>
+                                <li>Establish <strong>Daily Quality Meeting</strong> between department heads</li>
+                                <li>Launch <strong>Gauge Control SPC Program</strong> in extrusion</li>
+                                <li>Implement <strong>Color Standards Library</strong> for printing</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-info text-white">
+                            <h5>Medium-Term Actions (90 Days)</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li>Develop <strong>Cross-Training Program</strong> between departments</li>
+                                <li>Implement <strong>Digital Workflow System</strong> from sales to production</li>
+                                <li>Establish <strong>Supplier Quality Program</strong> for raw materials</li>
+                                <li>Create <strong>Preventive Maintenance Schedule</strong> for all equipment</li>
+                                <li>Develop <strong>Standard Operating Procedures</strong> for all major processes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <div class="alert alert-success mt-4">
-                    <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> Success Strategy</h6>
-                    <p class="mb-0 small">
-                        Implement a closed-loop communication system where feedback from each department informs process improvements. 
-                        Regular cross-training and shared goals create a culture of quality and continuous improvement.
-                    </p>
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5>Long-Term Culture Changes</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Shift from <strong>blame culture</strong> to <strong>problem-solving culture</strong></li>
+                        <li>Implement <strong>visual management</strong> with performance dashboards</li>
+                        <li>Establish <strong>continuous improvement teams</strong> for each department</li>
+                        <li>Create <strong>quality metrics</strong> tied to performance reviews</li>
+                        <li>Develop <strong>technical career path</strong> for operators</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block styles %}
 <style>
-.bg-purple {
-    background-color: #6f42c1 !important;
+.department-section {
+    scroll-margin-top: 20px;
 }
-
-.material-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.nav-link {
+    transition: all 0.3s ease;
 }
-
-.table-hover tbody tr:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    transition: background-color 0.2s ease-in-out;
+.nav-link:hover {
+    transform: translateY(-2px);
 }
-
-.card-header {
-    font-weight: 600;
+.table th {
+    position: sticky;
+    top: 0;
 }
-
 .badge {
-    font-size: 0.75em;
-    font-weight: 500;
-}
-
-.stakeholder-takeaways {
-    font-size: 0.8rem;
-}
-
-.stakeholder-takeaways .badge {
-    font-size: 0.7rem;
-}
-
-.text-danger strong {
-    font-weight: 600;
-}
-
-/* Responsive table adjustments */
-@media (max-width: 768px) {
-    .table-responsive {
-        font-size: 0.8rem;
-    }
-    
-    .stakeholder-takeaways {
-        font-size: 0.75rem;
-    }
-    
-    .card-body .table th,
-    .card-body .table td {
-        padding: 0.4rem;
-    }
-    
-    .table th, .table td {
-        display: block;
-        width: 100%;
-    }
-    
-    .table thead {
-        display: none;
-    }
-    
-    .table tr {
-        margin-bottom: 1rem;
-        display: block;
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-    }
-    
-    .table td {
-        border: none;
-        border-bottom: 1px solid #dee2e6;
-        position: relative;
-        padding-left: 50%;
-    }
-    
-    .table td:before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0.5rem;
-        width: 45%;
-        padding-right: 0.5rem;
-        font-weight: bold;
-        text-align: left;
-    }
+    font-size: 0.7em;
 }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add data labels for mobile responsive tables
-    if (window.innerWidth < 768) {
-        document.querySelectorAll('table tbody tr').forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const headers = ['Defect', 'Causes', 'Solutions', 'Takeaways'];
-            
-            cells.forEach((cell, index) => {
-                if (headers[index]) {
-                    cell.setAttribute('data-label', headers[index]);
-                }
+// Smooth scrolling for navigation
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
             });
-        });
-    }
+        }
+    });
+});
+
+// Update active nav link based on scroll position
+window.addEventListener('scroll', function() {
+    const sections = document.querySelectorAll('.department-section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (pageYOffset >= sectionTop - 100) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+            link.classList.add('active');
+        }
+    });
 });
 </script>
 {% endblock %}

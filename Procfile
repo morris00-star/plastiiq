@@ -1,1 +1,0 @@
-web: gunicorn qc_project.wsgi:application
