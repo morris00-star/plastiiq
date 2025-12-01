@@ -174,6 +174,8 @@
                                 <select class="form-select" name="cut_length_unit" style="max-width: 120px;">
                                     <option value="m">Meters</option>
                                     <option value="cm">cm</option>
+                                    <option value="mm">mm</option>
+                                    <option value="inch">Inches</option>
                                 </select>
                             </div>
                             <small class="form-text text-muted">Typical: 1-2 meters</small>
@@ -187,6 +189,8 @@
                                 <select class="form-select" name="cut_width_unit" style="max-width: 120px;">
                                     <option value="m">Meters</option>
                                     <option value="cm">cm</option>
+                                    <option value="mm">mm</option>
+                                    <option value="inch">Inches</option>
                                 </select>
                             </div>
                             <small class="form-text text-muted">Typical: 1 meter for full width</small>
@@ -219,6 +223,8 @@
                                 <select class="form-select" name="extrusion_width_unit" style="max-width: 120px;">
                                     <option value="m">Meters</option>
                                     <option value="cm">cm</option>
+                                    <option value="mm">mm</option>
+                                    <option value="inch">Inches</option>
                                 </select>
                             </div>
                             <small class="form-text text-muted">Typical: 1-3 meters</small>
@@ -617,28 +623,93 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Friction Force (Ff)</label>
-                        <div class="input-group">
-                            <input type="number" step="0.01" class="form-control" name="friction_force" required>
-                            <select class="form-select" name="friction_force_unit" style="max-width: 120px;">
-                                <option value="N">N</option>
-                                <option value="lbf">lbf</option>
-                            </select>
-                        </div>
+                        <label class="form-label">Test Method</label>
+                        <select class="form-select" name="test_method" required>
+                            <option value="film_to_film">Film to Film (Poly to Poly)</option>
+                            <option value="film_to_metal">Film to Metal (Poly to Metal)</option>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Normal Force (Fn)</label>
-                        <div class="input-group">
-                            <input type="number" step="0.01" class="form-control" name="normal_force" required>
-                            <select class="form-select" name="normal_force_unit" style="max-width: 120px;">
-                                <option value="N">N</option>
-                                <option value="lbf">lbf</option>
-                            </select>
+                        <label class="form-label">Film Surface</label>
+                        <select class="form-select" name="film_surface" required>
+                            <option value="inner">Inner Film Surface</option>
+                            <option value="outer">Outer Film Surface</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0">Static Friction</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Static Friction Force (Ff)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" name="static_friction_force" required>
+                                    <select class="form-select" name="static_friction_force_unit" style="max-width: 120px;">
+                                        <option value="N">N</option>
+                                        <option value="lbf">lbf</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Normal Force (Fn)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" name="static_normal_force" required>
+                                    <select class="form-select" name="static_normal_force_unit" style="max-width: 120px;">
+                                        <option value="N">N</option>
+                                        <option value="lbf">lbf</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0">Dynamic Friction</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Dynamic Friction Force (Ff)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" name="dynamic_friction_force" required>
+                                    <select class="form-select" name="dynamic_friction_force_unit" style="max-width: 120px;">
+                                        <option value="N">N</option>
+                                        <option value="lbf">lbf</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Normal Force (Fn)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" name="dynamic_normal_force" required>
+                                    <select class="form-select" name="dynamic_normal_force_unit" style="max-width: 120px;">
+                                        <option value="N">N</option>
+                                        <option value="lbf">lbf</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <small>
+                    <strong>Note:</strong><br>
+                    • <strong>Static COF</strong>: Resistance to initial motion<br>
+                    • <strong>Dynamic COF</strong>: Resistance during continuous motion<br>
+                    • <strong>Film to Film</strong>: Film to Film  surfaces<br>
+                    • <strong>Film to Metal</strong>: Film to Metal surfaces
+                </small>
             </div>
 
             <button type="submit" class="btn btn-dark">
@@ -938,31 +1009,76 @@
     </div>
     <div class="card-body">
         <form id="dartImpactForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select class="form-select" name="material_id" required>
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Film Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 120px;">
+                                <option value="micron">Microns</option>
+                                <option value="gauge">Gauge</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Weight Step (d)</label>
+                <div class="input-group">
+                    <input type="number" step="1" class="form-control" name="weight_step" value="5" required>
+                    <span class="input-group-text">grams</span>
+                </div>
+                <small class="form-text text-muted">Increment between test weights (e.g., 5g steps)</small>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label">Test Results</label>
                 <div class="alert alert-info">
-                    <small>Enter test weights and results. M50 is the average weight at which samples fail.</small>
+                    <small>
+                        <strong>ASTM D1709 Method A</strong><br>
+                        Enter test weights and results. M50 is calculated using the formula:<br>
+                        <strong>M50 = Wf + d(A/N - 0.5)</strong><br>
+                        Where: Wf = lowest weight with 50% failure, d = weight step, A = failures, N = total drops
+                    </small>
                 </div>
             </div>
 
             <div id="dartTestContainer">
                 <div class="row mb-2">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Test Weight (grams)</label>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Result</label>
+                    <div class="col-md-4">
+                        <label class="form-label">Failures (A)</label>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Total Drops (N)</label>
                     </div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6">
-                        <input type="number" step="1" class="form-control" name="weights_g[]" placeholder="Weight in grams">
+                    <div class="col-md-4">
+                        <input type="number" step="1" class="form-control" name="weights_g[]" placeholder="Weight in grams" required>
                     </div>
-                    <div class="col-md-6">
-                        <select class="form-select" name="results_pass_fail[]">
-                            <option value="true">Pass</option>
-                            <option value="false">Fail</option>
-                        </select>
+                    <div class="col-md-4">
+                        <input type="number" step="1" class="form-control" name="failures[]" placeholder="Number of failures" required min="0">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="1" class="form-control" name="total_drops[]" placeholder="Total drops" required min="1">
                     </div>
                 </div>
             </div>
@@ -977,7 +1093,7 @@
             </div>
 
             <button type="submit" class="btn btn-danger">
-                <i class="fas fa-calculator"></i> Calculate M50
+                <i class="fas fa-calculator"></i> Calculate Dart Impact
             </button>
         </form>
 
@@ -1805,11 +1921,21 @@ function calculateBURDDR() {
 function calculateDartImpact() {
     const form = document.getElementById('dartImpactForm');
     const weights = Array.from(form.querySelectorAll('input[name="weights_g[]"]')).map(input => parseFloat(input.value));
-    const results = Array.from(form.querySelectorAll('select[name="results_pass_fail[]"]')).map(select => select.value === 'true');
+    const failures = Array.from(form.querySelectorAll('input[name="failures[]"]')).map(input => parseInt(input.value));
+    const totalDrops = Array.from(form.querySelectorAll('input[name="total_drops[]"]')).map(input => parseInt(input.value));
+    const weightStep = parseFloat(form.querySelector('input[name="weight_step"]').value);
+    const materialId = form.querySelector('select[name="material_id"]').value;
+    const thickness = parseFloat(form.querySelector('input[name="thickness"]').value);
+    const thicknessUnit = form.querySelector('select[name="thickness_unit"]').value;
 
     const data = {
         weights_g: weights,
-        results_pass_fail: results
+        failures: failures,
+        total_drops: totalDrops,
+        weight_step: weightStep,
+        material_id: materialId,
+        thickness: thickness,
+        thickness_unit: thicknessUnit
     };
 
     fetch('/extrusion/calculate-dart-impact/', {
@@ -1825,6 +1951,31 @@ function calculateDartImpact() {
         console.error('Error:', error);
         displayDartImpactError('Network error: ' + error);
     });
+}
+
+function addDartTestRow() {
+    const container = document.getElementById('dartTestContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-4">
+            <input type="number" step="1" class="form-control" name="weights_g[]" placeholder="Weight in grams" required>
+        </div>
+        <div class="col-md-4">
+            <input type="number" step="1" class="form-control" name="failures[]" placeholder="Number of failures" required min="0">
+        </div>
+        <div class="col-md-4">
+            <input type="number" step="1" class="form-control" name="total_drops[]" placeholder="Total drops" required min="1">
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeDartTestRow() {
+    const container = document.getElementById('dartTestContainer');
+    if (container.children.length > 2) {
+        container.removeChild(container.lastChild);
+    }
 }
 
 function calculateGaugeVariation() {
@@ -2025,21 +2176,43 @@ function displayThicknessResult(result) {
         resultDiv.innerHTML = `
             <div class="alert alert-success">
                 <h6><i class="fas fa-check-circle"></i> Thickness Results:</h6>
-                <p><strong>Calculated Thickness:</strong> ${res.thickness_microns} microns</p>
-                <p><strong>Equivalent:</strong> ${res.thickness_mm} mm | ${res.thickness_mil} mil</p>
-                <p><small class="text-muted">Method: ${res.method === 'cut_weigh' ? 'Cut & Weigh' : 'Extrusion Rate'}</small></p>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Sheet Calculation</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Thickness:</strong> ${res.sheet_thickness_microns} gauge</p>
+                                <p><strong>Microns:</strong> ${res.sheet_thickness_gauge} microns</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Tube Calculation</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Thickness:</strong> ${res.tube_thickness_microns} gauge</p>
+                                <p><strong>Microns:</strong> ${res.tube_thickness_gauge} microns</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 p-2 bg-light rounded">
+                    <small class="text-muted">
+                        <strong>Method:</strong> ${res.method === 'cut_weigh' ? 'Cut & Weigh' : 'Extrusion Rate'} |
+                        <strong>Note:</strong> Tube thickness is calculated as 2× sheet thickness since tubes have two layers
+                    </small>
+                </div>
             </div>
         `;
     } else {
         resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
     }
-    resultDiv.style.display = 'block';
-    resultDiv.scrollIntoView({ behavior: 'smooth' });
-}
-
-function displayThicknessError(error) {
-    const resultDiv = document.getElementById('thicknessResult');
-    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
     resultDiv.style.display = 'block';
     resultDiv.scrollIntoView({ behavior: 'smooth' });
 }
@@ -2194,10 +2367,40 @@ function displayCOFResult(result) {
         const res = result.result;
         resultDiv.innerHTML = `
             <div class="alert alert-success">
-                <h6><i class="fas fa-check-circle"></i> COF Results:</h6>
-                <p><strong>Coefficient of Friction:</strong> ${res.coefficient_of_friction}</p>
-                <p><strong>Friction Type:</strong> ${res.friction_type}</p>
-                <p><strong>Interpretation:</strong> ${res.interpretation}</p>
+                <h6><i class="fas fa-check-circle"></i> COF Test Results:</h6>
+                <p><strong>Test Configuration:</strong> ${res.test_configuration.full_description}</p>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0">Static COF</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Coefficient:</strong> ${res.static_coefficient}</p>
+                                <p><strong>Friction Type:</strong> ${res.static_friction_type}</p>
+                                <p><strong>Interpretation:</strong> ${res.static_interpretation}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Dynamic COF</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Coefficient:</strong> ${res.dynamic_coefficient}</p>
+                                <p><strong>Friction Type:</strong> ${res.dynamic_friction_type}</p>
+                                <p><strong>Interpretation:</strong> ${res.dynamic_interpretation}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 p-3 bg-light rounded">
+                    <p><strong>Comparison Note:</strong> ${res.comparison_note}</p>
+                    <p><strong>Application Recommendation:</strong> ${res.application_recommendation}</p>
+                </div>
             </div>
         `;
     } else {
@@ -2337,9 +2540,61 @@ function displayDartImpactResult(result) {
     resultDiv.scrollIntoView({ behavior: 'smooth' });
 }
 
-function displayDartImpactError(error) {
+function displayDartImpactResult(result) {
     const resultDiv = document.getElementById('dartImpactResult');
-    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    if (result.success) {
+        const res = result.result;
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Dart Impact Test Results (ASTM D1709):</h6>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Absolute Values</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>M50 Value:</strong> ${res.dart_impact_m50_g} grams</p>
+                                <p><strong>Impact Category:</strong> ${res.impact_category}</p>
+                                <p><strong>Material:</strong> ${res.material_name}</p>
+                                <p><strong>Density:</strong> ${res.material_density} g/cm³</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Normalized Values</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Normalized M50:</strong> ${res.dart_impact_normalized} g/µm</p>
+                                <p><strong>Normalized Category:</strong> ${res.normalized_category}</p>
+                                <p><strong>Film Thickness:</strong> ${res.thickness_microns} microns</p>
+                                <p><strong>Weight Step:</strong> ${res.weight_step} g</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 p-3 bg-light rounded">
+                    <p><strong>Test Statistics:</strong></p>
+                    <ul class="mb-2">
+                        <li>Tests Conducted: ${res.test_count}</li>
+                        <li>Total Drops: ${res.total_drops}</li>
+                        <li>Total Failures: ${res.total_failures}</li>
+                        <li>Overall Failure Rate: ${res.failure_rate_percent}%</li>
+                    </ul>
+                    <small class="text-muted">
+                        <strong>Formula:</strong> M50 = Wf + d(A/N - 0.5) |
+                        <strong>Normalized:</strong> M50 / Thickness (µm)
+                    </small>
+                </div>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
     resultDiv.style.display = 'block';
     resultDiv.scrollIntoView({ behavior: 'smooth' });
 }

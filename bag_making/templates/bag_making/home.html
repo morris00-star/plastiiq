@@ -243,13 +243,13 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Pieces per Packet</label>
-                            <input type="number" class="form-control" name="pieces_per_packet" value="100" min="1">
+                            <input type="number" class="form-control" name="forward_pieces_per_packet" id="forwardPiecesPerPacket" placeholder="e.g., 100" min="1">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Packet Packaging Weight</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="packet_packaging_weight" value="0" placeholder="e.g., 2.5">
-                                <select class="form-select" name="packaging_unit" style="max-width: 100px;">
+                                <input type="number" step="0.001" class="form-control" name="forward_packet_packaging_weight" value="0" placeholder="e.g., 2.5">
+                                <select class="form-select" name="forward_packaging_unit" style="max-width: 100px;">
                                     <option value="g">g</option>
                                     <option value="kg">kg</option>
                                 </select>
@@ -272,13 +272,13 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Pieces per Packet</label>
-                            <input type="number" class="form-control" name="pieces_per_packet" value="100" min="1">
+                            <input type="number" class="form-control" name="reverse_pieces_per_packet" id="reversePiecesPerPacket" value="100" min="1">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Packet Packaging Weight</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="packet_packaging_weight" value="0" placeholder="e.g., 2.5">
-                                <select class="form-select" name="packaging_unit" style="max-width: 100px;">
+                                <input type="number" step="0.001" class="form-control" name="reverse_packet_packaging_weight" value="0" placeholder="e.g., 2.5">
+                                <select class="form-select" name="reverse_packaging_unit" style="max-width: 100px;">
                                     <option value="g">g</option>
                                     <option value="kg">kg</option>
                                 </select>
@@ -855,19 +855,60 @@ document.querySelectorAll('input[name="calculation_direction"]').forEach(radio =
     }
 });
 
-// Packet Weight Direction Toggle
+// Packet Weight Direction Toggle with Field Synchronization
 document.querySelectorAll('input[name="calculation_direction"]').forEach(radio => {
     if (radio.closest('#packetWeightForm')) {
         radio.addEventListener('change', function() {
+            const forwardFields = document.getElementById('forwardPacketFields');
+            const reverseFields = document.getElementById('reversePacketFields');
+            const forwardPiecesInput = document.getElementById('forwardPiecesPerPacket');
+            const reversePiecesInput = document.getElementById('reversePiecesPerPacket');
+            const forwardPackagingInput = document.querySelector('input[name="forward_packet_packaging_weight"]');
+            const reversePackagingInput = document.querySelector('input[name="reverse_packet_packaging_weight"]');
+
             if (this.value === 'forward') {
-                document.getElementById('forwardPacketFields').style.display = 'block';
-                document.getElementById('reversePacketFields').style.display = 'none';
+                forwardFields.style.display = 'block';
+                reverseFields.style.display = 'none';
+
+                // Sync values from reverse to forward when switching
+                if (reversePiecesInput.value !== '100') {
+                    forwardPiecesInput.value = reversePiecesInput.value;
+                }
+                if (reversePackagingInput.value !== '0') {
+                    forwardPackagingInput.value = reversePackagingInput.value;
+                }
             } else {
-                document.getElementById('forwardPacketFields').style.display = 'none';
-                document.getElementById('reversePacketFields').style.display = 'block';
+                forwardFields.style.display = 'none';
+                reverseFields.style.display = 'block';
+
+                // Sync values from forward to reverse when switching
+                if (forwardPiecesInput.value !== '100') {
+                    reversePiecesInput.value = forwardPiecesInput.value;
+                }
+                if (forwardPackagingInput.value !== '0') {
+                    reversePackagingInput.value = forwardPackagingInput.value;
+                }
             }
         });
     }
+});
+
+// Real-time synchronization between pieces per packet fields
+document.getElementById('forwardPiecesPerPacket').addEventListener('input', function() {
+    document.getElementById('reversePiecesPerPacket').value = this.value;
+});
+
+document.getElementById('reversePiecesPerPacket').addEventListener('input', function() {
+    document.getElementById('forwardPiecesPerPacket').value = this.value;
+});
+
+// Real-time synchronization between packaging weight fields
+document.querySelector('input[name="forward_packet_packaging_weight"]').addEventListener('input', function() {
+    document.querySelector('input[name="reverse_packet_packaging_weight"]').value = this.value;
+});
+
+document.querySelector('input[name="reverse_packet_packaging_weight"]').addEventListener('input', function() {
+    document.querySelector('input[name="forward_packet_packaging_weight"]').value = this.value;
 });
 
 // Bundle Weight Direction Toggle
@@ -1066,27 +1107,62 @@ function calculatePacketWeight() {
     const formData = new FormData(document.getElementById('packetWeightForm'));
     const data = Object.fromEntries(formData);
 
-    console.log('Packet Weight Form Data:', data); // Debug log
+    console.log('Packet Weight Form Data:', data);
 
-    // If using dimensions input, we need to calculate piece weight first
+    // Prepare the data for API call
+    const requestData = preparePacketWeightData(data);
+
+    if (!requestData) {
+        return; // Validation failed
+    }
+
+    fetch('/bag-making/calculate-packet-weight/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Received result:', result);
+        displayPacketWeightResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Calculation failed: ' + error);
+    });
+}
+
+function preparePacketWeightData(data) {
+    const requestData = {
+        calculation_direction: data.calculation_direction,
+        input_method: data.input_method,
+        output_unit: data.output_unit || 'kg'
+    };
+
     if (data.input_method === 'dimensions') {
-        // Prepare dimensions data for piece weight calculation
-        const dimensionsData = {
-            bag_type: data.dimensions_bag_type,
-            width: parseFloat(data.dimensions_width) || 0,
-            height: parseFloat(data.dimensions_height) || 0,
-            gusset_width: parseFloat(data.dimensions_gusset_width) || 0,
-            width_unit: data.dimensions_width_unit,
-            height_unit: data.dimensions_height_unit,
-            gusset_unit: data.dimensions_gusset_unit,
-            calculation_direction: 'pieces_to_weight', // We're calculating weight from dimensions
-            num_pieces: 1 // Calculate for one piece to get single piece weight
-        };
+        // Dimensions input method
+        requestData.dimensions_bag_type = data.dimensions_bag_type;
+        requestData.dimensions_width = parseFloat(data.dimensions_width) || 0;
+        requestData.dimensions_height = parseFloat(data.dimensions_height) || 0;
+        requestData.dimensions_gusset_width = parseFloat(data.dimensions_gusset_width) || 0;
+        requestData.dimensions_width_unit = data.dimensions_width_unit || 'cm';
+        requestData.dimensions_height_unit = data.dimensions_height_unit || 'cm';
+        requestData.dimensions_gusset_unit = data.dimensions_gusset_unit || 'cm';
+        requestData.dimensions_pieces_per_packet = parseInt(data.dimensions_pieces_per_packet) || 0;
+        requestData.dimensions_packet_packaging_weight = parseFloat(data.dimensions_packet_packaging_weight) || 0;
+        requestData.dimensions_packaging_unit = data.dimensions_packaging_unit || 'g';
 
-        // Add material data based on bag type
+        // Validate required dimensions fields
+        if (!requestData.dimensions_width || !requestData.dimensions_height) {
+            alert('Please enter valid width and height for dimensions calculation');
+            return null;
+        }
+
+        // Handle material data based on bag type
         if (data.dimensions_bag_type.startsWith('LAMINATED')) {
-            dimensionsData.layers = [];
+            // Collect laminated layers
             const layerRows = document.querySelectorAll('#dimensionsLayerContainer .layer-row');
+            let hasValidLayers = false;
 
             layerRows.forEach((row, index) => {
                 const materialSelect = row.querySelector('.dimensions-layer-material');
@@ -1095,112 +1171,65 @@ function calculatePacketWeight() {
 
                 if (materialSelect && thicknessInput && thicknessUnitSelect &&
                     materialSelect.value && thicknessInput.value) {
-                    const materialOption = materialSelect.options[materialSelect.selectedIndex];
-                    if (materialOption) {
-                        dimensionsData.layers.push({
-                            material_id: materialSelect.value,
-                            density_g_cm3: parseFloat(materialOption.getAttribute('data-density')) || 0.92,
-                            thickness_microns: parseFloat(thicknessInput.value),
-                            thickness_unit: thicknessUnitSelect.value
-                        });
-                    }
+                    requestData[`dimensions_layer_material_${index}`] = materialSelect.value;
+                    requestData[`dimensions_layer_thickness_${index}`] = parseFloat(thicknessInput.value) || 0;
+                    requestData[`dimensions_layer_thickness_unit_${index}`] = thicknessUnitSelect.value;
+                    hasValidLayers = true;
                 }
             });
 
-            if (dimensionsData.layers.length === 0) {
-                alert('Please add at least one layer for laminated bag in dimensions mode');
-                return;
+            if (!hasValidLayers) {
+                alert('Please add at least one valid layer for laminated bag');
+                return null;
             }
         } else {
             // Single layer bag
-            dimensionsData.material_id = data.dimensions_material_id;
-            dimensionsData.thickness = parseFloat(data.dimensions_thickness) || 0;
-            dimensionsData.thickness_unit = data.dimensions_thickness_unit;
+            requestData.dimensions_material_id = data.dimensions_material_id;
+            requestData.dimensions_thickness = parseFloat(data.dimensions_thickness) || 0;
+            requestData.dimensions_thickness_unit = data.dimensions_thickness_unit || 'micron';
 
-            if (!dimensionsData.material_id || !dimensionsData.thickness) {
-                alert('Please select material and enter thickness for single layer bag in dimensions mode');
-                return;
+            if (!requestData.dimensions_material_id || !requestData.dimensions_thickness) {
+                alert('Please select material and enter thickness for single layer bag');
+                return null;
             }
         }
 
-        // First calculate the single piece weight from dimensions
-        fetch('/bag-making/calculate-pieces-weight/', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(dimensionsData)
-        })
-        .then(response => response.json())
-        .then(pieceResult => {
-            if (pieceResult.success) {
-                // Now calculate packet weight using the single piece weight
-                const singlePieceWeightG = pieceResult.result.single_piece_weight_g;
-                const piecesPerPacket = parseInt(data.dimensions_pieces_per_packet) || 1;
-                const packetPackagingWeight = parseFloat(data.dimensions_packet_packaging_weight) || 0;
-                const packagingUnit = data.dimensions_packaging_unit || 'g';
-
-                // Prepare packet calculation data
-                const packetData = {
-                    calculation_direction: data.calculation_direction,
-                    single_piece_weight_g: singlePieceWeightG,
-                    pieces_per_packet: piecesPerPacket,
-                    packet_packaging_weight: packetPackagingWeight,
-                    packaging_unit: packagingUnit,
-                    output_unit: data.output_unit,
-                    from_dimensions: true,
-                    dimensions_data: dimensionsData,
-                    composite_gsm: pieceResult.result.composite_gsm,
-                    area_m2: pieceResult.result.area_m2
-                };
-
-                // Send to packet weight endpoint
-                fetch('/bag-making/calculate-packet-weight/', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(packetData)
-                })
-                .then(response => response.json())
-                .then(result => {
-                    // Add the dimensions data to the result for display
-                    if (result.success) {
-                        result.result.single_piece_weight_g = singlePieceWeightG;
-                        result.result.area_m2 = pieceResult.result.area_m2;
-                        result.result.composite_gsm = pieceResult.result.composite_gsm;
-                        result.result.packaging_weight = packetPackagingWeight;
-                        result.result.packaging_unit = packagingUnit;
-                    }
-                    displayPacketWeightResult(result);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Packet calculation failed: ' + error);
-                });
-
-            } else {
-                alert('Failed to calculate piece weight from dimensions: ' + pieceResult.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Dimensions calculation failed: ' + error);
-        });
-
+        // For reverse calculation in dimensions mode
+        if (data.calculation_direction === 'reverse') {
+            requestData.packet_weight = parseFloat(data.packet_weight) || 0;
+            requestData.weight_unit = data.weight_unit || 'kg';
+        }
     } else {
-        // Direct weight input mode
-        fetch('/bag-making/calculate-packet-weight/', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            displayPacketWeightResult(result);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Calculation failed: ' + error);
-        });
+        // Direct weight input method
+        const isForward = data.calculation_direction === 'forward';
+
+        if (isForward) {
+            requestData.single_piece_weight_g = parseFloat(data.single_piece_weight_g) || 0;
+            requestData.pieces_per_packet = parseInt(data.forward_pieces_per_packet) || 0;
+            requestData.packet_packaging_weight = parseFloat(data.forward_packet_packaging_weight) || 0;
+            requestData.packaging_unit = data.forward_packaging_unit || 'g';
+
+            if (!requestData.single_piece_weight_g || !requestData.pieces_per_packet) {
+                alert('Please enter single piece weight and pieces per packet');
+                return null;
+            }
+        } else {
+            requestData.packet_weight = parseFloat(data.packet_weight) || 0;
+            requestData.weight_unit = data.weight_unit || 'kg';
+            requestData.pieces_per_packet = parseInt(data.reverse_pieces_per_packet) || 0;
+            requestData.packet_packaging_weight = parseFloat(data.reverse_packet_packaging_weight) || 0;
+            requestData.packaging_unit = data.reverse_packaging_unit || 'g';
+
+            if (!requestData.packet_weight || !requestData.pieces_per_packet) {
+                alert('Please enter packet weight and pieces per packet');
+                return null;
+            }
+        }
     }
+
+    return requestData;
 }
+
 
 function calculateBundleWeight() {
     const formData = new FormData(document.getElementById('bundleWeightForm'));
@@ -1427,15 +1456,18 @@ function displayPacketWeightResult(result) {
                         <div class="col-md-6">
                             <p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>
                             <p><strong>Pieces per Packet:</strong> ${res.pieces_per_packet}</p>
+                            <p><strong>Total Bag Weight:</strong> ${res.total_piece_weight_g} g</p>
                             ${res.area_m2 ? `<p><strong>Bag Area:</strong> ${res.area_m2} m²</p>` : ''}
                             ${res.composite_gsm ? `<p><strong>Material GSM:</strong> ${res.composite_gsm} g/m²</p>` : ''}
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Total Packet Weight:</strong> ${res.packet_weight} ${res.output_unit}</p>
-                            <p><strong>Net Bag Weight:</strong> ${(res.pieces_per_packet * res.single_piece_weight_g / 1000).toFixed(4)} kg</p>
-                            <p><strong>Packaging Weight:</strong> ${res.packaging_weight || '0'} ${res.packaging_unit || 'g'}</p>
+                            <p><strong>Gross Packet Weight:</strong> ${res.gross_weight} ${res.output_unit}</p>
+                            <p><strong>Net Bag Weight:</strong> ${res.net_weight} ${res.output_unit}</p>
+                            <p><strong>Packaging Weight:</strong> ${res.packaging_weight} ${res.packaging_unit}</p>
+                            <p><strong>Packaging Percentage:</strong> ${res.packaging_percentage}%</p>
                         </div>
                     </div>
+                    ${res.pieces_per_packet ? `<p class="mt-2"><small>Calculation: (${res.single_piece_weight_g}g × ${res.pieces_per_packet}) + ${res.packaging_weight}g packaging = ${res.gross_weight}${res.output_unit}</small></p>` : ''}
                 </div>
             `;
         } else {
@@ -1444,16 +1476,19 @@ function displayPacketWeightResult(result) {
                     <h6><i class="fas fa-check-circle"></i> Reverse Calculation Results:</h6>
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Packet Weight:</strong> ${res.packet_weight} ${res.weight_unit}</p>
+                            <p><strong>Gross Packet Weight:</strong> ${res.packet_weight} ${res.weight_unit}</p>
                             <p><strong>Pieces per Packet:</strong> ${res.pieces_per_packet}</p>
+                            <p><strong>Net Bag Weight:</strong> ${(res.net_bag_weight_g / 1000).toFixed(4)} kg (${res.net_bag_weight_g} g)</p>
                             ${res.area_m2 ? `<p><strong>Bag Area:</strong> ${res.area_m2} m²</p>` : ''}
                             ${res.composite_gsm ? `<p><strong>Material GSM:</strong> ${res.composite_gsm} g/m²</p>` : ''}
                         </div>
                         <div class="col-md-6">
                             <p><strong>Calculated Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>
-                            <p><strong>Net Bag Weight per Packet:</strong> ${(res.single_piece_weight_g * res.pieces_per_packet / 1000).toFixed(4)} kg</p>
+                            <p><strong>Packaging Weight:</strong> ${res.packaging_weight_g} g</p>
+                            <p><strong>Packaging Percentage:</strong> ${res.packaging_percentage}%</p>
                         </div>
                     </div>
+                    ${res.pieces_per_packet ? `<p class="mt-2"><small>Calculation: (${res.packet_weight}${res.weight_unit} - ${res.packaging_weight_g}g packaging) ÷ ${res.pieces_per_packet} = ${res.single_piece_weight_g}g per piece</small></p>` : ''}
                 </div>
             `;
         }
@@ -1463,6 +1498,7 @@ function displayPacketWeightResult(result) {
     resultDiv.style.display = 'block';
     resultDiv.scrollIntoView({ behavior: 'smooth' });
 }
+
 
 function displayBundleWeightResult(result) {
     const resultDiv = document.getElementById('bundleWeightResult');

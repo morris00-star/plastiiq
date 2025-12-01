@@ -151,116 +151,14 @@ def calculate_packet_weight(request):
             input_method = data.get('input_method', 'direct_weight')
 
             calculator = BagMakingCalculator()
+            result = {}
 
             if input_method == 'dimensions':
-                # Calculate single piece weight from dimensions first
-                bag_type = data.get('bag_type', data.get('dimensions_bag_type', 'FLAT_SHEET'))
-                width = float(data.get('width', data.get('dimensions_width', 0)))
-                height = float(data.get('height', data.get('dimensions_height', 0)))
-                gusset_width = float(data.get('gusset_width', data.get('dimensions_gusset_width', 0)))
-                width_unit = data.get('width_unit', data.get('dimensions_width_unit', 'cm'))
-                height_unit = data.get('height_unit', data.get('dimensions_height_unit', 'cm'))
-                gusset_unit = data.get('gusset_unit', data.get('dimensions_gusset_unit', 'cm'))
-                pieces_per_packet = int(data.get('pieces_per_packet', data.get('dimensions_pieces_per_packet', 0)))
-
-                # Calculate area
-                area_m2 = calculator.calculate_single_piece_area(
-                    width, height, bag_type, gusset_width,
-                    width_unit, height_unit, gusset_unit
-                )
-
-                # Calculate GSM based on material type
-                if bag_type.startswith('LAMINATED'):
-                    layers_data = data.get('layers', [])
-                    if not layers_data:
-                        return JsonResponse({'success': False, 'error': 'No layers provided for laminated bag'})
-
-                    composite_gsm = calculator.calculate_composite_gsm(layers_data)
-                else:
-                    material_id = data.get('material_id', data.get('dimensions_material_id'))
-                    if not material_id:
-                        return JsonResponse({'success': False, 'error': 'Material required for single layer bag'})
-
-                    material = PlasticMaterial.objects.get(id=material_id)
-                    thickness = float(data.get('thickness', data.get('dimensions_thickness', 0)))
-                    thickness_unit = data.get('thickness_unit', data.get('dimensions_thickness_unit', 'micron'))
-
-                    thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
-                    thickness_um = thickness_m * 1e6
-
-                    composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
-
-                # Calculate single piece weight
-                single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm)
-
-                # Now proceed with packet calculation
-                if calculation_direction == 'forward':
-                    packet_weight = calculator.calculate_packet_weight(
-                        pieces_per_packet, single_piece_weight_g,
-                        0, 'g', data.get('output_unit', 'kg')
-                    )
-
-                    result = {
-                        'packet_weight': round(packet_weight, 4),
-                        'output_unit': data.get('output_unit', 'kg'),
-                        'calculation_type': 'forward',
-                        'pieces_per_packet': pieces_per_packet,
-                        'single_piece_weight_g': round(single_piece_weight_g, 4),
-                        'area_m2': round(area_m2, 6),
-                        'composite_gsm': round(composite_gsm, 2)
-                    }
-                else:
-                    # Reverse calculation from dimensions
-                    packet_weight = float(data.get('packet_weight', 0))
-                    weight_unit = data.get('weight_unit', 'kg')
-
-                    calculated_piece_weight_g = calculator.reverse_calculate_from_packet_weight(
-                        packet_weight, pieces_per_packet, 0, 'g', weight_unit
-                    )
-
-                    result = {
-                        'single_piece_weight_g': round(calculated_piece_weight_g, 4),
-                        'calculation_type': 'reverse',
-                        'packet_weight': packet_weight,
-                        'weight_unit': weight_unit,
-                        'pieces_per_packet': pieces_per_packet,
-                        'area_m2': round(area_m2, 6),
-                        'composite_gsm': round(composite_gsm, 2)
-                    }
+                # Calculate from dimensions
+                result = calculate_packet_weight_from_dimensions_data(data, calculator)
             else:
-                # Direct weight input method (original logic)
-                if calculation_direction == 'forward':
-                    single_piece_weight_g = float(data.get('single_piece_weight_g', 0))
-                    pieces_per_packet = int(data.get('pieces_per_packet', 0))
-
-                    packet_weight = calculator.calculate_packet_weight(
-                        pieces_per_packet, single_piece_weight_g,
-                        0, 'g', data.get('output_unit', 'kg')
-                    )
-
-                    result = {
-                        'packet_weight': round(packet_weight, 4),
-                        'output_unit': data.get('output_unit', 'kg'),
-                        'calculation_type': 'forward',
-                        'pieces_per_packet': pieces_per_packet,
-                        'single_piece_weight_g': single_piece_weight_g
-                    }
-                else:
-                    packet_weight = float(data.get('packet_weight', 0))
-                    weight_unit = data.get('weight_unit', 'kg')
-                    pieces_per_packet = int(data.get('pieces_per_packet', 0))
-
-                    single_piece_weight_g = calculator.reverse_calculate_from_packet_weight(
-                        packet_weight, pieces_per_packet, 0, 'g', weight_unit
-                    )
-
-                    result = {
-                        'single_piece_weight_g': round(single_piece_weight_g, 4),
-                        'calculation_type': 'reverse',
-                        'packet_weight': packet_weight,
-                        'weight_unit': weight_unit,
-                        'pieces_per_packet': pieces_per_packet
-                    }
+                # Direct weight input
+                result = calculate_packet_weight_from_direct_data(data, calculator)
 
             if request.user.is_authenticated:
                 default_material = PlasticMaterial.objects.first()
@@ -279,6 +177,179 @@ def calculate_packet_weight(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def calculate_packet_weight_from_dimensions_data(data, calculator):
+    """Calculate packet weight from bag dimensions"""
+    calculation_direction = data.get('calculation_direction', 'forward')
+
+    # Extract dimensions data
+    bag_type = data.get('dimensions_bag_type', 'FLAT_SHEET')
+    width = float(data.get('dimensions_width', 0))
+    height = float(data.get('dimensions_height', 0))
+    gusset_width = float(data.get('dimensions_gusset_width', 0))
+    width_unit = data.get('dimensions_width_unit', 'cm')
+    height_unit = data.get('dimensions_height_unit', 'cm')
+    gusset_unit = data.get('dimensions_gusset_unit', 'cm')
+    pieces_per_packet = int(data.get('dimensions_pieces_per_packet', 0))
+    packet_packaging_weight = float(data.get('dimensions_packet_packaging_weight', 0))
+    packaging_unit = data.get('dimensions_packaging_unit', 'g')
+    output_unit = data.get('output_unit', 'kg')
+
+    # Calculate area
+    area_m2 = calculator.calculate_single_piece_area(
+        width, height, bag_type, gusset_width,
+        width_unit, height_unit, gusset_unit
+    )
+
+    # Calculate GSM based on material type
+    if bag_type.startswith('LAMINATED'):
+        layers_data = []
+        layer_index = 0
+        while f'dimensions_layer_material_{layer_index}' in data:
+            material_id = data.get(f'dimensions_layer_material_{layer_index}')
+            thickness = float(data.get(f'dimensions_layer_thickness_{layer_index}', 0))
+            thickness_unit = data.get(f'dimensions_layer_thickness_unit_{layer_index}', 'micron')
+
+            if material_id and thickness:
+                try:
+                    material = PlasticMaterial.objects.get(id=material_id)
+                    layers_data.append({
+                        'thickness_microns': thickness,
+                        'density_g_cm3': material.density,
+                        'thickness_unit': thickness_unit
+                    })
+                except PlasticMaterial.DoesNotExist:
+                    pass
+            layer_index += 1
+
+        if not layers_data:
+            raise ValueError('No valid layers provided for laminated bag')
+
+        composite_gsm = calculator.calculate_composite_gsm(layers_data)
+    else:
+        material_id = data.get('dimensions_material_id')
+        if not material_id:
+            raise ValueError('Material required for single layer bag')
+
+        material = PlasticMaterial.objects.get(id=material_id)
+        thickness = float(data.get('dimensions_thickness', 0))
+        thickness_unit = data.get('dimensions_thickness_unit', 'micron')
+
+        thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
+        thickness_um = thickness_m * 1e6
+
+        composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
+
+    # Calculate single piece weight
+    single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm)
+
+    # Calculate packet weight
+    if calculation_direction == 'forward':
+        packet_result = calculator.calculate_packet_weight(
+            pieces_per_packet, single_piece_weight_g,
+            packet_packaging_weight, packaging_unit, output_unit
+        )
+
+        result = {
+            'calculation_type': 'forward',
+            'from_dimensions': True,
+            'single_piece_weight_g': round(single_piece_weight_g, 4),
+            'pieces_per_packet': pieces_per_packet,
+            'area_m2': round(area_m2, 6),
+            'composite_gsm': round(composite_gsm, 2),
+            'gross_weight': packet_result['gross_weight'],
+            'net_weight': packet_result['net_weight'],
+            'packaging_weight': packet_result['packaging_weight'],
+            'packaging_percentage': packet_result['packaging_percentage'],
+            'total_piece_weight_g': packet_result['total_piece_weight_g'],
+            'output_unit': output_unit,
+            'packaging_unit': 'g'
+        }
+    else:
+        # Reverse calculation
+        packet_weight = float(data.get('packet_weight', 0))
+        weight_unit = data.get('weight_unit', 'kg')
+
+        reverse_result = calculator.reverse_calculate_from_packet_weight(
+            packet_weight, pieces_per_packet,
+            packet_packaging_weight, packaging_unit, weight_unit
+        )
+
+        result = {
+            'calculation_type': 'reverse',
+            'from_dimensions': True,
+            'packet_weight': packet_weight,
+            'weight_unit': weight_unit,
+            'pieces_per_packet': pieces_per_packet,
+            'area_m2': round(area_m2, 6),
+            'composite_gsm': round(composite_gsm, 2),
+            'single_piece_weight_g': reverse_result['single_piece_weight_g'],
+            'net_bag_weight_g': reverse_result['net_bag_weight_g'],
+            'gross_packet_weight_g': reverse_result['gross_packet_weight_g'],
+            'packaging_weight_g': reverse_result['packaging_weight_g'],
+            'packaging_percentage': reverse_result['packaging_percentage']
+        }
+
+    return result
+
+
+def calculate_packet_weight_from_direct_data(data, calculator):
+    """Calculate packet weight from direct weight input"""
+    calculation_direction = data.get('calculation_direction', 'forward')
+
+    if calculation_direction == 'forward':
+        single_piece_weight_g = float(data.get('single_piece_weight_g', 0))
+        pieces_per_packet = int(data.get('pieces_per_packet', 0))
+        packet_packaging_weight = float(data.get('packet_packaging_weight', 0))
+        packaging_unit = data.get('packaging_unit', 'g')
+        output_unit = data.get('output_unit', 'kg')
+
+        packet_result = calculator.calculate_packet_weight(
+            pieces_per_packet, single_piece_weight_g,
+            packet_packaging_weight, packaging_unit, output_unit
+        )
+
+        result = {
+            'calculation_type': 'forward',
+            'from_dimensions': False,
+            'single_piece_weight_g': round(single_piece_weight_g, 4),
+            'pieces_per_packet': pieces_per_packet,
+            'gross_weight': packet_result['gross_weight'],
+            'net_weight': packet_result['net_weight'],
+            'packaging_weight': packet_result['packaging_weight'],
+            'packaging_percentage': packet_result['packaging_percentage'],
+            'total_piece_weight_g': packet_result['total_piece_weight_g'],
+            'output_unit': output_unit,
+            'packaging_unit': 'g'
+        }
+    else:
+        # Reverse calculation
+        packet_weight = float(data.get('packet_weight', 0))
+        weight_unit = data.get('weight_unit', 'kg')
+        pieces_per_packet = int(data.get('pieces_per_packet', 0))
+        packet_packaging_weight = float(data.get('packet_packaging_weight', 0))
+        packaging_unit = data.get('packaging_unit', 'g')
+
+        reverse_result = calculator.reverse_calculate_from_packet_weight(
+            packet_weight, pieces_per_packet,
+            packet_packaging_weight, packaging_unit, weight_unit
+        )
+
+        result = {
+            'calculation_type': 'reverse',
+            'from_dimensions': False,
+            'packet_weight': packet_weight,
+            'weight_unit': weight_unit,
+            'pieces_per_packet': pieces_per_packet,
+            'single_piece_weight_g': reverse_result['single_piece_weight_g'],
+            'net_bag_weight_g': reverse_result['net_bag_weight_g'],
+            'gross_packet_weight_g': reverse_result['gross_packet_weight_g'],
+            'packaging_weight_g': reverse_result['packaging_weight_g'],
+            'packaging_percentage': reverse_result['packaging_percentage']
+        }
+
+    return result
 
 
 @login_required

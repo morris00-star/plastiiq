@@ -216,7 +216,50 @@ class ExtrusionCalculator:
     def calc_coefficient_of_friction(F_f, F_n):
         return F_f / F_n if F_n else 0
 
+
     @staticmethod
     def calc_dart_impact_m50(weights_g, results_pass_fail):
+        """Original method using pass/fail results"""
         fails = [w for w, r in zip(weights_g, results_pass_fail) if not r]
         return statistics.mean(fails) if fails else max(weights_g) if weights_g else 0
+
+
+    @staticmethod
+    def calc_dart_impact_m50_astm(weights_g, failures, total_drops, weight_step):
+        """
+        Calculate Dart Impact M50 using ASTM D1709 Method A formula:
+        M50 = Wf + d(A/N - 0.5)
+
+        Where:
+        Wf = lowest weight where there is 50% failure
+        d = weight step
+        A = number of failures at weight Wf
+        N = total drops at weight Wf
+        """
+        if not weights_g or len(weights_g) != len(failures) or len(weights_g) != len(total_drops):
+            return 0
+
+        # Find the weight where failure rate is closest to 50%
+        best_weight = weights_g[0]
+        best_failures = failures[0]
+        best_total_drops = total_drops[0]
+        min_diff = float('inf')
+
+        for i, weight in enumerate(weights_g):
+            if i < len(failures) and i < len(total_drops) and total_drops[i] > 0:
+                failure_rate = failures[i] / total_drops[i]
+                diff = abs(failure_rate - 0.5)
+                if diff < min_diff:
+                    min_diff = diff
+                    best_weight = weight
+                    best_failures = failures[i]
+                    best_total_drops = total_drops[i]
+
+        # Calculate M50 using ASTM formula
+        if best_total_drops > 0:
+            m50 = best_weight + weight_step * (best_failures / best_total_drops - 0.5)
+        else:
+            m50 = best_weight
+
+        return max(m50, 0)  # Ensure non-negative result
+

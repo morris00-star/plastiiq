@@ -251,12 +251,18 @@ def calculate_thickness(request):
                     })
 
                 thickness_microns = thickness_m * 1_000_000
+                thickness_gauge = thickness_microns * 0.254
 
                 result = {
                     'thickness_microns': round(thickness_microns, 2),
+                    'thickness_gauge': round(thickness_gauge, 2),
                     'thickness_mm': round(thickness_m * 1000, 4),
                     'thickness_mil': round(thickness_microns / 25.4, 3),
                     'method': 'cut_weigh',
+                    'sheet_thickness_microns': round(thickness_microns, 2),
+                    'tube_thickness_microns': round(thickness_microns * 2, 2),
+                    'sheet_thickness_gauge': round(thickness_gauge, 2),
+                    'tube_thickness_gauge': round(thickness_gauge * 2, 2),
                     'inputs_used': {
                         'mass_kg': round(mass_kg, 6),
                         'length_m': round(length_m, 4),
@@ -300,12 +306,18 @@ def calculate_thickness(request):
                     })
 
                 thickness_microns = thickness_m * 1_000_000
+                thickness_gauge = thickness_microns * 0.254
 
                 result = {
                     'thickness_microns': round(thickness_microns, 2),
+                    'thickness_gauge': round(thickness_gauge, 2),
                     'thickness_mm': round(thickness_m * 1000, 4),
                     'thickness_mil': round(thickness_microns / 25.4, 3),
                     'method': 'extrusion_rate',
+                    'sheet_thickness_microns': round(thickness_microns, 2),
+                    'tube_thickness_microns': round(thickness_microns * 2, 2),
+                    'sheet_thickness_gauge': round(thickness_gauge, 2),
+                    'tube_thickness_gauge': round(thickness_gauge * 2, 2),
                     'inputs_used': {
                         'mass_flow_kghr': round(mass_flow_kghr, 2),
                         'width_m': round(width_m, 4),
@@ -722,22 +734,53 @@ def calculate_cof(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            friction_force = safe_float(data.get('friction_force', 0))
-            friction_force_unit = data.get('friction_force_unit', 'N')
-            normal_force = safe_float(data.get('normal_force', 0))
-            normal_force_unit = data.get('normal_force_unit', 'N')
+
+            # Get test configuration
+            test_method = data.get('test_method', 'film_to_film')
+            film_surface = data.get('film_surface', 'inner')
+
+            # Static friction data
+            static_friction_force = safe_float(data.get('static_friction_force', 0))
+            static_friction_force_unit = data.get('static_friction_force_unit', 'N')
+            static_normal_force = safe_float(data.get('static_normal_force', 0))
+            static_normal_force_unit = data.get('static_normal_force_unit', 'N')
+
+            # Dynamic friction data
+            dynamic_friction_force = safe_float(data.get('dynamic_friction_force', 0))
+            dynamic_friction_force_unit = data.get('dynamic_friction_force_unit', 'N')
+            dynamic_normal_force = safe_float(data.get('dynamic_normal_force', 0))
+            dynamic_normal_force_unit = data.get('dynamic_normal_force_unit', 'N')
 
             calculator = ExtrusionCalculator()
 
-            F_f = calculator.convert_force(friction_force, friction_force_unit, 'N')
-            F_n = calculator.convert_force(normal_force, normal_force_unit, 'N')
+            # Convert to base units
+            F_f_static = calculator.convert_force(static_friction_force, static_friction_force_unit, 'N')
+            F_n_static = calculator.convert_force(static_normal_force, static_normal_force_unit, 'N')
+            F_f_dynamic = calculator.convert_force(dynamic_friction_force, dynamic_friction_force_unit, 'N')
+            F_n_dynamic = calculator.convert_force(dynamic_normal_force, dynamic_normal_force_unit, 'N')
 
-            cof = calculator.calc_coefficient_of_friction(F_f, F_n)
+            # Calculate coefficients
+            static_cof = calculator.calc_coefficient_of_friction(F_f_static, F_n_static)
+            dynamic_cof = calculator.calc_coefficient_of_friction(F_f_dynamic, F_n_dynamic)
+
+            # Determine test configuration description
+            test_method_display = "Film to Film (Poly to Poly)" if test_method == 'film_to_film' else "Film to Metal (Poly to Metal)"
+            film_surface_display = "Inner Surface" if film_surface == 'inner' else "Outer Surface"
 
             result = {
-                'coefficient_of_friction': round(cof, 3),
-                'friction_type': get_friction_type(cof),
-                'interpretation': get_cof_interpretation(cof)
+                'static_coefficient': round(static_cof, 3),
+                'dynamic_coefficient': round(dynamic_cof, 3),
+                'test_configuration': {
+                    'method': test_method_display,
+                    'surface': film_surface_display,
+                    'full_description': f"{test_method_display} - {film_surface_display}"
+                },
+                'static_friction_type': get_friction_type(static_cof),
+                'dynamic_friction_type': get_friction_type(dynamic_cof),
+                'static_interpretation': get_cof_interpretation(static_cof, 'static'),
+                'dynamic_interpretation': get_cof_interpretation(dynamic_cof, 'dynamic'),
+                'comparison_note': get_cof_comparison_note(static_cof, dynamic_cof),
+                'application_recommendation': get_application_recommendation(static_cof, dynamic_cof, test_method)
             }
 
             if request.user.is_authenticated:
@@ -757,25 +800,71 @@ def calculate_cof(request):
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-
 def get_friction_type(cof):
     if cof < 0.1:
         return "Very Low Friction"
-    elif cof < 0.3:
+    elif cof < 0.2:
         return "Low Friction"
-    elif cof < 0.5:
-        return "Medium Friction"
-    else:
-        return "High Friction"
-
-
-def get_cof_interpretation(cof):
-    if cof < 0.2:
-        return "Excellent for high-speed packaging"
     elif cof < 0.4:
-        return "Good for general packaging"
+        return "Medium Friction"
+    elif cof < 0.6:
+        return "High Friction"
     else:
-        return "May cause handling issues in high-speed applications"
+        return "Very High Friction"
+
+
+def get_cof_interpretation(cof, friction_type):
+    if friction_type == 'static':
+        if cof < 0.2:
+            return "Excellent for bag opening and high-speed packaging"
+        elif cof < 0.4:
+            return "Good for general packaging applications"
+        elif cof < 0.6:
+            return "May cause sticking in high-speed applications"
+        else:
+            return "High sticking tendency - may cause handling issues"
+    else:  # dynamic
+        if cof < 0.15:
+            return "Excellent slip properties for high-speed machinery"
+        elif cof < 0.3:
+            return "Good for most packaging machinery"
+        elif cof < 0.5:
+            return "May require machinery adjustments"
+        else:
+            return "High friction - may cause machinery problems"
+
+
+def get_cof_comparison_note(static_cof, dynamic_cof):
+    if static_cof > dynamic_cof:
+        return "Typical behavior: Static COF > Dynamic COF"
+    elif static_cof < dynamic_cof:
+        return "Atypical: Static COF < Dynamic COF (unusual)"
+    else:
+        return "Static and Dynamic COF are equal"
+
+
+def get_application_recommendation(static_cof, dynamic_cof, test_method):
+    base_recommendation = ""
+
+    if test_method == 'film_to_film':
+        if dynamic_cof < 0.2:
+            base_recommendation = "Excellent for high-speed bag making and stacking"
+        elif dynamic_cof < 0.35:
+            base_recommendation = "Suitable for most packaging applications"
+        else:
+            base_recommendation = "May cause stacking and handling issues"
+    else:  # film_to_metal
+        if dynamic_cof < 0.15:
+            base_recommendation = "Excellent for high-speed machinery operation"
+        elif dynamic_cof < 0.25:
+            base_recommendation = "Good for standard packaging machinery"
+        else:
+            base_recommendation = "May cause machinery wear and tear"
+
+    if static_cof > 0.5:
+        base_recommendation += " - High static friction may cause bag opening issues"
+
+    return base_recommendation
 
 
 @login_required
@@ -785,27 +874,51 @@ def calculate_dart_impact(request):
         try:
             data = json.loads(request.body)
             weights_g = [safe_float(w) for w in data.get('weights_g', [])]
-            results_pass_fail = [bool(r) for r in data.get('results_pass_fail', [])]
+            failures = [safe_int(f) for f in data.get('failures', [])]
+            total_drops = [safe_int(td) for td in data.get('total_drops', [])]
+            weight_step = safe_float(data.get('weight_step', 5))
+            material_id = data.get('material_id')
+            thickness = safe_float(data.get('thickness', 0))
+            thickness_unit = data.get('thickness_unit', 'micron')
 
-            if len(weights_g) != len(results_pass_fail):
-                return JsonResponse({'success': False, 'error': 'Weights and results arrays must have same length'})
+            # Validate inputs
+            if len(weights_g) != len(failures) or len(weights_g) != len(total_drops):
+                return JsonResponse({'success': False, 'error': 'Weights, failures, and total drops arrays must have same length'})
 
-            calculator = ExtrusionCalculator()
-            m50 = calculator.calc_dart_impact_m50(weights_g, results_pass_fail)
+            if not material_id:
+                return JsonResponse({'success': False, 'error': 'Please select a material'})
+
+            material = PlasticMaterial.objects.get(id=material_id)
+            calculator = ExtrusionCalculator(material.density)
+
+            # Convert thickness to microns for normalization
+            thickness_microns = calculator.convert_to_meters(thickness, thickness_unit) * 1_000_000
+
+            # Calculate M50 using ASTM D1709 formula - FIXED CALL
+            m50 = calculator.calc_dart_impact_m50_astm(weights_g, failures, total_drops, weight_step)
+
+            # Calculate normalized value (grams per micron)
+            normalized_m50 = m50 / thickness_microns if thickness_microns > 0 else 0
 
             result = {
                 'dart_impact_m50_g': round(m50, 1),
+                'dart_impact_normalized': round(normalized_m50, 3),
+                'thickness_microns': round(thickness_microns, 1),
                 'test_count': len(weights_g),
-                'pass_count': sum(results_pass_fail),
-                'fail_count': len(results_pass_fail) - sum(results_pass_fail),
-                'impact_category': get_dart_impact_category(m50)
+                'total_failures': sum(failures),
+                'total_drops': sum(total_drops),
+                'failure_rate_percent': round((sum(failures) / sum(total_drops)) * 100, 1) if sum(total_drops) > 0 else 0,
+                'weight_step': weight_step,
+                'impact_category': get_dart_impact_category(m50),
+                'normalized_category': get_normalized_dart_impact_category(normalized_m50),
+                'material_name': material.name,
+                'material_density': material.density
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
                 ExtrusionCalculation.objects.create(
                     calculation_type='DART_IMPACT',
-                    material=default_material,
+                    material=material,
                     input_data=data,
                     result_data=result,
                     user=request.user
@@ -813,6 +926,8 @@ def calculate_dart_impact(request):
 
             return JsonResponse({'success': True, 'result': result})
 
+        except PlasticMaterial.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Selected material not found'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 
@@ -829,6 +944,15 @@ def get_dart_impact_category(m50_g):
     else:
         return "Very High Impact Resistance"
 
+def get_normalized_dart_impact_category(normalized_value):
+    if normalized_value < 0.5:
+        return "Low Normalized Impact"
+    elif normalized_value < 1.0:
+        return "Medium Normalized Impact"
+    elif normalized_value < 2.0:
+        return "High Normalized Impact"
+    else:
+        return "Very High Normalized Impact"
 
 @login_required
 @csrf_exempt
