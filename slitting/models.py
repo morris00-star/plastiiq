@@ -18,6 +18,7 @@ class SlittingCalculation(models.Model):
     input_data = models.JSONField()
     result_data = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    core_weight_source = models.CharField(max_length=20, blank=True, null=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -38,3 +39,20 @@ class SlittingLayer(models.Model):
 
     class Meta:
         ordering = ['layer_order']
+
+
+class CoreMaterial(models.Model):
+    """Model to store different core material properties"""
+    name = models.CharField(max_length=100)
+    material_type = models.CharField(max_length=50)  # e.g., 'Paper', 'Plastic', 'Steel'
+    density = models.FloatField(help_text="Density in g/cm³")
+    wall_thickness_mm = models.FloatField(default=1.5, help_text="Typical wall thickness in mm")
+    color = models.CharField(max_length=30, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.material_type}) - {self.density}g/cm³"
+

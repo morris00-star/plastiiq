@@ -81,7 +81,7 @@
                 <div class="col-md-4">
                     <label class="form-label">Gusset Width (if applicable)</label>
                     <div class="input-group">
-                        <input type="number" step="0.01" class="form-control" name="gusset_width" value="0" placeholder="e.g., 5">
+                        <input type="number" step="0.01" class="form-control" name="gusset_width"  placeholder="e.g., 5">
                         <select class="form-select" name="gusset_unit" style="max-width: 100px;">
                             <option value="cm">cm</option>
                             <option value="mm">mm</option>
@@ -163,7 +163,7 @@
             <div class="row mb-3">
                 <div class="col-md-6" id="piecesInput">
                     <label class="form-label">Number of Pieces</label>
-                    <input type="number" class="form-control" name="num_pieces" value="1000" min="1">
+                    <input type="number" class="form-control" name="num_pieces" placeholder="e.g., 1000" min="1">
                 </div>
                 <div class="col-md-6" id="weightInput" style="display: none;">
                     <label class="form-label">Total Weight</label>
@@ -494,18 +494,18 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Packet Weight (kg)</label>
-                            <input type="number" step="0.001" class="form-control" name="packet_weight_kg" placeholder="e.g., 0.525">
+                            <input type="number" step="0.001" class="form-control" name="packet_weight_kg" placeholder="e.g., 50">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Packets per Bundle</label>
-                            <input type="number" class="form-control" name="packets_per_bundle" value="20" min="1">
+                            <input type="number" class="form-control" name="packets_per_bundle" placeholder="e.g., 20" min="1">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Bundle Packaging Weight</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight" value="0" placeholder="e.g., 0.5">
+                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight" placeholder="e.g., 2">
                                 <select class="form-select" name="packaging_unit" style="max-width: 100px;">
-                                    <option value="kg">kg</option>
+                                    <option value="kg" selected>kg</option>
                                     <option value="g">g</option>
                                 </select>
                             </div>
@@ -518,23 +518,23 @@
                         <div class="col-md-4">
                             <label class="form-label">Bundle Weight</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="bundle_weight" placeholder="e.g., 10.5">
+                                <input type="number" step="0.001" class="form-control" name="bundle_weight" placeholder="e.g., 45">
                                 <select class="form-select" name="weight_unit" style="max-width: 100px;">
-                                    <option value="kg">kg</option>
+                                    <option value="kg" selected>kg</option>
                                     <option value="g">g</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Packets per Bundle</label>
-                            <input type="number" class="form-control" name="packets_per_bundle" value="20" min="1">
+                            <input type="number" class="form-control" name="packets_per_bundle" placeholder="e.g., 20" min="1">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Bundle Packaging Weight</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight" value="0" placeholder="e.g., 0.5">
+                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight" placeholder="e.g., 2">
                                 <select class="form-select" name="packaging_unit" style="max-width: 100px;">
-                                    <option value="kg">kg</option>
+                                    <option value="kg" selected>kg</option>
                                     <option value="g">g</option>
                                 </select>
                             </div>
@@ -589,7 +589,7 @@
                     <div class="col-md-4">
                         <label class="form-label">Gusset Width (if applicable)</label>
                         <div class="input-group">
-                            <input type="number" step="0.01" class="form-control" name="dimensions_gusset_width" value="0" placeholder="e.g., 5">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_gusset_width" placeholder="e.g., 5">
                             <select class="form-select" name="dimensions_gusset_unit" style="max-width: 100px;">
                                 <option value="cm">cm</option>
                                 <option value="mm">mm</option>
@@ -670,16 +670,16 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label class="form-label">Pieces per Packet</label>
-                        <input type="number" class="form-control" name="dimensions_pieces_per_packet" value="100" min="1">
+                        <input type="number" class="form-control" name="dimensions_pieces_per_packet" placeholder="e.g., 100" min="1">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Packets per Bundle</label>
-                        <input type="number" class="form-control" name="dimensions_packets_per_bundle" value="20" min="1">
+                        <input type="number" class="form-control" name="dimensions_packets_per_bundle" placeholder="e.g., 20" min="1">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Bundle Packaging Weight</label>
                         <div class="input-group">
-                            <input type="number" step="0.001" class="form-control" name="dimensions_bundle_packaging_weight" value="0" placeholder="e.g., 0.5">
+                            <input type="number" step="0.001" class="form-control" name="dimensions_bundle_packaging_weight" placeholder="e.g., 0.5">
                             <select class="form-select" name="dimensions_packaging_unit" style="max-width: 100px;">
                                 <option value="kg">kg</option>
                                 <option value="g">g</option>
@@ -721,12 +721,12 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Total Pieces to Produce</label>
-                    <input type="number" class="form-control" name="total_pieces" value="10000" min="1">
+                    <input type="number" class="form-control" name="total_pieces" placeholder="e.g., 1000" min="1">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Machine Speed</label>
                     <div class="input-group">
-                        <input type="number" step="0.1" class="form-control" name="machine_speed" value="120" min="1">
+                        <input type="number" step="0.1" class="form-control" name="machine_speed" placeholder="e.g., 120" min="1">
                         <select class="form-select" name="machine_speed_unit" style="max-width: 120px;">
                             <option value="pcs_min">pcs/min</option>
                             <option value="pcs_hr">pcs/hr</option>
@@ -739,7 +739,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Input Film Mass</label>
                     <div class="input-group">
-                        <input type="number" step="0.001" class="form-control" name="input_film_mass" value="50" min="0.001">
+                        <input type="number" step="0.001" class="form-control" name="input_film_mass" placeholder="e.g., 50" min="0.001">
                         <select class="form-select" name="input_mass_unit" style="max-width: 100px;">
                             <option value="kg">kg</option>
                             <option value="g">g</option>
@@ -750,7 +750,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Output Bag Mass</label>
                     <div class="input-group">
-                        <input type="number" step="0.001" class="form-control" name="output_bag_mass" value="48" min="0.001">
+                        <input type="number" step="0.001" class="form-control" name="output_bag_mass" placeholder="e.g., 48" min="0.001">
                         <select class="form-select" name="output_mass_unit" style="max-width: 100px;">
                             <option value="kg">kg</option>
                             <option value="g">g</option>
@@ -764,7 +764,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Actual Run Time</label>
                     <div class="input-group">
-                        <input type="number" step="0.1" class="form-control" name="actual_run_time" value="480" min="0.1">
+                        <input type="number" step="0.1" class="form-control" name="actual_run_time" placeholder="e.g., 480" min="0.1">
                         <select class="form-select" name="actual_time_unit" style="max-width: 100px;">
                             <option value="min">minutes</option>
                             <option value="hr">hours</option>
@@ -773,7 +773,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Total Pieces Produced</label>
-                    <input type="number" class="form-control" name="total_pieces_produced" value="10000" min="1">
+                    <input type="number" class="form-control" name="total_pieces_produced" placeholder="e.g., 1000" min="1">
                 </div>
             </div>
 
@@ -1512,15 +1512,25 @@ function displayBundleWeightResult(result) {
                         <div class="col-md-6">
                             <p><strong>Packet Weight:</strong> ${res.packet_weight_kg} kg</p>
                             <p><strong>Packets per Bundle:</strong> ${res.packets_per_bundle}</p>
+                            <p><strong>Net Packets Weight:</strong> ${res.net_packets_weight_kg} kg</p>
                             ${res.single_piece_weight_g ? `<p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>` : ''}
                             ${res.area_m2 ? `<p><strong>Bag Area:</strong> ${res.area_m2} m²</p>` : ''}
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Total Bundle Weight:</strong> ${res.bundle_weight} ${res.output_unit}</p>
-                            <p><strong>Net Packets Weight:</strong> ${(res.packets_per_bundle * res.packet_weight_kg).toFixed(4)} kg</p>
-                            <p><strong>Total Pieces in Bundle:</strong> ${(res.packets_per_bundle * res.pieces_per_packet).toLocaleString()}</p>
+                            <p><strong>Gross Bundle Weight:</strong> ${res.gross_weight} ${res.output_unit}</p>
+                            <p><strong>Net Bundle Weight:</strong> ${res.net_weight} ${res.output_unit}</p>
+                            <p><strong>Bundle Packaging Weight:</strong> ${res.packaging_weight} ${res.packaging_unit}</p>
+                            <p><strong>Packaging Percentage:</strong> ${res.packaging_percentage}%</p>
                         </div>
                     </div>
+                    ${res.packets_per_bundle ? `
+                        <div class="mt-2 p-2 bg-light rounded">
+                            <small><strong>Calculation Breakdown:</strong><br>
+                            Net Packets: ${res.packets_per_bundle} packets × ${res.packet_weight_kg} kg = ${res.net_packets_weight_kg} kg<br>
+                            Gross Bundle: ${res.net_packets_weight_kg} kg + ${res.packaging_weight} kg packaging = ${res.gross_weight} ${res.output_unit}
+                            </small>
+                        </div>
+                    ` : ''}
                 </div>
             `;
         } else {
@@ -1529,16 +1539,26 @@ function displayBundleWeightResult(result) {
                     <h6><i class="fas fa-check-circle"></i> Reverse Calculation Results:</h6>
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Bundle Weight:</strong> ${res.bundle_weight} ${res.weight_unit}</p>
+                            <p><strong>Gross Bundle Weight:</strong> ${res.bundle_weight} ${res.weight_unit}</p>
                             <p><strong>Packets per Bundle:</strong> ${res.packets_per_bundle}</p>
-                            ${res.single_piece_weight_g ? `<p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>` : ''}
+                            <p><strong>Bundle Packaging Weight:</strong> ${res.packaging_weight_kg} kg</p>
+                            <p><strong>Packaging Percentage:</strong> ${res.packaging_percentage}%</p>
                         </div>
                         <div class="col-md-6">
                             <p><strong>Calculated Packet Weight:</strong> ${res.packet_weight_kg} kg</p>
-                            <p><strong>Net Packets Weight:</strong> ${(res.packet_weight_kg * res.packets_per_bundle).toFixed(4)} kg</p>
-                            <p><strong>Total Pieces in Bundle:</strong> ${(res.packets_per_bundle * res.pieces_per_packet).toLocaleString()}</p>
+                            <p><strong>Net Packets Weight:</strong> ${res.net_packets_weight_kg} kg</p>
+                            ${res.single_piece_weight_g ? `<p><strong>Single Piece Weight:</strong> ${res.single_piece_weight_g} g</p>` : ''}
+                            ${res.pieces_per_packet ? `<p><strong>Total Pieces in Bundle:</strong> ${(res.packets_per_bundle * res.pieces_per_packet).toLocaleString()}</p>` : ''}
                         </div>
                     </div>
+                    ${res.packets_per_bundle ? `
+                        <div class="mt-2 p-2 bg-light rounded">
+                            <small><strong>Calculation Breakdown:</strong><br>
+                            Net Packets: ${res.gross_bundle_weight_kg} kg - ${res.packaging_weight_kg} kg packaging = ${res.net_packets_weight_kg} kg<br>
+                            Packet Weight: ${res.net_packets_weight_kg} kg ÷ ${res.packets_per_bundle} packets = ${res.packet_weight_kg} kg per packet
+                            </small>
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }

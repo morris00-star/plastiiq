@@ -16,6 +16,8 @@ urlpatterns = [
     path('calculate-yield/', views.calculate_yield, name='calculate_yield'),
     path('calculate-film-length/', views.calculate_film_length, name='calculate_film_length'),
 
+    path('core-materials/', views.get_core_materials, name='get_core_materials'),
+
     # History
     path('history/', views.slitting_history, name='slitting_history'),
 ]

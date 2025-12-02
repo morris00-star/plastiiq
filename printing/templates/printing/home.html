@@ -53,7 +53,7 @@
                     <div class="mb-3" id="lengthInput">
                         <label class="form-label">Film Length</label>
                         <div class="input-group">
-                            <input type="number" step="0.001" class="form-control" name="length" value="1000">
+                            <input type="number" step="0.001" class="form-control" name="length" placeholder="e.g., 1000">
                             <select class="form-select" name="length_unit" style="max-width: 120px;">
                                 <option value="m">Meters</option>
                                 <option value="ft">Feet</option>
@@ -79,7 +79,7 @@
                     <div class="mb-3">
                         <label class="form-label">Film Width</label>
                         <div class="input-group">
-                            <input type="number" step="0.0001" class="form-control" name="width" required value="1.2">
+                            <input type="number" step="0.0001" class="form-control" name="width" placeholder="e.g., 1.2">
                             <select class="form-select" name="width_unit" style="max-width: 120px;">
                                 <option value="m">Meters</option>
                                 <option value="cm">cm</option>
@@ -92,7 +92,7 @@
                     <div class="mb-3">
                         <label class="form-label">Film Thickness</label>
                         <div class="input-group">
-                            <input type="number" step="0.01" class="form-control" name="thickness" required value="25">
+                            <input type="number" step="0.01" class="form-control" name="thickness" placeholder="e.g., 25">
                             <select class="form-select" name="thickness_unit" style="max-width: 120px;">
                                 <option value="micron">Microns</option>
                                 <option value="mm">mm</option>
@@ -133,7 +133,7 @@
                     <div class="mb-3">
                         <label class="form-label">Film Width</label>
                         <div class="input-group">
-                            <input type="number" step="0.0001" class="form-control" name="film_width" required value="1.2">
+                            <input type="number" step="0.0001" class="form-control" name="film_width" placeholder="e.g., 1.2">
                             <select class="form-select" name="film_width_unit" style="max-width: 120px;">
                                 <option value="m">Meters</option>
                                 <option value="cm">cm</option>
@@ -144,7 +144,7 @@
                     <div class="mb-3">
                         <label class="form-label">Film Length</label>
                         <div class="input-group">
-                            <input type="number" step="0.001" class="form-control" name="film_length" required value="5000">
+                            <input type="number" step="0.001" class="form-control" name="film_length" placeholder="e.g., 5000">
                             <select class="form-select" name="film_length_unit" style="max-width: 120px;">
                                 <option value="m">Meters</option>
                                 <option value="ft">Feet</option>
@@ -154,7 +154,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Ink Coverage (%)</label>
-                        <input type="number" step="0.01" class="form-control" name="coverage_percent" required value="65" min="0" max="100">
+                        <input type="number" step="0.01" class="form-control" name="coverage_percent" placeholder="e.g., 65" min="0" max="100">
                         <div class="form-text">Percentage of area covered by ink (0-100%)</div>
                     </div>
                 </div>
@@ -163,7 +163,7 @@
                     <div class="mb-3">
                         <label class="form-label">Ink Coverage GSM</label>
                         <div class="input-group">
-                            <input type="number" step="0.001" class="form-control" name="ink_coverage_gsm" required value="1.0">
+                            <input type="number" step="0.001" class="form-control" name="ink_coverage_gsm" placeholder="e.g., 1.0">
                             <span class="input-group-text">g/m²</span>
                         </div>
                         <div class="form-text">Dry ink laydown for 100% solid coverage</div>
@@ -172,7 +172,7 @@
                     <div class="mb-3">
                         <label class="form-label">Ink Density</label>
                         <div class="input-group">
-                            <input type="number" step="0.0001" class="form-control" name="ink_density" required value="1.4">
+                            <input type="number" step="0.0001" class="form-control" name="ink_density" required placeholder="e.g., 1.4">
                             <span class="input-group-text">g/cm³</span>
                         </div>
                         <div class="form-text">Dry ink density</div>
@@ -223,7 +223,7 @@
                         <div class="mb-3">
                             <label class="form-label">Length Run</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="length" value="1500">
+                                <input type="number" step="0.001" class="form-control" name="length" placeholder="e.g., 1500">
                                 <select class="form-select" name="length_unit" style="max-width: 120px;">
                                     <option value="m">Meters</option>
                                     <option value="ft">Feet</option>
@@ -235,7 +235,7 @@
                         <div class="mb-3">
                             <label class="form-label">Run Time</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="run_time" value="12.5">
+                                <input type="number" step="0.001" class="form-control" name="run_time" placeholder="e.g., 12.5">
                                 <select class="form-select" name="run_time_unit" style="max-width: 120px;">
                                     <option value="min">Minutes</option>
                                     <option value="hr">Hours</option>
@@ -252,7 +252,7 @@
                         <div class="mb-3">
                             <label class="form-label">Total Order Length</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="total_length" value="10000">
+                                <input type="number" step="0.001" class="form-control" name="total_length" placeholder="e.g., 10000">
                                 <select class="form-select" name="total_length_unit" style="max-width: 120px;">
                                     <option value="m">Meters</option>
                                     <option value="ft">Feet</option>
@@ -264,7 +264,7 @@
                         <div class="mb-3">
                             <label class="form-label">Machine Speed</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="machine_speed" value="120">
+                                <input type="number" step="0.001" class="form-control" name="machine_speed" placeholder="e.g., 120">
                                 <select class="form-select" name="machine_speed_unit" style="max-width: 120px;">
                                     <option value="m_min">m/min</option>
                                     <option value="m_hr">m/hr</option>
@@ -325,7 +325,7 @@
                         <div class="mb-3">
                             <label class="form-label">Thickness</label>
                             <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" name="thickness" id="thicknessInput" value="12">
+                                <input type="number" step="0.01" class="form-control" name="thickness" id="thicknessInput" placeholder="e.g., 12">
                                 <select class="form-select" name="thickness_unit" style="max-width: 120px;">
                                     <option value="micron">Microns</option>
                                     <option value="mm">mm</option>
@@ -341,7 +341,7 @@
                         <div class="mb-3">
                             <label class="form-label">Density (g/cm³)</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="density" id="densityInput" value="1.385">
+                                <input type="number" step="0.001" class="form-control" name="density" id="densityInput" placeholder="e.g., 1.365">
                                 <span class="input-group-text">g/cm³</span>
                             </div>
                             <div class="form-text">
@@ -424,7 +424,7 @@
                         <div class="mb-3">
                             <label class="form-label">Sample Mass</label>
                             <div class="input-group">
-                                <input type="number" step="0.0001" class="form-control" name="sample_mass" value="0.231">
+                                <input type="number" step="0.0001" class="form-control" name="sample_mass" placeholder="e.g., 0.231">
                                 <select class="form-select" name="sample_mass_unit" style="max-width: 120px;">
                                     <option value="g">grams</option>
                                     <option value="mg">mg</option>
@@ -436,7 +436,7 @@
                         <div class="mb-3">
                             <label class="form-label">Sample Area</label>
                             <div class="input-group">
-                                <input type="number" step="0.0001" class="form-control" name="sample_area" value="100">
+                                <input type="number" step="0.0001" class="form-control" name="sample_area" placeholder="e.g., 100">
                                 <select class="form-select" name="sample_area_unit" style="max-width: 120px;">
                                     <option value="cm2">cm²</option>
                                     <option value="m2">m²</option>
@@ -528,7 +528,7 @@
                         <div class="mb-3">
                             <label class="form-label">Total Batch Size</label>
                             <div class="input-group">
-                                <input type="number" step="0.0001" class="form-control" name="total_batch_kg" value="10">
+                                <input type="number" step="0.0001" class="form-control" name="total_batch_kg" placeholder="e.g., 10">
                                 <span class="input-group-text">kg</span>
                             </div>
                         </div>
@@ -538,25 +538,25 @@
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label class="form-label">Pigment (%)</label>
-                            <input type="number" step="0.0001" class="form-control" name="pigment_pct" value="15">
+                            <input type="number" step="0.0001" class="form-control" name="pigment_pct" placeholder="e.g., 15">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label class="form-label">Binder (%)</label>
-                            <input type="number" step="0.0001" class="form-control" name="binder_pct" value="25">
+                            <input type="number" step="0.0001" class="form-control" name="binder_pct" placeholder="e.g., 25">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label class="form-label">Additives (%)</label>
-                            <input type="number" step="0.0001" class="form-control" name="additives_pct" value="5">
+                            <input type="number" step="0.0001" class="form-control" name="additives_pct" placeholder="e.g., 5">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label class="form-label">Solvent (%)</label>
-                            <input type="number" step="0.0001" class="form-control" name="solvent_pct" value="55">
+                            <input type="number" step="0.0001" class="form-control" name="solvent_pct" placeholder="e.g., 55">
                         </div>
                     </div>
                 </div>
@@ -574,14 +574,14 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label class="form-label">Current Viscosity</label>
-                            <input type="number" step="0.0001" class="form-control" name="current_viscosity" value="25">
+                            <input type="number" step="0.0001" class="form-control" name="current_viscosity" placeholder="e.g., 25">
                             <div class="form-text">e.g., 25 seconds (Ford Cup #4)</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label class="form-label">Target Viscosity</label>
-                            <input type="number" step="0.0001" class="form-control" name="target_viscosity" value="18">
+                            <input type="number" step="0.0001" class="form-control" name="target_viscosity" placeholder="e.g., 18">
                             <div class="form-text">Desired viscosity</div>
                         </div>
                     </div>
@@ -589,7 +589,7 @@
                         <div class="mb-3">
                             <label class="form-label">Current Mass</label>
                             <div class="input-group">
-                                <input type="number" step="0.0001" class="form-control" name="current_mass" value="5">
+                                <input type="number" step="0.0001" class="form-control" name="current_mass" placeholder="e.g., 5">
                                 <select class="form-select" name="current_mass_unit" style="max-width: 100px;">
                                     <option value="kg">kg</option>
                                     <option value="g">g</option>
@@ -668,7 +668,7 @@
                         <div class="mb-3">
                             <label class="form-label">Total Color Batch Size</label>
                             <div class="input-group">
-                                <input type="number" step="0.0001" class="form-control" name="color_batch_kg" id="colorBatchSize" value="1">
+                                <input type="number" step="0.0001" class="form-control" name="color_batch_kg" id="colorBatchSize" placeholder="e.g., 1">
                                 <span class="input-group-text">kg</span>
                             </div>
                             <div class="form-text">Total amount of mixed color ink needed</div>
@@ -721,7 +721,7 @@
                     <div class="mb-3">
                         <label class="form-label">Total Order Length</label>
                         <div class="input-group">
-                            <input type="number" step="0.0001" class="form-control" name="total_order_length" value="25000">
+                            <input type="number" step="0.0001" class="form-control" name="total_order_length" placeholder="e.g., 25000">
                             <select class="form-select" name="total_order_length_unit" style="max-width: 120px;">
                                 <option value="m">Meters</option>
                                 <option value="ft">Feet</option>
@@ -733,7 +733,7 @@
                     <div class="mb-3">
                         <label class="form-label">Machine Speed</label>
                         <div class="input-group">
-                            <input type="number" step="0.0001" class="form-control" name="machine_speed" value="120">
+                            <input type="number" step="0.0001" class="form-control" name="machine_speed" placeholder="e.g., 120">
                             <select class="form-select" name="machine_speed_unit" style="max-width: 120px;">
                                 <option value="m_min">m/min</option>
                                 <option value="m_hr">m/hr</option>
@@ -745,7 +745,7 @@
                     <div class="mb-3">
                         <label class="form-label">Setup Time</label>
                         <div class="input-group">
-                            <input type="number" step="0.0001" class="form-control" name="setup_time" value="30">
+                            <input type="number" step="0.0001" class="form-control" name="setup_time" placeholder="e.g., 30">
                             <select class="form-select" name="setup_time_unit" style="max-width: 120px;">
                                 <option value="min">Minutes</option>
                                 <option value="hr">Hours</option>
@@ -759,7 +759,7 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Machine Efficiency (%)</label>
-                        <input type="number" step="0.0001" class="form-control" name="efficiency_percent" value="85" min="0" max="100">
+                        <input type="number" step="0.0001" class="form-control" name="efficiency_percent" placeholder="e.g., 85" min="0" max="100">
                         <div class="form-text">Typical efficiency: 80-90%</div>
                     </div>
                 </div>
