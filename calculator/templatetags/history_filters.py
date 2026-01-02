@@ -9,7 +9,9 @@ register = template.Library()
 def get_section_name(calculation):
     """Get section name from calculation object"""
     model_name = calculation.__class__.__name__
-    if 'Extrusion' in model_name:
+    if 'Maintenance' in model_name:
+        return 'Maintenance'
+    elif 'Extrusion' in model_name:
         return 'Extrusion'
     elif 'Printing' in model_name:
         return 'Printing'
@@ -39,6 +41,7 @@ def get_section_badge(calculation):
     """Get Bootstrap badge class for section"""
     section = get_section_name(calculation)
     badge_classes = {
+        'Maintenance': 'bg-indigo',
         'Extrusion': 'bg-success',
         'Printing': 'bg-info',
         'Lamination': 'bg-warning text-dark',
@@ -53,6 +56,7 @@ def get_section_icon(calculation):
     """Get Font Awesome icon for section"""
     section = get_section_name(calculation)
     icon_classes = {
+        'Maintenance': 'fas fa-tools',
         'Extrusion': 'fas fa-industry',
         'Printing': 'fas fa-print',
         'Lamination': 'fas fa-layer-group',

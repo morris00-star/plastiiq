@@ -9,7 +9,6 @@ urlpatterns = [
     path('calculate-packet-weight/', views.calculate_packet_weight, name='calculate_packet_weight'),
     path('calculate-bundle-weight/', views.calculate_bundle_weight, name='calculate_bundle_weight'),
     path('calculate-production-metrics/', views.calculate_production_metrics, name='calculate_production_metrics'),
-    path('history/', views.bag_making_history, name='bag_making_history'),
     path('calculate-packet-weight-dimensions/', views.calculate_packet_weight_from_dimensions_data, name='calculate_packet_weight_dimensions'),
     path('calculate-bundle-weight-dimensions/', views.calculate_bundle_weight_from_dimensions_data, name='calculate_bundle_weight_dimensions'),
 ]

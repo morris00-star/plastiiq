@@ -6,17 +6,33 @@
   <component name="ChangeListManager">
     <list default="true" id="59e339a0-e2c6-4049-b9eb-8449e35cb863" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/plastic_qc_calculator.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/plastic_qc_calculator.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0002_alter_customuser_company_id_number_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0003_alter_customuser_company_id_number.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0004_remove_customuser_company_id_number_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0005_customuser_pending_profile_data_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0006_customuser_last_password_change_and_more.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/bag_making/bag_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/bag_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/migrations/0001_initial.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bag_making/templates/bag_making/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/templates/bag_making/home.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bag_making/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bag_making/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/printing/templates/printing/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/printing/templates/printing/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/slitting_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/slitting_calculator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/templates/slitting/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/templates/slitting/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculator/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculator/migrations/0002_densitycalculation_user_delete_calculationhistory.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculator/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/calculator/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculator/templatetags/history_filters.py" beforeDir="false" afterPath="$PROJECT_DIR$/calculator/templatetags/history_filters.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/extrusion/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lamination/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/lamination/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/printing/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/printing/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sales/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/sales/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sales/migrations/0002_laminatedfilm_delete_currencyrate_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sales/migrations/0003_laminatedstructure_delete_laminatedfilm_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/migrations/0002_slittingcalculation_core_weight_kg_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/migrations/0003_corematerial_and_more.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +70,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHELLCHECK.PATH&quot;: &quot;I do mind&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/admin/django_projects/ucu_project_irrigation&quot;
+    &quot;last_opened_file_path&quot;: &quot;/home/admin/django_projects/uganda_trading_mm/mobile_money_uganda&quot;
   }
 }</component>
   <component name="RecentsManager">

@@ -677,10 +677,3 @@ def get_production_recommendations(yield_percent, efficiency_percent):
 
     return recommendations if recommendations else ["Process running within normal parameters"]
 
-
-@login_required
-def bag_making_history(request):
-    """Display bag making calculation history"""
-    calculations = BagMakingCalculation.objects.filter(user=request.user).select_related('material').order_by(
-        '-timestamp')
-    return render(request, 'bag_making/history.html', {'calculations': calculations})

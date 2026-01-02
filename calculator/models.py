@@ -1,22 +1,6 @@
+# calculator/models.py
 from django.db import models
 from django.conf import settings
-
-
-class DensityCalculation(models.Model):
-    material = models.ForeignKey('PlasticMaterial', on_delete=models.CASCADE)
-    mass = models.FloatField(help_text="Mass in grams")
-    volume = models.FloatField(help_text="Volume in cm³")
-    calculated_density = models.FloatField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-
-    def __str__(self):
-        return f"{self.material.name} - {self.calculated_density} g/cm³"
 
 
 class PlasticMaterial(models.Model):
@@ -38,3 +22,20 @@ class PlasticMaterial(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.code}) - Density: {self.density} g/cm³"
+
+
+class DensityCalculation(models.Model):
+    material = models.ForeignKey(PlasticMaterial, on_delete=models.CASCADE)
+    mass = models.FloatField(help_text="Mass in grams")
+    volume = models.FloatField(help_text="Volume in cm³")
+    calculated_density = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"{self.material.name} - {self.calculated_density} g/cm³"

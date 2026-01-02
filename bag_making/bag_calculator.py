@@ -150,6 +150,39 @@ class BagMakingCalculator:
             'packaging_unit': 'g'  # Always display packaging in grams for consistency
         }
 
+    def calculate_bundle_weight(self, packets_per_bundle, packet_weight_kg,
+                                bundle_packaging_weight=0, packaging_unit='kg', output_unit='kg'):
+        """
+        Calculates the total weight of a bundle or bale including packaging.
+        Returns gross weight, net weight, and packaging details.
+        """
+        # Convert all to kilograms first for consistent calculations
+        bundle_packaging_weight_kg = self.convert_mass(bundle_packaging_weight, packaging_unit, 'kg')
+
+        # Calculate net and gross weights
+        net_bundle_weight_kg = packets_per_bundle * packet_weight_kg
+        gross_bundle_weight_kg = net_bundle_weight_kg + bundle_packaging_weight_kg
+
+        # Calculate packaging percentage
+        packaging_percentage = (
+                    bundle_packaging_weight_kg / gross_bundle_weight_kg * 100) if gross_bundle_weight_kg > 0 else 0
+
+        # Convert to output unit
+        gross_bundle_weight_output = self.convert_mass(gross_bundle_weight_kg, 'kg', output_unit)
+        net_bundle_weight_output = self.convert_mass(net_bundle_weight_kg, 'kg', output_unit)
+        packaging_weight_output = self.convert_mass(bundle_packaging_weight_kg, 'kg', output_unit)
+
+        return {
+            'gross_weight': round(gross_bundle_weight_output, 4),
+            'net_weight': round(net_bundle_weight_output, 4),
+            'packaging_weight': round(bundle_packaging_weight_kg, 4),  # Keep in kg for consistency
+            'packaging_percentage': round(packaging_percentage, 2),
+            'net_packets_weight_kg': round(net_bundle_weight_kg, 4),
+            'packet_weight_kg': round(packet_weight_kg, 4),
+            'packets_per_bundle': packets_per_bundle,
+            'output_unit': output_unit,
+            'packaging_unit': 'kg'  # Display packaging in kg
+        }
 
     def reverse_calculate_from_packet_weight(self, packet_weight, pieces_per_packet,
                                              packet_packaging_weight=0, packaging_unit='g',
@@ -180,41 +213,6 @@ class BagMakingCalculator:
             'packaging_weight_g': round(packet_packaging_weight_g, 4),
             'packaging_percentage': round(packaging_percentage, 4),
             'pieces_per_packet': pieces_per_packet
-        }
-
-    def calculate_bundle_weight(self, packets_per_bundle, packet_weight_kg,
-                                bundle_packaging_weight=0, packaging_unit='kg', output_unit='kg'):
-        """
-        Calculates the total weight of a bundle or bale including packaging.
-        Returns gross weight, net weight, and packaging details.
-        """
-        # Convert all to kilograms first for consistent calculations
-        packet_weight_kg = self.convert_mass(packet_weight_kg, 'kg', 'kg')  # Ensure it's in kg
-        bundle_packaging_weight_kg = self.convert_mass(bundle_packaging_weight, packaging_unit, 'kg')
-
-        # Calculate net and gross weights
-        net_bundle_weight_kg = packets_per_bundle * packet_weight_kg
-        gross_bundle_weight_kg = net_bundle_weight_kg + bundle_packaging_weight_kg
-
-        # Calculate packaging percentage
-        packaging_percentage = (
-                    bundle_packaging_weight_kg / gross_bundle_weight_kg * 100) if gross_bundle_weight_kg > 0 else 0
-
-        # Convert to output unit
-        gross_bundle_weight_output = self.convert_mass(gross_bundle_weight_kg, 'kg', output_unit)
-        net_bundle_weight_output = self.convert_mass(net_bundle_weight_kg, 'kg', output_unit)
-        packaging_weight_output = self.convert_mass(bundle_packaging_weight_kg, 'kg', output_unit)
-
-        return {
-            'gross_weight': round(gross_bundle_weight_output, 4),
-            'net_weight': round(net_bundle_weight_output, 4),
-            'packaging_weight': round(bundle_packaging_weight_kg, 4),  # Keep in kg for consistency
-            'packaging_percentage': round(packaging_percentage, 2),
-            'net_packets_weight_kg': round(net_bundle_weight_kg, 4),
-            'packet_weight_kg': round(packet_weight_kg, 4),
-            'packets_per_bundle': packets_per_bundle,
-            'output_unit': output_unit,
-            'packaging_unit': 'kg'  # Display packaging in kg
         }
 
     def reverse_calculate_from_bundle_weight(self, bundle_weight, packets_per_bundle,
@@ -286,3 +284,5 @@ class BagMakingCalculator:
 
         rate_pcs_hr = (total_pieces_produced / actual_run_time_min) * 60
         return rate_pcs_hr
+    
+    
