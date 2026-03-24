@@ -82,6 +82,7 @@ class BagMakingCalculator:
             height: float,
             bag_type: str,
             gusset_width: float = 0,
+            gusset_type: str = 'side',
             flap_length: float = 0,
             width_unit: str = 'm',
             height_unit: str = 'm',
