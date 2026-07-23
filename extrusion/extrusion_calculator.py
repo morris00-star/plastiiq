@@ -263,3 +263,140 @@ class ExtrusionCalculator:
 
         return max(m50, 0)  # Ensure non-negative result
 
+
+    # ---------------------------------------------------------------------
+    # MACHINE ARCHITECTURE — MULTI-LAYER DISTRIBUTION (3-LAYER / 5-LAYER)
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calc_layer_distribution(rpm_values, total_kg=None, total_microns=None):
+        """
+        RPM-based layer allocation for multi-layer film extrusion.
+        Works for any layer count (3-layer: A,B,C or 5-layer: A,B,C,D,E).
+
+        Formula 1: Layer% = (Layer RPM / Total RPM) * 100
+        Formula 2: Layer kg = (Layer% / 100) * Total kg
+        Formula 3: Layer um = (Layer% / 100) * Total um
+
+        Returns list of dicts: [{'percent': .., 'kg': .., 'microns': ..}, ...]
+        in the same order as rpm_values.
+        """
+        total_rpm = sum(rpm_values)
+        if total_rpm <= 0:
+            return [{'percent': 0.0, 'kg': 0.0, 'microns': 0.0} for _ in rpm_values]
+
+        layers = []
+        for rpm in rpm_values:
+            percent = (rpm / total_rpm) * 100
+            kg = (percent / 100) * total_kg if total_kg else 0.0
+            microns = (percent / 100) * total_microns if total_microns else 0.0
+            layers.append({
+                'percent': percent,
+                'kg': kg,
+                'microns': microns
+            })
+        return layers
+
+    @staticmethod
+    def calc_composite_density_by_percent(densities_g_cm3, percentages):
+        """
+        Weighted composite density using layer allocation percentages
+        (instead of thicknesses):
+        rho_total = sum(rho_i * %_i / 100) for i in A..E
+        """
+        if len(densities_g_cm3) != len(percentages):
+            raise ValueError("Each layer must have a matching density and percentage")
+        return sum(d * (p / 100) for d, p in zip(densities_g_cm3, percentages))
+
+    # ---------------------------------------------------------------------
+    # MASTERBATCH / REGRIND / PROCESS EFFICIENCY / CAST FILM / QC EXTRAS
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calc_masterbatch_dosing(target_percent, total_batch_kg):
+        """
+        Masterbatch (color/additive) dosing.
+        MB kg = (Target% / 100) * Total Batch kg
+        Virgin Resin kg = Total Batch kg - MB kg
+        Letdown Ratio = 1 : (Virgin kg / MB kg)
+        """
+        mb_kg = (target_percent / 100) * total_batch_kg
+        virgin_kg = total_batch_kg - mb_kg
+        letdown_ratio = (virgin_kg / mb_kg) if mb_kg > 0 else 0.0
+        return {
+            'mb_kg': mb_kg,
+            'virgin_kg': virgin_kg,
+            'letdown_ratio': letdown_ratio
+        }
+
+    @staticmethod
+    def calc_regrind_blend(regrind_percent, total_batch_kg, virgin_density_g_cm3, regrind_density_g_cm3):
+        """
+        Regrind/recycled content blend ratio and blended density.
+        Regrind kg = (Regrind% / 100) * Total Batch kg
+        Blended Density = (rho_virgin * %virgin) + (rho_regrind * %regrind)
+        """
+        virgin_percent = 100 - regrind_percent
+        regrind_kg = (regrind_percent / 100) * total_batch_kg
+        virgin_kg = total_batch_kg - regrind_kg
+        blended_density = (virgin_density_g_cm3 * (virgin_percent / 100)) + \
+                           (regrind_density_g_cm3 * (regrind_percent / 100))
+        return {
+            'regrind_kg': regrind_kg,
+            'virgin_kg': virgin_kg,
+            'virgin_percent': virgin_percent,
+            'blended_density_g_cm3': blended_density
+        }
+
+    @staticmethod
+    def calc_specific_output_rate(mass_flow_kghr, screw_rpm):
+        """Specific Output = Mass Flow Rate (kg/hr) / Screw RPM"""
+        return mass_flow_kghr / screw_rpm if screw_rpm else 0.0
+
+    def calc_neck_in(self, die_width_m, final_width_m):
+        """Neck-in = Die Width - Final Film Width (cast film / extrusion coating)"""
+        return die_width_m - final_width_m
+
+    @staticmethod
+    def calc_cast_draw_ratio(die_gap_m, final_thickness_m):
+        """Draw Ratio = Die Gap / Final Thickness (cast/flat-die lines)"""
+        return die_gap_m / final_thickness_m if final_thickness_m else 0.0
+
+    @staticmethod
+    def calc_puncture_energy_trapezoidal(forces_N, displacements_m):
+        """
+        Puncture/impact energy from force-displacement data using
+        trapezoidal integration: Energy (J) = integral of F dx
+        """
+        if len(forces_N) != len(displacements_m) or len(forces_N) < 2:
+            return 0.0
+        energy = 0.0
+        for i in range(1, len(forces_N)):
+            dx = displacements_m[i] - displacements_m[i - 1]
+            avg_f = (forces_N[i] + forces_N[i - 1]) / 2
+            energy += avg_f * dx
+        return energy
+
+    @staticmethod
+    def calc_puncture_energy_simplified(peak_force_N, displacement_at_break_m):
+        """Simplified puncture energy: Energy ~= 0.5 * Peak Force * Displacement at Break"""
+        return 0.5 * peak_force_N * displacement_at_break_m
+
+    @staticmethod
+    def calc_secant_modulus(stress_at_2pct_mpa, strain=0.02):
+        """Secant Modulus (MPa) = Stress at 2% strain / 0.02"""
+        return stress_at_2pct_mpa / strain if strain else 0.0
+
+    @staticmethod
+    def calc_waste_percent(waste_kg, total_input_kg):
+        """Waste% = (Waste kg / Total Input kg) * 100"""
+        return (waste_kg / total_input_kg) * 100 if total_input_kg else 0.0
+
+    @staticmethod
+    def calc_normalized_barrier(measured_value, measured_thickness, target_thickness):
+        """
+        Normalize a barrier property (WVTR/OTR) measured at one thickness
+        to an equivalent value at a target thickness:
+        Normalized = Measured x (Measured Thickness / Target Thickness)
+        """
+        return measured_value * (measured_thickness / target_thickness) if target_thickness else 0.0

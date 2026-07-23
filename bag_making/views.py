@@ -3,13 +3,17 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from calculator.models import PlasticMaterial
-from .models import BagMakingCalculation
+from .models import BagMakingCalculation, AddonComponent
 from .bag_calculator import BagMakingCalculator
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
 def bag_making_home(request):
+    """Home view for bag making calculators"""
     calculators = [
         {'id': 'pieces_weight', 'name': 'Pieces ↔ Weight Converter', 'icon': 'fas fa-exchange-alt'},
         {'id': 'packet_weight', 'name': 'Packet Weight Calculator', 'icon': 'fas fa-box'},
@@ -17,13 +21,25 @@ def bag_making_home(request):
         {'id': 'production_time', 'name': 'Production Time & Efficiency', 'icon': 'fas fa-clock'},
     ]
 
+    # Updated bag types with flap option and gusset types
     bag_types = [
         ('FLAT_SHEET', 'Flat Sheet Bag'),
         ('TUBULAR', 'Tubular Bag'),
-        ('GUSSETED', 'Gusseted Bag'),
+        ('TUBULAR_WITH_FLAP', 'Tubular Bag with Flap'),
+        ('GUSSETED_SIDE', 'Side Gusseted Bag'),
+        ('GUSSETED_BOTTOM', 'Bottom Gusseted Bag'),
         ('LAMINATED_FLAT', 'Laminated Flat Bag'),
         ('LAMINATED_TUBULAR', 'Laminated Tubular Bag'),
-        ('LAMINATED_GUSSETED', 'Laminated Gusseted Bag'),
+        ('LAMINATED_TUBULAR_FLAP', 'Laminated Tubular with Flap'),
+        ('LAMINATED_GUSSETED_SIDE', 'Laminated Side Gusseted Bag'),
+        ('LAMINATED_GUSSETED_BOTTOM', 'Laminated Bottom Gusseted Bag'),
+    ]
+
+    addon_types = [
+        ('NONE', 'No Add-ons'),
+        ('ZIPPER', 'Zipper Only'),
+        ('HANDLES', 'Handles Only'),
+        ('BOTH', 'Zipper and Handles'),
     ]
 
     materials = PlasticMaterial.objects.filter(material_type='FILM')
@@ -32,6 +48,7 @@ def bag_making_home(request):
         'section_name': 'Bag Making',
         'calculators': calculators,
         'bag_types': bag_types,
+        'addon_types': addon_types,
         'materials': materials
     })
 
@@ -39,6 +56,7 @@ def bag_making_home(request):
 @login_required
 @csrf_exempt
 def calculate_pieces_weight(request):
+    """Calculate pieces to weight or weight to pieces"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -54,11 +72,13 @@ def calculate_pieces_weight(request):
             height_unit = data.get('height_unit', 'cm')
             gusset_width = float(data.get('gusset_width', 0))
             gusset_unit = data.get('gusset_unit', 'cm')
+            flap_length = float(data.get('flap_length', 0))
+            flap_unit = data.get('flap_unit', 'cm')
 
-            # Calculate area
+            # Calculate area with flap support
             area_m2 = calculator.calculate_single_piece_area(
-                width, height, bag_type, gusset_width,
-                width_unit, height_unit, gusset_unit
+                width, height, bag_type, gusset_width, flap_length,
+                width_unit, height_unit, gusset_unit, flap_unit
             )
 
             # Calculate GSM based on material type
@@ -67,7 +87,6 @@ def calculate_pieces_weight(request):
                 layers_data = data.get('layers', [])
                 if not layers_data:
                     return JsonResponse({'success': False, 'error': 'No layers provided for laminated bag'})
-
                 composite_gsm = calculator.calculate_composite_gsm(layers_data)
             else:
                 # For single layer bags
@@ -81,11 +100,21 @@ def calculate_pieces_weight(request):
 
                 thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
                 thickness_um = thickness_m * 1e6
-
                 composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
 
-            # Calculate single piece weight
-            single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm)
+            # Calculate add-on weight
+            addon_data = data.get('addons', {})
+            addon_weight_g = calculator.calculate_addon_weight(
+                zipper_data=addon_data.get('zipper'),
+                handle_data=addon_data.get('handles')
+            )
+
+            # Calculate single piece weight including add-ons
+            single_piece_weight_g = calculator.calculate_single_piece_weight(
+                area_m2, composite_gsm, addon_weight_g
+            )
+
+            result = {}
 
             if calculation_direction == 'pieces_to_weight':
                 num_pieces = int(data.get('num_pieces', 0))
@@ -97,6 +126,8 @@ def calculate_pieces_weight(request):
 
                 result = {
                     'single_piece_weight_g': round(single_piece_weight_g, 4),
+                    'bag_weight_only_g': round(single_piece_weight_g - addon_weight_g, 4),
+                    'addon_weight_g': round(addon_weight_g, 4),
                     'total_weight': round(total_weight, 4),
                     'output_unit': output_unit,
                     'num_pieces': num_pieces,
@@ -114,6 +145,8 @@ def calculate_pieces_weight(request):
 
                 result = {
                     'single_piece_weight_g': round(single_piece_weight_g, 4),
+                    'bag_weight_only_g': round(single_piece_weight_g - addon_weight_g, 4),
+                    'addon_weight_g': round(addon_weight_g, 4),
                     'num_pieces': num_pieces,
                     'total_weight': total_weight,
                     'weight_unit': weight_unit,
@@ -124,14 +157,51 @@ def calculate_pieces_weight(request):
 
             # Save calculation
             if request.user.is_authenticated:
-                BagMakingCalculation.objects.create(
+                calculation = BagMakingCalculation.objects.create(
                     calculation_type='PIECES_WEIGHT',
                     bag_type=bag_type,
-                    material=material if not bag_type.startswith('LAMINATED') else PlasticMaterial.objects.first(),
+                    addon_type=data.get('addon_type', 'NONE'),
+                    material=material if not bag_type.startswith('LAMINATED') else None,
                     input_data=data,
                     result_data=result,
                     user=request.user
                 )
+
+                # Save addon components if any
+                if addon_weight_g > 0:
+                    self._save_addon_components(calculation, addon_data)
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            logger.error(f"Error in pieces_weight calculation: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def reverse_calculate_zipper(request):
+    """Reverse calculate zipper weight per cm from total add-on weight"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            calculator = BagMakingCalculator()
+
+            total_addon_weight_g = float(data.get('total_addon_weight_g', 0))
+            zipper_length = float(data.get('zipper_length', 0))
+            length_unit = data.get('length_unit', 'cm')
+            num_handles = int(data.get('num_handles', 0))
+            handle_weight_g = float(data.get('handle_weight_g', 0))
+
+            result = calculator.reverse_calculate_zipper_weight(
+                total_addon_weight_g,
+                zipper_length,
+                length_unit,
+                num_handles,
+                handle_weight_g
+            )
 
             return JsonResponse({'success': True, 'result': result})
 
@@ -141,9 +211,31 @@ def calculate_pieces_weight(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 
+def _save_addon_components(calculation, addon_data):
+    """Helper function to save addon components"""
+    if addon_data.get('zipper', {}).get('enabled'):
+        AddonComponent.objects.create(
+            calculation=calculation,
+            addon_type='ZIPPER',
+            material=PlasticMaterial.objects.get(id=addon_data['zipper']['material_id']),
+            weight_per_piece=addon_data['zipper'].get('total_weight', 0),
+            description=f"Zipper length: {addon_data['zipper'].get('length', 0)} {addon_data['zipper'].get('length_unit', 'cm')}"
+        )
+
+    if addon_data.get('handles', {}).get('enabled'):
+        AddonComponent.objects.create(
+            calculation=calculation,
+            addon_type='HANDLE',
+            material=PlasticMaterial.objects.get(id=addon_data['handles']['material_id']),
+            weight_per_piece=addon_data['handles'].get('total_weight', 0),
+            description=f"Quantity: {addon_data['handles'].get('quantity', 2)}"
+        )
+
+
 @login_required
 @csrf_exempt
 def calculate_packet_weight(request):
+    """Calculate packet weight calculations"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -154,18 +246,16 @@ def calculate_packet_weight(request):
             result = {}
 
             if input_method == 'dimensions':
-                # Calculate from dimensions
                 result = calculate_packet_weight_from_dimensions_data(data, calculator)
             else:
-                # Direct weight input
                 result = calculate_packet_weight_from_direct_data(data, calculator)
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
                 BagMakingCalculation.objects.create(
                     calculation_type='PACKET_WEIGHT',
                     bag_type=data.get('bag_type', 'FLAT_SHEET'),
-                    material=default_material,
+                    addon_type=data.get('addon_type', 'NONE'),
+                    material=None,
                     input_data=data,
                     result_data=result,
                     user=request.user
@@ -174,6 +264,7 @@ def calculate_packet_weight(request):
             return JsonResponse({'success': True, 'result': result})
 
         except Exception as e:
+            logger.error(f"Error in packet_weight calculation: {str(e)}", exc_info=True)
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
@@ -188,9 +279,11 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
     width = float(data.get('dimensions_width', 0))
     height = float(data.get('dimensions_height', 0))
     gusset_width = float(data.get('dimensions_gusset_width', 0))
+    flap_length = float(data.get('dimensions_flap_length', 0))
     width_unit = data.get('dimensions_width_unit', 'cm')
     height_unit = data.get('dimensions_height_unit', 'cm')
     gusset_unit = data.get('dimensions_gusset_unit', 'cm')
+    flap_unit = data.get('dimensions_flap_unit', 'cm')
     pieces_per_packet = int(data.get('dimensions_pieces_per_packet', 0))
     packet_packaging_weight = float(data.get('dimensions_packet_packaging_weight', 0))
     packaging_unit = data.get('dimensions_packaging_unit', 'g')
@@ -198,8 +291,8 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
 
     # Calculate area
     area_m2 = calculator.calculate_single_piece_area(
-        width, height, bag_type, gusset_width,
-        width_unit, height_unit, gusset_unit
+        width, height, bag_type, gusset_width, flap_length,
+        width_unit, height_unit, gusset_unit, flap_unit
     )
 
     # Calculate GSM based on material type
@@ -238,13 +331,18 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
 
         thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
         thickness_um = thickness_m * 1e6
-
         composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
 
-    # Calculate single piece weight
-    single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm)
+    # Calculate add-on weight
+    addon_data = data.get('dimensions_addons', {})
+    addon_weight_g = calculator.calculate_addon_weight(
+        zipper_data=addon_data.get('zipper'),
+        handle_data=addon_data.get('handles')
+    )
 
-    # Calculate packet weight
+    # Calculate single piece weight including add-ons
+    single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm, addon_weight_g)
+
     if calculation_direction == 'forward':
         packet_result = calculator.calculate_packet_weight(
             pieces_per_packet, single_piece_weight_g,
@@ -255,6 +353,8 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
             'calculation_type': 'forward',
             'from_dimensions': True,
             'single_piece_weight_g': round(single_piece_weight_g, 4),
+            'bag_weight_only_g': round(single_piece_weight_g - addon_weight_g, 4),
+            'addon_weight_g': round(addon_weight_g, 4),
             'pieces_per_packet': pieces_per_packet,
             'area_m2': round(area_m2, 6),
             'composite_gsm': round(composite_gsm, 2),
@@ -267,7 +367,6 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
             'packaging_unit': 'g'
         }
     else:
-        # Reverse calculation
         packet_weight = float(data.get('packet_weight', 0))
         weight_unit = data.get('weight_unit', 'kg')
 
@@ -324,7 +423,6 @@ def calculate_packet_weight_from_direct_data(data, calculator):
             'packaging_unit': 'g'
         }
     else:
-        # Reverse calculation
         packet_weight = float(data.get('packet_weight', 0))
         weight_unit = data.get('weight_unit', 'kg')
         pieces_per_packet = int(data.get('pieces_per_packet', 0))
@@ -355,6 +453,7 @@ def calculate_packet_weight_from_direct_data(data, calculator):
 @login_required
 @csrf_exempt
 def calculate_bundle_weight(request):
+    """Calculate bundle weight calculations"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -365,18 +464,16 @@ def calculate_bundle_weight(request):
             result = {}
 
             if input_method == 'dimensions':
-                # Calculate from dimensions
                 result = calculate_bundle_weight_from_dimensions_data(data, calculator)
             else:
-                # Direct weight input
                 result = calculate_bundle_weight_from_direct_data(data, calculator)
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
                 BagMakingCalculation.objects.create(
                     calculation_type='BUNDLE_WEIGHT',
                     bag_type=data.get('bag_type', 'FLAT_SHEET'),
-                    material=default_material,
+                    addon_type=data.get('addon_type', 'NONE'),
+                    material=None,
                     input_data=data,
                     result_data=result,
                     user=request.user
@@ -385,6 +482,7 @@ def calculate_bundle_weight(request):
             return JsonResponse({'success': True, 'result': result})
 
         except Exception as e:
+            logger.error(f"Error in bundle_weight calculation: {str(e)}", exc_info=True)
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
@@ -394,8 +492,6 @@ def calculate_bundle_weight_from_direct_data(data, calculator):
     """Calculate bundle weight from direct weight input"""
     calculation_direction = data.get('calculation_direction', 'forward')
 
-    print("Direct data received:", data)  # Debug log
-
     if calculation_direction == 'forward':
         packet_weight_kg = float(data.get('packet_weight_kg', 0))
         packets_per_bundle = int(data.get('packets_per_bundle', 0))
@@ -403,22 +499,10 @@ def calculate_bundle_weight_from_direct_data(data, calculator):
         packaging_unit = data.get('packaging_unit', 'kg')
         output_unit = data.get('output_unit', 'kg')
 
-        print(
-            f"Forward calculation inputs: packet={packet_weight_kg}kg, packets={packets_per_bundle}, packaging={bundle_packaging_weight}{packaging_unit}")  # Debug log
-
-        # Ensure packaging weight is properly converted
-        if packaging_unit == 'g':
-            bundle_packaging_weight_kg = bundle_packaging_weight / 1000
-            packaging_unit = 'kg'  # Convert to kg for calculator
-        else:
-            bundle_packaging_weight_kg = bundle_packaging_weight
-
         bundle_result = calculator.calculate_bundle_weight(
             packets_per_bundle, packet_weight_kg,
-            bundle_packaging_weight_kg, packaging_unit, output_unit
+            bundle_packaging_weight, packaging_unit, output_unit
         )
-
-        print("Bundle result:", bundle_result)  # Debug log
 
         result = {
             'calculation_type': 'forward',
@@ -434,22 +518,16 @@ def calculate_bundle_weight_from_direct_data(data, calculator):
             'packaging_unit': 'kg'
         }
     else:
-        # Reverse calculation
         bundle_weight = float(data.get('bundle_weight', 0))
         weight_unit = data.get('weight_unit', 'kg')
         packets_per_bundle = int(data.get('packets_per_bundle', 0))
         bundle_packaging_weight = float(data.get('bundle_packaging_weight', 0))
         packaging_unit = data.get('packaging_unit', 'kg')
 
-        print(
-            f"Reverse calculation inputs: bundle={bundle_weight}{weight_unit}, packets={packets_per_bundle}, packaging={bundle_packaging_weight}{packaging_unit}")  # Debug log
-
         reverse_result = calculator.reverse_calculate_from_bundle_weight(
             bundle_weight, packets_per_bundle,
             bundle_packaging_weight, packaging_unit, weight_unit
         )
-
-        print("Reverse result:", reverse_result)  # Debug log
 
         result = {
             'calculation_type': 'reverse',
@@ -476,9 +554,11 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
     width = float(data.get('dimensions_width', 0))
     height = float(data.get('dimensions_height', 0))
     gusset_width = float(data.get('dimensions_gusset_width', 0))
+    flap_length = float(data.get('dimensions_flap_length', 0))
     width_unit = data.get('dimensions_width_unit', 'cm')
     height_unit = data.get('dimensions_height_unit', 'cm')
     gusset_unit = data.get('dimensions_gusset_unit', 'cm')
+    flap_unit = data.get('dimensions_flap_unit', 'cm')
     pieces_per_packet = int(data.get('dimensions_pieces_per_packet', 0))
     packets_per_bundle = int(data.get('dimensions_packets_per_bundle', 0))
     bundle_packaging_weight = float(data.get('dimensions_bundle_packaging_weight', 0))
@@ -487,8 +567,8 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
 
     # Calculate area
     area_m2 = calculator.calculate_single_piece_area(
-        width, height, bag_type, gusset_width,
-        width_unit, height_unit, gusset_unit
+        width, height, bag_type, gusset_width, flap_length,
+        width_unit, height_unit, gusset_unit, flap_unit
     )
 
     # Calculate GSM based on material type
@@ -527,11 +607,17 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
 
         thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
         thickness_um = thickness_m * 1e6
-
         composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
 
-    # Calculate single piece weight
-    single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm)
+    # Calculate add-on weight
+    addon_data = data.get('dimensions_addons', {})
+    addon_weight_g = calculator.calculate_addon_weight(
+        zipper_data=addon_data.get('zipper'),
+        handle_data=addon_data.get('handles')
+    )
+
+    # Calculate single piece weight including add-ons
+    single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm, addon_weight_g)
 
     # Calculate packet weight
     packet_weight_kg = (single_piece_weight_g * pieces_per_packet) / 1000
@@ -546,6 +632,8 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
             'calculation_type': 'forward',
             'from_dimensions': True,
             'single_piece_weight_g': round(single_piece_weight_g, 4),
+            'bag_weight_only_g': round(single_piece_weight_g - addon_weight_g, 4),
+            'addon_weight_g': round(addon_weight_g, 4),
             'pieces_per_packet': pieces_per_packet,
             'area_m2': round(area_m2, 6),
             'composite_gsm': round(composite_gsm, 2),
@@ -560,7 +648,6 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
             'packaging_unit': 'kg'
         }
     else:
-        # Reverse calculation
         bundle_weight = float(data.get('bundle_weight', 0))
         weight_unit = data.get('weight_unit', 'kg')
 
@@ -592,6 +679,7 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
 @login_required
 @csrf_exempt
 def calculate_production_metrics(request):
+    """Calculate production time and efficiency metrics"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -648,7 +736,8 @@ def calculate_production_metrics(request):
                 BagMakingCalculation.objects.create(
                     calculation_type='PRODUCTION_TIME',
                     bag_type=data.get('bag_type', 'FLAT_SHEET'),
-                    material=PlasticMaterial.objects.first(),
+                    addon_type='NONE',
+                    material=None,
                     input_data=data,
                     result_data=result,
                     user=request.user
@@ -657,12 +746,14 @@ def calculate_production_metrics(request):
             return JsonResponse({'success': True, 'result': result})
 
         except Exception as e:
+            logger.error(f"Error in production_metrics calculation: {str(e)}", exc_info=True)
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 
 def get_production_recommendations(yield_percent, efficiency_percent):
+    """Generate production recommendations based on metrics"""
     recommendations = []
 
     if yield_percent < 85:
@@ -676,4 +767,3 @@ def get_production_recommendations(yield_percent, efficiency_percent):
         recommendations.append("High efficiency - Excellent performance")
 
     return recommendations if recommendations else ["Process running within normal parameters"]
-

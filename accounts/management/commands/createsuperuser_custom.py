@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 email=email,
                 password=password,
                 company_id_number=company_id,
-                phone_number='0000000000',  # Default phone
+                phone_number='0780443345',  # Default phone
                 company_role='manager',
                 section='other'
             )

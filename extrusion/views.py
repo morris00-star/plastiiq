@@ -48,6 +48,15 @@ def extrusion_home(request):
         {'id': 'gauge_variation', 'name': 'Gauge Variation', 'icon': 'fas fa-chart-line'},
         {'id': 'composite_density', 'name': 'Composite Density', 'icon': 'fas fa-layer-group'},
         {'id': 'yield_basis', 'name': 'Yield & Basis Weight', 'icon': 'fas fa-balance-scale'},
+        {'id': 'layer_distribution', 'name': 'Layer Distribution', 'icon': 'fas fa-th-large'},
+        {'id': 'masterbatch_dosing', 'name': 'Masterbatch Dosing', 'icon': 'fas fa-tint'},
+        {'id': 'regrind_blend', 'name': 'Regrind/Recycled Blend', 'icon': 'fas fa-recycle'},
+        {'id': 'specific_output', 'name': 'Specific Output Rate', 'icon': 'fas fa-tachometer-alt'},
+        {'id': 'neck_in_draw', 'name': 'Neck-in / Draw Ratio', 'icon': 'fas fa-compress-arrows-alt'},
+        {'id': 'puncture_energy', 'name': 'Puncture Resistance / Impact Energy', 'icon': 'fas fa-fist-raised'},
+        {'id': 'secant_modulus', 'name': 'Secant Modulus', 'icon': 'fas fa-ruler-combined'},
+        {'id': 'waste_percent', 'name': 'Scrap/Waste Percentage', 'icon': 'fas fa-trash-alt'},
+        {'id': 'barrier_normalization', 'name': 'Barrier Property Normalization', 'icon': 'fas fa-shield-alt'},
     ]
 
     materials = PlasticMaterial.objects.filter(material_type='FILM')
@@ -1199,6 +1208,590 @@ def calculate_roll_radius(request):
                 ExtrusionCalculation.objects.create(
                     calculation_type='ROLL_RADIUS',
                     material=material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_layer_distribution(request):
+    """
+    RPM-based layer distribution for multi-layer machine architecture.
+    Supports 3-layer (A,B,C) and 5-layer (A,B,C,D,E) configurations.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            config = data.get('layer_config', '3layer')  # '3layer' or '5layer'
+            total_kg = safe_float(data.get('total_kg', 0))
+            total_microns = safe_float(data.get('total_microns', 0))
+
+            if config == '5layer':
+                labels = ['A', 'B', 'C', 'D', 'E']
+            elif config == '3layer':
+                labels = ['A', 'B', 'C']
+            else:
+                return JsonResponse({'success': False, 'error': 'layer_config must be "3layer" or "5layer"'})
+
+            rpm_values = [safe_float(data.get(f'rpm_{label.lower()}', 0)) for label in labels]
+
+            if sum(rpm_values) <= 0:
+                return JsonResponse({'success': False, 'error': 'Total RPM must be greater than 0'})
+
+            calculator = ExtrusionCalculator()
+            layer_results = calculator.calc_layer_distribution(rpm_values, total_kg, total_microns)
+
+            layers = []
+            for label, rpm, layer in zip(labels, rpm_values, layer_results):
+                layers.append({
+                    'layer': label,
+                    'rpm': rpm,
+                    'percent': round(layer['percent'], 2),
+                    'kg': round(layer['kg'], 3),
+                    'microns': round(layer['microns'], 2)
+                })
+
+            result = {
+                'layer_config': config,
+                'total_rpm': round(sum(rpm_values), 2),
+                'total_kg': total_kg,
+                'total_microns': total_microns,
+                'layers': layers
+            }
+
+            if request.user.is_authenticated:
+                calc_type = 'LAYER_DISTRIBUTION_5' if config == '5layer' else 'LAYER_DISTRIBUTION_3'
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type=calc_type,
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_composite_density(request):
+    """
+    Calculate composite density.
+    method='thickness' (default): weighted by layer thickness in microns.
+    method='percent': weighted by layer allocation percentages (must sum to 100).
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            method = data.get('method', 'thickness')
+            layer_densities = [safe_float(d) for d in data.get('layer_densities', [])]
+
+            calculator = ExtrusionCalculator()
+
+            if method == 'percent':
+                layer_percentages = [safe_float(p) for p in data.get('layer_percentages', [])]
+
+                if len(layer_densities) != len(layer_percentages):
+                    return JsonResponse({'success': False, 'error': 'Number of densities must match number of percentages'})
+
+                total_percent = sum(layer_percentages)
+                if round(total_percent, 1) != 100.0:
+                    return JsonResponse({'success': False, 'error': f'Layer percentages must sum to 100% (currently {total_percent}%)'})
+
+                composite_density = calculator.calc_composite_density_by_percent(layer_densities, layer_percentages)
+
+                layer_data = []
+                for i, (density, percent) in enumerate(zip(layer_densities, layer_percentages)):
+                    layer_data.append({
+                        'layer': i + 1,
+                        'density_g_cm3': density,
+                        'allocation_percent': percent
+                    })
+
+                result = {
+                    'composite_density_g_cm3': round(composite_density, 4),
+                    'method': 'percent',
+                    'layers': layer_data,
+                    'layer_count': len(layer_densities)
+                }
+
+            else:
+                layer_thicknesses = [safe_float(t) for t in data.get('layer_thicknesses', [])]
+
+                if len(layer_densities) != len(layer_thicknesses):
+                    return JsonResponse({'success': False, 'error': 'Number of densities must match number of thicknesses'})
+
+                composite_density = calculator.calc_composite_density(layer_densities, layer_thicknesses)
+
+                total_thickness = sum(layer_thicknesses)
+                layer_data = []
+                for i, (density, thickness) in enumerate(zip(layer_densities, layer_thicknesses)):
+                    layer_data.append({
+                        'layer': i + 1,
+                        'density_g_cm3': density,
+                        'thickness_microns': thickness,
+                        'weight_percent': round((density * thickness) / (composite_density * total_thickness) * 100, 1)
+                    })
+
+                result = {
+                    'composite_density_g_cm3': round(composite_density, 4),
+                    'total_thickness_microns': round(total_thickness, 1),
+                    'method': 'thickness',
+                    'layers': layer_data,
+                    'layer_count': len(layer_densities)
+                }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='COMPOSITE_DENSITY',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_masterbatch_dosing(request):
+    """Masterbatch/color concentrate dosing calculator"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            target_percent = safe_float(data.get('target_percent', 0))
+            total_batch = safe_float(data.get('total_batch', 0))
+            total_batch_unit = data.get('total_batch_unit', 'kg')
+
+            if target_percent <= 0 or total_batch <= 0:
+                return JsonResponse({'success': False, 'error': 'Target percent and total batch must be greater than 0'})
+
+            calculator = ExtrusionCalculator()
+            total_batch_kg = calculator.convert_mass(total_batch, total_batch_unit, 'kg')
+
+            dosing = calculator.calc_masterbatch_dosing(target_percent, total_batch_kg)
+
+            result = {
+                'mb_kg': round(dosing['mb_kg'], 4),
+                'mb_g': round(dosing['mb_kg'] * 1000, 1),
+                'virgin_kg': round(dosing['virgin_kg'], 3),
+                'letdown_ratio': round(dosing['letdown_ratio'], 1),
+                'letdown_display': f"1:{round(dosing['letdown_ratio'], 1)}",
+                'target_percent': target_percent
+            }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='MASTERBATCH_DOSING',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_regrind_blend(request):
+    """Regrind/recycled content blend ratio and blended density calculator"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            regrind_percent = safe_float(data.get('regrind_percent', 0))
+            total_batch = safe_float(data.get('total_batch', 0))
+            total_batch_unit = data.get('total_batch_unit', 'kg')
+            virgin_density = safe_float(data.get('virgin_density', 0))
+            regrind_density = safe_float(data.get('regrind_density', 0))
+
+            if regrind_percent < 0 or regrind_percent > 100:
+                return JsonResponse({'success': False, 'error': 'Regrind percent must be between 0 and 100'})
+            if total_batch <= 0:
+                return JsonResponse({'success': False, 'error': 'Total batch must be greater than 0'})
+
+            calculator = ExtrusionCalculator()
+            total_batch_kg = calculator.convert_mass(total_batch, total_batch_unit, 'kg')
+
+            blend = calculator.calc_regrind_blend(regrind_percent, total_batch_kg, virgin_density, regrind_density)
+
+            result = {
+                'regrind_kg': round(blend['regrind_kg'], 3),
+                'virgin_kg': round(blend['virgin_kg'], 3),
+                'virgin_percent': round(blend['virgin_percent'], 1),
+                'regrind_percent': round(regrind_percent, 1),
+                'blended_density_g_cm3': round(blend['blended_density_g_cm3'], 4)
+            }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='REGRIND_BLEND',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_specific_output(request):
+    """Specific output rate (kg/hr per screw RPM) calculator"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            mass_flow = safe_float(data.get('mass_flow', 0))
+            mass_flow_unit = data.get('mass_flow_unit', 'kg_hr')
+            screw_rpm = safe_float(data.get('screw_rpm', 0))
+            baseline_specific_output = safe_float(data.get('baseline_specific_output', 0))
+
+            if mass_flow <= 0 or screw_rpm <= 0:
+                return JsonResponse({'success': False, 'error': 'Mass flow and screw RPM must be greater than 0'})
+
+            calculator = ExtrusionCalculator()
+            mass_flow_kghr = mass_flow if mass_flow_unit == 'kg_hr' else calculator.convert_mass_flow(mass_flow, mass_flow_unit, 'kg_hr')
+
+            specific_output = calculator.calc_specific_output_rate(mass_flow_kghr, screw_rpm)
+
+            result = {
+                'specific_output_kg_hr_rpm': round(specific_output, 4),
+                'mass_flow_kghr': round(mass_flow_kghr, 2),
+                'screw_rpm': screw_rpm
+            }
+
+            if baseline_specific_output > 0:
+                deviation_percent = ((specific_output - baseline_specific_output) / baseline_specific_output) * 100
+                result['baseline_specific_output'] = baseline_specific_output
+                result['deviation_percent'] = round(deviation_percent, 1)
+                result['deviation_note'] = get_specific_output_deviation_note(deviation_percent)
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='SPECIFIC_OUTPUT',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def get_specific_output_deviation_note(deviation_percent):
+    if abs(deviation_percent) < 3:
+        return "Within normal range"
+    elif deviation_percent >= 3:
+        return "Above baseline - check for possible over-feeding or screw wear"
+    else:
+        return "Below baseline - possible surging, slippage, or feed restriction"
+
+
+@login_required
+@csrf_exempt
+def calculate_neck_in_draw(request):
+    """Neck-in and draw ratio calculator for cast film / extrusion coating lines"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            die_width = safe_float(data.get('die_width', 0))
+            die_width_unit = data.get('die_width_unit', 'm')
+            final_width = safe_float(data.get('final_width', 0))
+            final_width_unit = data.get('final_width_unit', 'm')
+            die_gap = safe_float(data.get('die_gap', 0))
+            die_gap_unit = data.get('die_gap_unit', 'mm')
+            final_thickness = safe_float(data.get('final_thickness', 0))
+            final_thickness_unit = data.get('final_thickness_unit', 'micron')
+
+            calculator = ExtrusionCalculator()
+
+            die_width_m = calculator.convert_length(die_width, die_width_unit, 'm')
+            final_width_m = calculator.convert_length(final_width, final_width_unit, 'm')
+            die_gap_m = calculator.convert_length(die_gap, die_gap_unit, 'm')
+            final_thickness_m = calculator.convert_to_meters(final_thickness, final_thickness_unit)
+
+            neck_in_m = calculator.calc_neck_in(die_width_m, final_width_m)
+            draw_ratio = calculator.calc_cast_draw_ratio(die_gap_m, final_thickness_m)
+
+            result = {
+                'neck_in_mm': round(neck_in_m * 1000, 2),
+                'neck_in_cm': round(neck_in_m * 100, 2),
+                'neck_in_percent': round((neck_in_m / die_width_m) * 100, 2) if die_width_m else 0,
+                'draw_ratio': round(draw_ratio, 2)
+            }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='NECK_IN_DRAW',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_puncture_energy(request):
+    """Puncture resistance / impact energy calculator (trapezoidal or simplified method)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            method = data.get('method', 'simplified')  # 'simplified' or 'trapezoidal'
+
+            calculator = ExtrusionCalculator()
+
+            if method == 'trapezoidal':
+                forces = [safe_float(f) for f in data.get('forces_N', [])]
+                displacements_mm = [safe_float(d) for d in data.get('displacements_mm', [])]
+                displacements_m = [d / 1000 for d in displacements_mm]
+
+                if len(forces) != len(displacements_m) or len(forces) < 2:
+                    return JsonResponse({'success': False, 'error': 'Need at least 2 matching force/displacement points'})
+
+                energy_j = calculator.calc_puncture_energy_trapezoidal(forces, displacements_m)
+                result = {
+                    'method': 'trapezoidal',
+                    'puncture_energy_j': round(energy_j, 3),
+                    'data_points': len(forces),
+                    'peak_force_n': round(max(forces), 2)
+                }
+            else:
+                peak_force = safe_float(data.get('peak_force_n', 0))
+                displacement_break_m = safe_float(data.get('displacement_at_break_mm', 0)) / 1000
+
+                if peak_force <= 0 or displacement_break_m <= 0:
+                    return JsonResponse({'success': False, 'error': 'Peak force and displacement at break must be greater than 0'})
+
+                energy_j = calculator.calc_puncture_energy_simplified(peak_force, displacement_break_m)
+                result = {
+                    'method': 'simplified',
+                    'puncture_energy_j': round(energy_j, 3),
+                    'peak_force_n': peak_force,
+                    'displacement_at_break_mm': round(displacement_break_m * 1000, 2)
+                }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='PUNCTURE_ENERGY',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_secant_modulus(request):
+    """Secant modulus calculator (stiffness from 2% strain stress)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            load_at_2pct = safe_float(data.get('load_at_2pct', 0))
+            load_unit = data.get('load_unit', 'N')
+            width = safe_float(data.get('width', 0))
+            width_unit = data.get('width_unit', 'mm')
+            thickness = safe_float(data.get('thickness', 0))
+            thickness_unit = data.get('thickness_unit', 'micron')
+
+            if load_at_2pct <= 0 or width <= 0 or thickness <= 0:
+                return JsonResponse({'success': False, 'error': 'Load, width, and thickness must be greater than 0'})
+
+            calculator = ExtrusionCalculator()
+
+            load_N = calculator.convert_force(load_at_2pct, load_unit, 'N')
+            width_m = calculator.convert_length(width, width_unit, 'm')
+            thickness_m = calculator.convert_to_meters(thickness, thickness_unit)
+
+            stress_mpa = calculator.calc_tensile_strength(load_N, width_m, thickness_m)
+            secant_modulus_mpa = calculator.calc_secant_modulus(stress_mpa)
+
+            result = {
+                'stress_at_2pct_mpa': round(stress_mpa, 3),
+                'secant_modulus_mpa': round(secant_modulus_mpa, 1),
+                'secant_modulus_psi': round(secant_modulus_mpa * 145.038, 1),
+                'stiffness_category': get_secant_modulus_category(secant_modulus_mpa)
+            }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='SECANT_MODULUS',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def get_secant_modulus_category(modulus_mpa):
+    if modulus_mpa < 200:
+        return "Low Stiffness (Flexible film)"
+    elif modulus_mpa < 800:
+        return "Medium Stiffness"
+    elif modulus_mpa < 2000:
+        return "High Stiffness"
+    else:
+        return "Very High Stiffness (Rigid)"
+
+
+@login_required
+@csrf_exempt
+def calculate_waste_percent(request):
+    """Scrap/waste percentage calculator"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            waste = safe_float(data.get('waste', 0))
+            waste_unit = data.get('waste_unit', 'kg')
+            total_input = safe_float(data.get('total_input', 0))
+            total_input_unit = data.get('total_input_unit', 'kg')
+
+            if total_input <= 0:
+                return JsonResponse({'success': False, 'error': 'Total input must be greater than 0'})
+
+            calculator = ExtrusionCalculator()
+            waste_kg = calculator.convert_mass(waste, waste_unit, 'kg')
+            total_input_kg = calculator.convert_mass(total_input, total_input_unit, 'kg')
+
+            waste_percent = calculator.calc_waste_percent(waste_kg, total_input_kg)
+            good_output_kg = total_input_kg - waste_kg
+
+            result = {
+                'waste_percent': round(waste_percent, 2),
+                'waste_kg': round(waste_kg, 3),
+                'good_output_kg': round(good_output_kg, 3),
+                'yield_percent': round(100 - waste_percent, 2),
+                'waste_rating': get_waste_rating(waste_percent)
+            }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='WASTE_PERCENT',
+                    material=default_material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def get_waste_rating(waste_percent):
+    if waste_percent < 2:
+        return "Excellent - Minimal Waste"
+    elif waste_percent < 5:
+        return "Good - Acceptable Waste Level"
+    elif waste_percent < 10:
+        return "Fair - Review Process Settings"
+    else:
+        return "Poor - High Waste, Investigate Root Cause"
+
+
+@login_required
+@csrf_exempt
+def calculate_barrier_normalization(request):
+    """Barrier property (WVTR/OTR) normalization by thickness calculator"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            property_type = data.get('property_type', 'WVTR')
+            measured_value = safe_float(data.get('measured_value', 0))
+            measured_thickness = safe_float(data.get('measured_thickness', 0))
+            target_thickness = safe_float(data.get('target_thickness', 0))
+            thickness_unit = data.get('thickness_unit', 'micron')
+
+            if measured_value <= 0 or measured_thickness <= 0 or target_thickness <= 0:
+                return JsonResponse({'success': False, 'error': 'Measured value, measured thickness, and target thickness must be greater than 0'})
+
+            calculator = ExtrusionCalculator()
+            normalized_value = calculator.calc_normalized_barrier(measured_value, measured_thickness, target_thickness)
+
+            result = {
+                'property_type': property_type,
+                'measured_value': measured_value,
+                'measured_thickness': measured_thickness,
+                'target_thickness': target_thickness,
+                'thickness_unit': thickness_unit,
+                'normalized_value': round(normalized_value, 4)
+            }
+
+            if request.user.is_authenticated:
+                default_material = PlasticMaterial.objects.first()
+                ExtrusionCalculation.objects.create(
+                    calculation_type='BARRIER_NORMALIZATION',
+                    material=default_material,
                     input_data=data,
                     result_data=result,
                     user=request.user

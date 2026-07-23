@@ -7,3 +7,4 @@ render.yaml
 runtime.txt
 .python-version
 Procfile
+.aider*

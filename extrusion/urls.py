@@ -23,6 +23,15 @@ urlpatterns = [
     path('calculate-gauge-variation/', views.calculate_gauge_variation, name='calculate_gauge_variation'),
     path('calculate-composite-density/', views.calculate_composite_density, name='calculate_composite_density'),
     path('calculate-yield-basis-weight/', views.calculate_yield_basis_weight, name='calculate_yield_basis_weight'),
+    path('calculate-layer-distribution/', views.calculate_layer_distribution, name='calculate_layer_distribution'),
+    path('calculate-masterbatch-dosing/', views.calculate_masterbatch_dosing, name='calculate_masterbatch_dosing'),
+    path('calculate-regrind-blend/', views.calculate_regrind_blend, name='calculate_regrind_blend'),
+    path('calculate-specific-output/', views.calculate_specific_output, name='calculate_specific_output'),
+    path('calculate-neck-in-draw/', views.calculate_neck_in_draw, name='calculate_neck_in_draw'),
+    path('calculate-puncture-energy/', views.calculate_puncture_energy, name='calculate_puncture_energy'),
+    path('calculate-secant-modulus/', views.calculate_secant_modulus, name='calculate_secant_modulus'),
+    path('calculate-waste-percent/', views.calculate_waste_percent, name='calculate_waste_percent'),
+    path('calculate-barrier-normalization/', views.calculate_barrier_normalization, name='calculate_barrier_normalization'),
     path('calculate-roll-radius-from-mass/', views.calculate_roll_radius_from_mass, name='calculate_roll_radius_from_mass'),
 
     # History

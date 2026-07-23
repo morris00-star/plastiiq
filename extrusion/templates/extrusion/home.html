@@ -1182,11 +1182,23 @@
             <div class="mb-3">
                 <label class="form-label">Multi-layer Film Structure</label>
                 <div class="alert alert-info">
-                    <small>Enter density and thickness for each layer. Composite density is calculated as weighted average.</small>
+                    <small>Enter density for each layer, then weight the composite either by layer thickness (microns) or by layer allocation (%).</small>
                 </div>
             </div>
 
-            <div id="compositeLayersContainer">
+            <div class="mb-3">
+                <label class="form-label">Weighting Method</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="composite_method" value="thickness" id="compositeMethodThickness" checked>
+                    <label class="form-check-label" for="compositeMethodThickness">By Layer Thickness (microns)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="composite_method" value="percent" id="compositeMethodPercent">
+                    <label class="form-check-label" for="compositeMethodPercent">By Layer Allocation (%)</label>
+                </div>
+            </div>
+
+            <div id="compositeLayersContainerThickness">
                 <div class="row mb-2">
                     <div class="col-md-6">
                         <label class="form-label">Layer Density (g/cm³)</label>
@@ -1197,7 +1209,7 @@
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-6">
-                        <input type="number" step="0.001" class="form-control" name="layer_densities[]" placeholder="e.g., 0.92 for LDPE">
+                        <input type="number" step="0.001" class="form-control" name="layer_densities_t[]" placeholder="e.g., 0.92 for LDPE">
                     </div>
                     <div class="col-md-6">
                         <input type="number" step="0.1" class="form-control" name="layer_thicknesses[]" placeholder="Thickness in microns">
@@ -1205,21 +1217,56 @@
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-6">
-                        <input type="number" step="0.001" class="form-control" name="layer_densities[]" placeholder="e.g., 1.35 for PET">
+                        <input type="number" step="0.001" class="form-control" name="layer_densities_t[]" placeholder="e.g., 1.35 for PET">
                     </div>
                     <div class="col-md-6">
                         <input type="number" step="0.1" class="form-control" name="layer_thicknesses[]" placeholder="Thickness in microns">
                     </div>
                 </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCompositeLayerRow('thickness')">
+                        <i class="fas fa-plus"></i> Add Layer
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCompositeLayerRow('thickness')">
+                        <i class="fas fa-minus"></i> Remove Layer
+                    </button>
+                </div>
             </div>
 
-            <div class="mb-3">
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCompositeLayerRow()">
-                    <i class="fas fa-plus"></i> Add Layer
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCompositeLayerRow()">
-                    <i class="fas fa-minus"></i> Remove Layer
-                </button>
+            <div id="compositeLayersContainerPercent" style="display: none;">
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Layer Density (g/cm³)</label>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Layer Allocation (%)</label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <input type="number" step="0.001" class="form-control" name="layer_densities_p[]" placeholder="e.g., 0.92 for LDPE">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" step="0.1" class="form-control" name="layer_percentages[]" placeholder="Allocation %">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <input type="number" step="0.001" class="form-control" name="layer_densities_p[]" placeholder="e.g., 1.35 for PET">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" step="0.1" class="form-control" name="layer_percentages[]" placeholder="Allocation %">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="form-text text-muted">Allocation percentages across all layers must sum to 100%.</small><br>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCompositeLayerRow('percent')">
+                        <i class="fas fa-plus"></i> Add Layer
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCompositeLayerRow('percent')">
+                        <i class="fas fa-minus"></i> Remove Layer
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-primary">
@@ -1228,6 +1275,116 @@
         </form>
 
         <div id="compositeDensityResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Layer Distribution Calculator -->
+<div class="card shadow mb-4" id="layer_distribution">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-th-large"></i> Layer Distribution (Multi-layer Machine Architecture)
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="layerDistributionForm">
+            <div class="mb-3">
+                <label class="form-label">Machine Configuration</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="layer_config" value="3layer" id="config3Layer" checked>
+                    <label class="form-check-label" for="config3Layer">3-Layer (A outer / B middle / C inner)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="layer_config" value="5layer" id="config5Layer">
+                    <label class="form-check-label" for="config5Layer">5-Layer (A outer / B,C,D middle / E inner)</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Batch Mass (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="total_kg">
+                            <span class="input-group-text">kg</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Film Thickness (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="total_microns">
+                            <span class="input-group-text">microns</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <small><strong>Formulas:</strong> Layer% = (Layer RPM / Total RPM) x 100 &nbsp;|&nbsp;
+                Layer kg = (Layer% / 100) x Total kg &nbsp;|&nbsp; Layer um = (Layer% / 100) x Total um</small>
+            </div>
+
+            <div class="row" id="layerRpmFields3">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer A (Outer) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_a" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer B (Middle) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_b" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer C (Inner) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_c" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="layerRpmFields5" style="display: none;">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer A (Outer) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_a_5">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer B (Middle) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_b_5">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer C (Middle) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_c_5">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer D (Middle) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_d_5">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Layer E (Inner) RPM</label>
+                        <input type="number" step="0.1" class="form-control" name="rpm_e_5">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calculator"></i> Calculate Distribution
+            </button>
+        </form>
+
+        <div id="layerDistributionResult" class="mt-3" style="display: none;"></div>
     </div>
 </div>
 
@@ -1290,6 +1447,418 @@
     </div>
 </div>
 
+<!-- Masterbatch Dosing Calculator -->
+<div class="card shadow mb-4" id="masterbatch_dosing">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-tint"></i> Masterbatch Dosing Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="masterbatchDosingForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Target Masterbatch Loading</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="target_percent" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Batch Size</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="total_batch" required>
+                            <select class="form-select" name="total_batch_unit" style="max-width: 120px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-info"><i class="fas fa-calculator"></i> Calculate Dosing</button>
+        </form>
+        <div id="masterbatchDosingResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Regrind/Recycled Blend Calculator -->
+<div class="card shadow mb-4" id="regrind_blend">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-recycle"></i> Regrind/Recycled Blend Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="regrindBlendForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Regrind Content</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" min="0" max="100" class="form-control" name="regrind_percent" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Batch Size</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="total_batch" required>
+                            <select class="form-select" name="total_batch_unit" style="max-width: 120px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Virgin Resin Density</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="virgin_density" required>
+                            <span class="input-group-text">g/cm³</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Regrind Density</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="regrind_density" required>
+                            <span class="input-group-text">g/cm³</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success"><i class="fas fa-calculator"></i> Calculate Blend</button>
+        </form>
+        <div id="regrindBlendResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Specific Output Rate Calculator -->
+<div class="card shadow mb-4" id="specific_output">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> Specific Output Rate Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="specificOutputForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Mass Flow Rate</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="mass_flow" required>
+                            <select class="form-select" name="mass_flow_unit" style="max-width: 100px;">
+                                <option value="kg_hr">kg/hr</option>
+                                <option value="kg_min">kg/min</option>
+                                <option value="lb_hr">lb/hr</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Screw Speed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="screw_rpm" required>
+                            <span class="input-group-text">RPM</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Baseline Specific Output (optional)</label>
+                        <input type="number" step="0.001" class="form-control" name="baseline_specific_output">
+                        <small class="form-text text-muted">kg/hr per RPM, for deviation check</small>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-warning"><i class="fas fa-calculator"></i> Calculate</button>
+        </form>
+        <div id="specificOutputResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Neck-in / Draw Ratio Calculator -->
+<div class="card shadow mb-4" id="neck_in_draw">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-compress-arrows-alt"></i> Neck-in / Draw Ratio Calculator (Cast Film)</h5>
+    </div>
+    <div class="card-body">
+        <form id="neckInDrawForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Die Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="die_width" required>
+                            <select class="form-select" name="die_width_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Final Film Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="final_width" required>
+                            <select class="form-select" name="final_width_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Die Gap</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="die_gap" required>
+                            <select class="form-select" name="die_gap_unit" style="max-width: 100px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Final Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="final_thickness" required>
+                            <select class="form-select" name="final_thickness_unit" style="max-width: 100px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-secondary"><i class="fas fa-calculator"></i> Calculate</button>
+        </form>
+        <div id="neckInDrawResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Puncture Resistance / Impact Energy Calculator -->
+<div class="card shadow mb-4" id="puncture_energy">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="fas fa-fist-raised"></i> Puncture Resistance / Impact Energy</h5>
+    </div>
+    <div class="card-body">
+        <form id="punctureEnergyForm">
+            <div class="mb-3">
+                <label class="form-label">Method</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="puncture_method" value="simplified" id="punctureSimplified" checked>
+                    <label class="form-check-label" for="punctureSimplified">Simplified (Peak Force x Displacement)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="puncture_method" value="trapezoidal" id="punctureTrapezoidal">
+                    <label class="form-check-label" for="punctureTrapezoidal">Trapezoidal (Force-Displacement Curve)</label>
+                </div>
+            </div>
+
+            <div id="punctureSimplifiedFields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Peak Force</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" name="peak_force_n">
+                                <span class="input-group-text">N</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Displacement at Break</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="displacement_at_break_mm">
+                                <span class="input-group-text">mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="punctureTrapezoidalFields" style="display: none;">
+                <div class="alert alert-info"><small>Enter matching Force (N) and Displacement (mm) points from the test curve.</small></div>
+                <div id="punctureCurveContainer">
+                    <div class="row mb-2">
+                        <div class="col-md-6"><input type="number" step="0.01" class="form-control" name="forces_n[]" placeholder="Force (N)"></div>
+                        <div class="col-md-6"><input type="number" step="0.1" class="form-control" name="displacements_mm[]" placeholder="Displacement (mm)"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-6"><input type="number" step="0.01" class="form-control" name="forces_n[]" placeholder="Force (N)"></div>
+                        <div class="col-md-6"><input type="number" step="0.1" class="form-control" name="displacements_mm[]" placeholder="Displacement (mm)"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addPunctureCurveRow()"><i class="fas fa-plus"></i> Add Point</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePunctureCurveRow()"><i class="fas fa-minus"></i> Remove Point</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-danger"><i class="fas fa-calculator"></i> Calculate Energy</button>
+        </form>
+        <div id="punctureEnergyResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Secant Modulus Calculator -->
+<div class="card shadow mb-4" id="secant_modulus">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-ruler-combined"></i> Secant Modulus Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="secantModulusForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Load at 2% Strain</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="load_at_2pct" required>
+                            <select class="form-select" name="load_unit" style="max-width: 100px;">
+                                <option value="N">N</option>
+                                <option value="kN">kN</option>
+                                <option value="lbf">lbf</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Sample Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="width" required>
+                            <select class="form-select" name="width_unit" style="max-width: 100px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Sample Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 100px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                                <option value="mil">Mil</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-dark"><i class="fas fa-calculator"></i> Calculate Modulus</button>
+        </form>
+        <div id="secantModulusResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Scrap/Waste Percentage Calculator -->
+<div class="card shadow mb-4" id="waste_percent">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Scrap/Waste Percentage Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="wastePercentForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Waste/Scrap Amount</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="waste" required>
+                            <select class="form-select" name="waste_unit" style="max-width: 120px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Input</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="total_input" required>
+                            <select class="form-select" name="total_input_unit" style="max-width: 120px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-secondary"><i class="fas fa-calculator"></i> Calculate Waste %</button>
+        </form>
+        <div id="wastePercentResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Barrier Property Normalization Calculator -->
+<div class="card shadow mb-4" id="barrier_normalization">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Barrier Property Normalization (WVTR/OTR)</h5>
+    </div>
+    <div class="card-body">
+        <form id="barrierNormalizationForm">
+            <div class="mb-3">
+                <label class="form-label">Property Type</label>
+                <select class="form-select" name="property_type">
+                    <option value="WVTR">WVTR (Water Vapor Transmission Rate)</option>
+                    <option value="OTR">OTR (Oxygen Transmission Rate)</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Measured Value</label>
+                        <input type="number" step="0.0001" class="form-control" name="measured_value" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Measured Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="measured_thickness" required>
+                            <select class="form-select" name="thickness_unit" style="max-width: 100px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Target Thickness</label>
+                        <input type="number" step="0.1" class="form-control" name="target_thickness" required>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Normalize</button>
+        </form>
+        <div id="barrierNormalizationResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
 <div class="alert alert-info mt-4">
     <h6><i class="fas fa-info-circle"></i> Notes:</h6>
     <ul class="mb-0">
@@ -1304,79 +1873,87 @@
 
 {% block scripts %}
 <script>
+function safeBind(id, event, handler) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener(event, handler);
+    } else {
+        console.warn(`[extrusion] Element with id "${id}" not found — skipping ${event} listener`);
+    }
+}
 // Event Listeners for Form Submissions
-document.getElementById('piecesWeightForm').addEventListener('submit', function(e) {
+safeBind('piecesWeightForm', 'submit', function(e) {
     e.preventDefault();
     calculatePiecesWeight();
 });
 
-document.getElementById('thicknessForm').addEventListener('submit', function(e) {
+safeBind('thicknessForm', 'submit', function(e) {
     e.preventDefault();
     calculateThickness();
 });
 
-document.getElementById('takeupForm').addEventListener('submit', function(e) {
+safeBind('takeupForm', 'submit', function(e) {
     e.preventDefault();
     calculateTakeupSpeed();
 });
 
-document.getElementById('tensileForm').addEventListener('submit', function(e) {
+safeBind('tensileForm', 'submit', function(e) {
     e.preventDefault();
     calculateTensileStrength();
 });
 
-document.getElementById('elongationForm').addEventListener('submit', function(e) {
+safeBind('elongationForm', 'submit', function(e) {
     e.preventDefault();
     calculateElongation();
 });
 
-document.getElementById('cofForm').addEventListener('submit', function(e) {
+safeBind('cofForm', 'submit', function(e) {
     e.preventDefault();
     calculateCOF();
 });
 
-document.getElementById('filmLengthForm').addEventListener('submit', function(e) {
+safeBind('filmLengthForm', 'submit', function(e) {
     e.preventDefault();
     calculateFilmLength();
 });
 
-document.getElementById('weightFromLengthForm').addEventListener('submit', function(e) {
+safeBind('weightFromLengthForm', 'submit', function(e) {
     e.preventDefault();
     calculateWeightFromLength();
 });
 
-document.getElementById('productionTimeForm').addEventListener('submit', function(e) {
+safeBind('productionTimeForm', 'submit', function(e) {
     e.preventDefault();
     calculateProductionTime();
 });
 
-document.getElementById('burDdrForm').addEventListener('submit', function(e) {
+safeBind('burDdrForm', 'submit', function(e) {
     e.preventDefault();
     calculateBURDDR();
 });
 
-document.getElementById('dartImpactForm').addEventListener('submit', function(e) {
+safeBind('dartImpactForm', 'submit', function(e) {
     e.preventDefault();
     calculateDartImpact();
 });
 
-document.getElementById('gaugeVariationForm').addEventListener('submit', function(e) {
+safeBind('gaugeVariationForm', 'submit', function(e) {
     e.preventDefault();
     calculateGaugeVariation();
 });
 
-document.getElementById('compositeDensityForm').addEventListener('submit', function(e) {
+safeBind('compositeDensityForm', 'submit', function(e) {
     e.preventDefault();
     calculateCompositeDensity();
 });
 
-document.getElementById('yieldBasisForm').addEventListener('submit', function(e) {
+safeBind('yieldBasisForm', 'submit', function(e) {
     e.preventDefault();
     calculateYieldBasisWeight();
 });
 
 // Roll Calculator - Single Event Listener - UPDATED with unique name
-document.getElementById('rollForm').addEventListener('submit', function(e) {
+safeBind('rollForm', 'submit', function(e) {
     e.preventDefault();
     console.log('Roll form submitted');
 
@@ -2005,13 +2582,18 @@ function calculateGaugeVariation() {
 
 function calculateCompositeDensity() {
     const form = document.getElementById('compositeDensityForm');
-    const densities = Array.from(form.querySelectorAll('input[name="layer_densities[]"]')).map(input => parseFloat(input.value));
-    const thicknesses = Array.from(form.querySelectorAll('input[name="layer_thicknesses[]"]')).map(input => parseFloat(input.value));
+    const method = form.querySelector('input[name="composite_method"]:checked').value;
 
-    const data = {
-        layer_densities: densities,
-        layer_thicknesses: thicknesses
-    };
+    let data;
+    if (method === 'percent') {
+        const densities = Array.from(form.querySelectorAll('input[name="layer_densities_p[]"]')).map(input => parseFloat(input.value));
+        const percentages = Array.from(form.querySelectorAll('input[name="layer_percentages[]"]')).map(input => parseFloat(input.value));
+        data = { method: 'percent', layer_densities: densities, layer_percentages: percentages };
+    } else {
+        const densities = Array.from(form.querySelectorAll('input[name="layer_densities_t[]"]')).map(input => parseFloat(input.value));
+        const thicknesses = Array.from(form.querySelectorAll('input[name="layer_thicknesses[]"]')).map(input => parseFloat(input.value));
+        data = { method: 'thickness', layer_densities: densities, layer_thicknesses: thicknesses };
+    }
 
     fetch('/extrusion/calculate-composite-density/', {
         method: 'POST',
@@ -2095,23 +2677,36 @@ function removeGaugeMeasurementRow() {
     }
 }
 
-function addCompositeLayerRow() {
-    const container = document.getElementById('compositeLayersContainer');
+function addCompositeLayerRow(mode) {
+    const containerId = mode === 'percent' ? 'compositeLayersContainerPercent' : 'compositeLayersContainerThickness';
+    const container = document.getElementById(containerId);
     const newRow = document.createElement('div');
     newRow.className = 'row mb-2';
-    newRow.innerHTML = `
-        <div class="col-md-6">
-            <input type="number" step="0.001" class="form-control" name="layer_densities[]" placeholder="Layer density g/cm³">
-        </div>
-        <div class="col-md-6">
-            <input type="number" step="0.1" class="form-control" name="layer_thicknesses[]" placeholder="Thickness in microns">
-        </div>
-    `;
+    if (mode === 'percent') {
+        newRow.innerHTML = `
+            <div class="col-md-6">
+                <input type="number" step="0.001" class="form-control" name="layer_densities_p[]" placeholder="Layer density g/cm³">
+            </div>
+            <div class="col-md-6">
+                <input type="number" step="0.1" class="form-control" name="layer_percentages[]" placeholder="Allocation %">
+            </div>
+        `;
+    } else {
+        newRow.innerHTML = `
+            <div class="col-md-6">
+                <input type="number" step="0.001" class="form-control" name="layer_densities_t[]" placeholder="Layer density g/cm³">
+            </div>
+            <div class="col-md-6">
+                <input type="number" step="0.1" class="form-control" name="layer_thicknesses[]" placeholder="Thickness in microns">
+            </div>
+        `;
+    }
     container.appendChild(newRow);
 }
 
-function removeCompositeLayerRow() {
-    const container = document.getElementById('compositeLayersContainer');
+function removeCompositeLayerRow(mode) {
+    const containerId = mode === 'percent' ? 'compositeLayersContainerPercent' : 'compositeLayersContainerThickness';
+    const container = document.getElementById(containerId);
     if (container.children.length > 2) {
         container.removeChild(container.lastChild);
     }
@@ -2637,22 +3232,32 @@ function displayCompositeDensityResult(result) {
     if (result.success) {
         const res = result.result;
         let layersHtml = '';
-        res.layers.forEach(layer => {
-            layersHtml += `
-                <li>Layer ${layer.layer}: Density ${layer.density_g_cm3} g/cm³,
-                    Thickness ${layer.thickness_microns} microns (${layer.weight_percent}%)</li>
+        if (res.method === 'percent') {
+            res.layers.forEach(layer => {
+                layersHtml += `<li>Layer ${layer.layer}: Density ${layer.density_g_cm3} g/cm³, Allocation ${layer.allocation_percent}%</li>`;
+            });
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Composite Density Results (by Allocation %):</h6>
+                    <p><strong>Composite Density:</strong> ${res.composite_density_g_cm3} g/cm³</p>
+                    <p><strong>Layer Composition (${res.layer_count} layers):</strong></p>
+                    <ul>${layersHtml}</ul>
+                </div>
             `;
-        });
-
-        resultDiv.innerHTML = `
-            <div class="alert alert-success">
-                <h6><i class="fas fa-check-circle"></i> Composite Density Results:</h6>
-                <p><strong>Composite Density:</strong> ${res.composite_density_g_cm3} g/cm³</p>
-                <p><strong>Total Thickness:</strong> ${res.total_thickness_microns} microns</p>
-                <p><strong>Layer Composition (${res.layer_count} layers):</strong></p>
-                <ul>${layersHtml}</ul>
-            </div>
-        `;
+        } else {
+            res.layers.forEach(layer => {
+                layersHtml += `<li>Layer ${layer.layer}: Density ${layer.density_g_cm3} g/cm³, Thickness ${layer.thickness_microns} microns (${layer.weight_percent}%)</li>`;
+            });
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Composite Density Results (by Thickness):</h6>
+                    <p><strong>Composite Density:</strong> ${res.composite_density_g_cm3} g/cm³</p>
+                    <p><strong>Total Thickness:</strong> ${res.total_thickness_microns} microns</p>
+                    <p><strong>Layer Composition (${res.layer_count} layers):</strong></p>
+                    <ul>${layersHtml}</ul>
+                </div>
+            `;
+        }
     } else {
         resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
     }
@@ -2693,6 +3298,395 @@ function displayYieldBasisError(error) {
     resultDiv.style.display = 'block';
     resultDiv.scrollIntoView({ behavior: 'smooth' });
 }
+
+// Composite Density method toggle
+document.querySelectorAll('input[name="composite_method"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const thicknessContainer = document.getElementById('compositeLayersContainerThickness');
+        const percentContainer = document.getElementById('compositeLayersContainerPercent');
+        if (this.value === 'percent') {
+            thicknessContainer.style.display = 'none';
+            percentContainer.style.display = 'block';
+        } else {
+            thicknessContainer.style.display = 'block';
+            percentContainer.style.display = 'none';
+        }
+    });
+});
+
+// Layer Distribution config toggle (3-layer vs 5-layer)
+document.querySelectorAll('input[name="layer_config"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const fields3 = document.getElementById('layerRpmFields3');
+        const fields5 = document.getElementById('layerRpmFields5');
+        const form = document.getElementById('layerDistributionForm');
+
+        if (this.value === '5layer') {
+            fields3.style.display = 'none';
+            fields5.style.display = 'flex';
+            form.querySelectorAll('input[name="rpm_a"], input[name="rpm_b"], input[name="rpm_c"]').forEach(i => i.required = false);
+            form.querySelectorAll('input[name="rpm_a_5"], input[name="rpm_b_5"], input[name="rpm_c_5"], input[name="rpm_d_5"], input[name="rpm_e_5"]').forEach(i => i.required = true);
+        } else {
+            fields3.style.display = 'flex';
+            fields5.style.display = 'none';
+            form.querySelectorAll('input[name="rpm_a"], input[name="rpm_b"], input[name="rpm_c"]').forEach(i => i.required = true);
+            form.querySelectorAll('input[name="rpm_a_5"], input[name="rpm_b_5"], input[name="rpm_c_5"], input[name="rpm_d_5"], input[name="rpm_e_5"]').forEach(i => i.required = false);
+        }
+    });
+});
+
+safeBind('layerDistributionForm', 'submit', function(e) {
+    e.preventDefault();
+    calculateLayerDistribution();
+});
+
+function calculateLayerDistribution() {
+    const form = document.getElementById('layerDistributionForm');
+    const config = form.querySelector('input[name="layer_config"]:checked').value;
+
+    const data = {
+        layer_config: config,
+        total_kg: form.querySelector('input[name="total_kg"]').value || '0',
+        total_microns: form.querySelector('input[name="total_microns"]').value || '0'
+    };
+
+    if (config === '5layer') {
+        data.rpm_a = form.querySelector('input[name="rpm_a_5"]').value;
+        data.rpm_b = form.querySelector('input[name="rpm_b_5"]').value;
+        data.rpm_c = form.querySelector('input[name="rpm_c_5"]').value;
+        data.rpm_d = form.querySelector('input[name="rpm_d_5"]').value;
+        data.rpm_e = form.querySelector('input[name="rpm_e_5"]').value;
+    } else {
+        data.rpm_a = form.querySelector('input[name="rpm_a"]').value;
+        data.rpm_b = form.querySelector('input[name="rpm_b"]').value;
+        data.rpm_c = form.querySelector('input[name="rpm_c"]').value;
+    }
+
+    fetch('/extrusion/calculate-layer-distribution/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        displayLayerDistributionResult(result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayLayerDistributionError('Network error: ' + error);
+    });
+}
+
+function displayLayerDistributionResult(result) {
+    const resultDiv = document.getElementById('layerDistributionResult');
+    if (result.success) {
+        const res = result.result;
+        let rowsHtml = '';
+        res.layers.forEach(layer => {
+            rowsHtml += `
+                <tr>
+                    <td>${layer.layer}</td>
+                    <td>${layer.rpm}</td>
+                    <td>${layer.percent}%</td>
+                    <td>${layer.kg} kg</td>
+                    <td>${layer.microns} microns</td>
+                </tr>
+            `;
+        });
+
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Layer Distribution Results (${res.layer_config === '5layer' ? '5-Layer' : '3-Layer'}):</h6>
+                <p><strong>Total RPM:</strong> ${res.total_rpm}</p>
+                <table class="table table-sm table-bordered mt-2">
+                    <thead>
+                        <tr><th>Layer</th><th>RPM</th><th>% of Total</th><th>Mass</th><th>Thickness</th></tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayLayerDistributionError(error) {
+    const resultDiv = document.getElementById('layerDistributionResult');
+    resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Puncture Energy method toggle
+document.querySelectorAll('input[name="puncture_method"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const simplifiedFields = document.getElementById('punctureSimplifiedFields');
+        const trapezoidalFields = document.getElementById('punctureTrapezoidalFields');
+        if (this.value === 'trapezoidal') {
+            simplifiedFields.style.display = 'none';
+            trapezoidalFields.style.display = 'block';
+        } else {
+            simplifiedFields.style.display = 'block';
+            trapezoidalFields.style.display = 'none';
+        }
+    });
+});
+
+function addPunctureCurveRow() {
+    const container = document.getElementById('punctureCurveContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-6"><input type="number" step="0.01" class="form-control" name="forces_n[]" placeholder="Force (N)"></div>
+        <div class="col-md-6"><input type="number" step="0.1" class="form-control" name="displacements_mm[]" placeholder="Displacement (mm)"></div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removePunctureCurveRow() {
+    const container = document.getElementById('punctureCurveContainer');
+    if (container.children.length > 2) {
+        container.removeChild(container.lastChild);
+    }
+}
+
+safeBind('masterbatchDosingForm', 'submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/extrusion/calculate-masterbatch-dosing/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('masterbatchDosingResult');
+        if (result.success) {
+            const res = result.result;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Masterbatch Dosing Results:</h6>
+                    <p><strong>Masterbatch Required:</strong> ${res.mb_kg} kg (${res.mb_g} g)</p>
+                    <p><strong>Virgin Resin Required:</strong> ${res.virgin_kg} kg</p>
+                    <p><strong>Letdown Ratio:</strong> ${res.letdown_display}</p>
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+safeBind('regrindBlendForm', 'submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/extrusion/calculate-regrind-blend/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('regrindBlendResult');
+        if (result.success) {
+            const res = result.result;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Regrind Blend Results:</h6>
+                    <p><strong>Regrind:</strong> ${res.regrind_kg} kg (${res.regrind_percent}%)</p>
+                    <p><strong>Virgin Resin:</strong> ${res.virgin_kg} kg (${res.virgin_percent}%)</p>
+                    <p><strong>Blended Density:</strong> ${res.blended_density_g_cm3} g/cm³</p>
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+safeBind('specificOutputForm', 'submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/extrusion/calculate-specific-output/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('specificOutputResult');
+        if (result.success) {
+            const res = result.result;
+            let extra = '';
+            if (res.deviation_percent !== undefined) {
+                extra = `<p><strong>Deviation from Baseline:</strong> ${res.deviation_percent}%</p><p><strong>Note:</strong> ${res.deviation_note}</p>`;
+            }
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Specific Output Results:</h6>
+                    <p><strong>Specific Output:</strong> ${res.specific_output_kg_hr_rpm} kg/hr per RPM</p>
+                    ${extra}
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+safeBind('neckInDrawForm', 'submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/extrusion/calculate-neck-in-draw/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('neckInDrawResult');
+        if (result.success) {
+            const res = result.result;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Neck-in / Draw Ratio Results:</h6>
+                    <p><strong>Neck-in:</strong> ${res.neck_in_mm} mm (${res.neck_in_percent}% of die width)</p>
+                    <p><strong>Draw Ratio:</strong> ${res.draw_ratio}</p>
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+safeBind('punctureEnergyForm', 'submit', function(e) {
+    e.preventDefault();
+    const form = document.getElementById('punctureEnergyForm');
+    const method = form.querySelector('input[name="puncture_method"]:checked').value;
+    let data = { method: method };
+
+    if (method === 'trapezoidal') {
+        data.forces_N = Array.from(form.querySelectorAll('input[name="forces_n[]"]')).map(i => parseFloat(i.value));
+        data.displacements_mm = Array.from(form.querySelectorAll('input[name="displacements_mm[]"]')).map(i => parseFloat(i.value));
+    } else {
+        data.peak_force_n = form.querySelector('input[name="peak_force_n"]').value;
+        data.displacement_at_break_mm = form.querySelector('input[name="displacement_at_break_mm"]').value;
+    }
+
+    fetch('/extrusion/calculate-puncture-energy/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('punctureEnergyResult');
+        if (result.success) {
+            const res = result.result;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Puncture Energy Results (${res.method}):</h6>
+                    <p><strong>Puncture Energy:</strong> ${res.puncture_energy_j} J</p>
+                    <p><strong>Peak Force:</strong> ${res.peak_force_n} N</p>
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+safeBind('secantModulusForm', 'submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/extrusion/calculate-secant-modulus/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('secantModulusResult');
+        if (result.success) {
+            const res = result.result;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Secant Modulus Results:</h6>
+                    <p><strong>Stress at 2% Strain:</strong> ${res.stress_at_2pct_mpa} MPa</p>
+                    <p><strong>Secant Modulus:</strong> ${res.secant_modulus_mpa} MPa (${res.secant_modulus_psi} psi)</p>
+                    <p><strong>Category:</strong> ${res.stiffness_category}</p>
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+safeBind('wastePercentForm', 'submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/extrusion/calculate-waste-percent/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('wastePercentResult');
+        if (result.success) {
+            const res = result.result;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Waste Percentage Results:</h6>
+                    <p><strong>Waste:</strong> ${res.waste_percent}% (${res.waste_kg} kg)</p>
+                    <p><strong>Good Output:</strong> ${res.good_output_kg} kg (${res.yield_percent}% yield)</p>
+                    <p><strong>Rating:</strong> ${res.waste_rating}</p>
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+safeBind('barrierNormalizationForm', 'submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/extrusion/calculate-barrier-normalization/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('barrierNormalizationResult');
+        if (result.success) {
+            const res = result.result;
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle"></i> Barrier Normalization Results:</h6>
+                    <p><strong>Property:</strong> ${res.property_type}</p>
+                    <p><strong>Measured:</strong> ${res.measured_value} at ${res.measured_thickness} ${res.thickness_unit}</p>
+                    <p><strong>Normalized to ${res.target_thickness} ${res.thickness_unit}:</strong> ${res.normalized_value}</p>
+                </div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
 
 // Initialize default values on page load
 document.addEventListener('DOMContentLoaded', function() {
