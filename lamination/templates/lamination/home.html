@@ -170,6 +170,15 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Waste Allowance</label>
+                <div class="input-group" style="max-width: 200px;">
+                    <input type="number" step="0.1" min="0" class="form-control" name="waste_percent" value="5.0">
+                    <span class="input-group-text">%</span>
+                </div>
+                <div class="form-text">Applied individually to each film layer and to the adhesive (default 5%)</div>
+            </div>
+
             <button type="submit" class="btn btn-success" id="weightBreakdownBtn">
                 <i class="fas fa-calculator"></i> Calculate Weight Breakdown
             </button>
@@ -397,7 +406,16 @@
                 </button>
                 <div class="form-text">Add as many layers as needed for your laminate structure</div>
             </div>
-            <button type="submit" class="btn btn-warning mt-3">
+            <div class="mb-3 mt-3">
+                <label class="form-label">Waste Allowance</label>
+                <div class="input-group" style="max-width: 200px;">
+                    <input type="number" step="0.1" min="0" class="form-control" name="waste_percent" value="5.0">
+                    <span class="input-group-text">%</span>
+                </div>
+                <div class="form-text">Applied individually to resin, hardener, and solvent (default 5%)</div>
+            </div>
+
+            <button type="submit" class="btn btn-warning">
                 <i class="fas fa-calculator"></i> Calculate Component Weights
             </button>
         </form>
@@ -584,6 +602,350 @@
         </form>
 
         <div id="yieldResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Setting/Curing Time Calculator -->
+<div class="card shadow mb-4" id="setting_time">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-hourglass-half"></i> Setting/Curing Time Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="settingTimeForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Length to Laminate</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="roll_length" required>
+                            <select class="form-select" name="roll_length_unit" style="max-width: 100px;">
+                                <option value="m">Meters</option>
+                                <option value="ft">Feet</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Machine Speed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="machine_speed" required>
+                            <select class="form-select" name="machine_speed_unit" style="max-width: 120px;">
+                                <option value="m_min">m/min</option>
+                                <option value="m_hr">m/hr</option>
+                                <option value="ft_min">ft/min</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Adhesive System</label>
+                        <select class="form-select" name="adhesive_type" id="settingTimeAdhesiveType">
+                            <option value="SOLVENTLESS">Solventless</option>
+                            <option value="SOLVENT_BASE">Solvent Base</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Setting/Curing Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.5" class="form-control" name="setting_time_hr" id="settingTimeHrInput" value="24" required>
+                            <span class="input-group-text">hours</span>
+                        </div>
+                        <div class="form-text">Chemistry-dependent - confirm against your adhesive TDS. Suggested defaults: 24hr (solventless), 48-72hr (solvent base).</div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate Turnaround Time</button>
+        </form>
+        <div id="settingTimeResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Peel Strength Calculator -->
+<div class="card shadow mb-4" id="peel_strength">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="fas fa-grip-lines"></i> Peel/Bond Strength Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="peelStrengthForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Peel Force</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="peel_force" required>
+                            <select class="form-select" name="peel_force_unit" style="max-width: 100px;">
+                                <option value="N">N</option>
+                                <option value="kN">kN</option>
+                                <option value="lbf">lbf</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Sample Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="sample_width_mm" value="15" required>
+                            <span class="input-group-text">mm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Test Type</label>
+                        <select class="form-select" name="test_type">
+                            <option value="film_to_film">Film to Film</option>
+                            <option value="film_to_foil">Film to Foil</option>
+                            <option value="film_to_paper">Film to Paper</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-danger"><i class="fas fa-calculator"></i> Calculate Peel Strength</button>
+        </form>
+        <div id="peelStrengthResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Coat Weight Verification Calculator -->
+<div class="card shadow mb-4" id="coat_weight_verification">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-vial"></i> Coat Weight Verification</h5>
+    </div>
+    <div class="card-body">
+        <form id="coatWeightVerificationForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="alert alert-info py-2 mb-2">
+                        <small><i class="fas fa-info-circle"></i> Works either way: weigh the <strong>adhesive supply roll</strong> (gets lighter as it's consumed) or the <strong>film/substrate roll</strong> (gets heavier once coated) - just enter the start and end weights below in the order you measured them.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Weight at Start of Run</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="roll_weight_before" required>
+                            <select class="form-select" name="weight_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Weight at End of Run</label>
+                        <input type="number" step="0.001" class="form-control" name="roll_weight_after" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Area Laminated</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="area_laminated_m2" required>
+                            <span class="input-group-text">m²</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Target Coat Weight (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="target_gsm">
+                            <span class="input-group-text">g/m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-info"><i class="fas fa-calculator"></i> Verify Coat Weight</button>
+        </form>
+        <div id="coatWeightVerificationResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Adhesive Application Rate Calculator -->
+<div class="card shadow mb-4" id="application_rate">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> Adhesive Application Rate Check</h5>
+    </div>
+    <div class="card-body">
+        <form id="applicationRateForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Adhesive Consumed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="adhesive_consumed" required>
+                            <select class="form-select" name="adhesive_consumed_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Total Area Covered</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="total_area_m2" required>
+                            <span class="input-group-text">m²</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Target Coat Weight (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="target_gsm">
+                            <span class="input-group-text">g/m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-warning"><i class="fas fa-calculator"></i> Check Application Rate</button>
+        </form>
+        <div id="applicationRateResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Residual Solvent Calculator -->
+<div class="card shadow mb-4" id="residual_solvent">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-smog"></i> Residual Solvent Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="residualSolventForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Solvent Detected</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="solvent_detected_ug" required>
+                            <span class="input-group-text">µg</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Sample Area</label>
+                        <div class="input-group">
+                            <input type="number" step="0.0001" class="form-control" name="sample_area_m2" required>
+                            <span class="input-group-text">m²</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Spec Limit (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="spec_limit_mg_m2">
+                            <span class="input-group-text">mg/m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-secondary"><i class="fas fa-calculator"></i> Calculate Residual Solvent</button>
+        </form>
+        <div id="residualSolventResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Overall Line Efficiency Calculator -->
+<div class="card shadow mb-4" id="overall_line_efficiency">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Overall Line Efficiency (OEE-style)</h5>
+    </div>
+    <div class="card-body">
+        <form id="overallLineEfficiencyForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Theoretical Lamination Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="lamination_time_min" required>
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Run Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="total_run_time_min" required>
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Downtime</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="downtime_min" required>
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Input Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="input_mass_kg" required>
+                            <span class="input-group-text">kg</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Output Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="output_mass_kg" required>
+                            <span class="input-group-text">kg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-dark"><i class="fas fa-calculator"></i> Calculate Overall Efficiency</button>
+        </form>
+        <div id="overallLineEfficiencyResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Adhesive Coverage per Roll Calculator -->
+<div class="card shadow mb-4" id="adhesive_coverage">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-scroll"></i> Adhesive Coverage per Roll (Planning)</h5>
+    </div>
+    <div class="card-body">
+        <form id="adhesiveCoverageForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Target Coat Weight</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="coat_weight_gsm" required>
+                            <span class="input-group-text">g/m²</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="roll_width" required>
+                            <select class="form-select" name="roll_width_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Roll Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="roll_length" required>
+                            <select class="form-select" name="roll_length_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="ft">ft</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success"><i class="fas fa-calculator"></i> Calculate Adhesive Required</button>
+        </form>
+        <div id="adhesiveCoverageResult" class="mt-3" style="display: none;"></div>
     </div>
 </div>
 
@@ -1074,6 +1436,7 @@ function calculateWeightBreakdown() {
         total_mass_unit: formData.get('total_mass_unit'),
         adhesive_type: formData.get('adhesive_type'),
         adhesive_gsm: parseFloat(formData.get('adhesive_gsm')),
+        waste_percent: parseFloat(formData.get('waste_percent')) || 5.0,
         layers: layers
     };
 
@@ -1180,7 +1543,8 @@ function calculateAdhesiveComponents() {
         total_mass_unit: formData.get('total_mass_unit'),
         total_film_gsm: total_film_gsm,
         calculated_from_layers: useLayers,
-        use_custom_ratio: isCustomSystem
+        use_custom_ratio: isCustomSystem,
+        waste_percent: parseFloat(formData.get('waste_percent')) || 5.0
     };
 
     // Add custom ratio data if using custom system
@@ -1372,11 +1736,14 @@ function displayWeightBreakdownResult(result) {
         html += '<p><strong>Adhesive per Layer:</strong> ' + res.adhesive_gsm_per_layer + ' g/m²</p>';
         html += '</div>';
 
-        // Show individual layer masses
-        html += '<h6>Film Layer Breakdown:</h6>';
+        // Show individual layer masses (net, waste, gross)
+        html += '<h6>Film Layer Breakdown (Net / Waste / Gross Required):</h6>';
         if (res.layer_masses && res.layer_masses.length > 0) {
             res.layer_masses.forEach(function(layer, index) {
-                html += '<p><strong>Layer ' + (index + 1) + ':</strong> ' + layer.material_name + ' - ' + layer.thickness_microns + 'µm (' + layer.gsm + ' g/m²) - <span class="text-primary">' + layer.mass_kg.toFixed(3) + ' kg (' + layer.mass_percent.toFixed(1) + '%)</span></p>';
+                html += '<p><strong>Layer ' + (index + 1) + ':</strong> ' + layer.material_name + ' - ' + layer.thickness_microns + 'µm (' + layer.gsm + ' g/m²)<br>';
+                html += '<span class="text-muted">Net: ' + layer.net_mass_kg + ' kg (' + layer.mass_percent.toFixed(1) + '%)</span> | ';
+                html += '<span class="text-warning">Waste (' + res.waste_percent + '%): ' + layer.waste_mass_kg + ' kg</span> | ';
+                html += '<span class="text-primary fw-bold">Gross Required: ' + layer.gross_mass_kg + ' kg</span></p>';
             });
         } else {
             // Fallback to original display
@@ -1386,10 +1753,20 @@ function displayWeightBreakdownResult(result) {
         }
 
         html += '<hr>';
+        html += '<h6>Adhesive (Net / Waste / Gross Required):</h6>';
+        html += '<p><span class="text-muted">Net: ' + res.adhesive_net_mass_kg + ' kg</span> | ';
+        html += '<span class="text-warning">Waste (' + res.waste_percent + '%): ' + res.adhesive_waste_mass_kg + ' kg</span> | ';
+        html += '<span class="text-primary fw-bold">Gross Required: ' + res.adhesive_gross_mass_kg + ' kg</span></p>';
+
+        html += '<hr>';
         html += '<h6>Mass Summary:</h6>';
-        html += '<p><strong>Total Film Mass:</strong> ' + res.total_film_mass_kg + ' kg (' + res.film_breakdown_percent + '%)</p>';
-        html += '<p><strong>Total Adhesive Mass:</strong> ' + res.total_adhesive_mass_kg + ' kg (' + res.adhesive_breakdown_percent + '%)</p>';
-        html += '<p><strong>Total Laminate Mass:</strong> ' + (res.total_film_mass_kg + res.total_adhesive_mass_kg).toFixed(3) + ' kg (100%)</p>';
+        html += '<p><strong>Total Film Mass (net):</strong> ' + res.total_film_mass_kg + ' kg (' + res.film_breakdown_percent + '%)</p>';
+        html += '<p><strong>Total Adhesive Mass (net):</strong> ' + res.total_adhesive_mass_kg + ' kg (' + res.adhesive_breakdown_percent + '%)</p>';
+        html += '<p><strong>Total Laminate Mass (net):</strong> ' + res.total_net_mass_kg + ' kg (100%)</p>';
+        html += '<div class="mt-2 p-2 bg-warning bg-opacity-25 rounded">';
+        html += '<p class="mb-1"><strong>Total Waste (' + res.waste_percent + '%):</strong> ' + res.total_waste_mass_kg + ' kg</p>';
+        html += '<p class="mb-0"><strong>Total Gross Mass to Procure/Feed:</strong> <span class="fw-bold text-primary">' + res.total_gross_mass_kg + ' kg</span></p>';
+        html += '</div>';
 
         html += '<hr>';
         html += '<h6>GSM Summary:</h6>';
@@ -1449,14 +1826,14 @@ function displayAdhesiveComponentsResult(result) {
         }
 
         html += '<hr>';
-        html += '<h6>Component Quantities:</h6>';
+        html += '<h6>Component Quantities (Net / Gross w/ ' + res.waste_percent + '% Waste):</h6>';
         html += '<p><strong>Dry Adhesive Required:</strong> ' + res.dry_adhesive_mass_kg + ' kg</p>';
-        html += '<p><strong>Resin Component (Part A):</strong> ' + res.resin_kg + ' kg</p>';
-        html += '<p><strong>Hardener Component (Part B):</strong> ' + res.hardener_kg + ' kg</p>';
+        html += '<p><strong>Resin Component (Part A):</strong> ' + res.resin_kg + ' kg net &rarr; <span class="fw-bold text-primary">' + res.resin_gross_kg + ' kg gross</span> (+' + res.resin_waste_kg + ' kg waste)</p>';
+        html += '<p><strong>Hardener Component (Part B):</strong> ' + res.hardener_kg + ' kg net &rarr; <span class="fw-bold text-primary">' + res.hardener_gross_kg + ' kg gross</span> (+' + res.hardener_waste_kg + ' kg waste)</p>';
 
         // Solvent info
         if (res.ethyl_acetate_kg > 0) {
-            html += '<p><strong>Ethyl Acetate Solvent (Part C):</strong> ' + res.ethyl_acetate_kg + ' kg</p>';
+            html += '<p><strong>Ethyl Acetate Solvent (Part C):</strong> ' + res.ethyl_acetate_kg + ' kg net &rarr; <span class="fw-bold text-primary">' + res.solvent_gross_kg + ' kg gross</span> (+' + res.solvent_waste_kg + ' kg waste)</p>';
             html += '<div class="alert alert-warning mt-2">';
             html += '<small><i class="fas fa-exclamation-triangle"></i> <strong>Safety Note:</strong> Handle ethyl acetate with proper ventilation and PPE.</small>';
             html += '</div>';
@@ -1464,7 +1841,8 @@ function displayAdhesiveComponentsResult(result) {
             html += '<p><strong>Solvent (Part C):</strong> None required (Solventless System)</p>';
         }
 
-        html += '<p><strong>Total Wet Mix:</strong> ' + res.total_wet_mix_kg + ' kg</p>';
+        html += '<p><strong>Total Wet Mix (net):</strong> ' + res.total_wet_mix_kg + ' kg</p>';
+        html += '<p><strong>Total Wet Mix to Prepare (gross, w/ waste):</strong> <span class="fw-bold text-primary">' + res.total_wet_mix_gross_kg + ' kg</span></p>';
 
         // Area info
         if (res.total_area_m2) {
@@ -1574,6 +1952,225 @@ function displayError(resultDivId, message) {
     resultDiv.style.display = 'block';
     resultDiv.scrollIntoView({ behavior: 'smooth' });
 }
+
+// Setting Time: prefill suggested cure time based on adhesive system
+document.addEventListener('DOMContentLoaded', function() {
+    const settingAdhesiveSelect = document.getElementById('settingTimeAdhesiveType');
+    if (settingAdhesiveSelect) {
+        settingAdhesiveSelect.addEventListener('change', function() {
+            const input = document.getElementById('settingTimeHrInput');
+            input.value = this.value === 'SOLVENT_BASE' ? 60 : 24;
+        });
+    }
+});
+
+document.getElementById('settingTimeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/lamination/calculate-setting-time/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('settingTimeResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Setting Time Results:</h6>';
+            html += '<p><strong>Lamination Time:</strong> ' + res.lamination_time_min + ' min (' + res.lamination_time_hr + ' hr)</p>';
+            html += '<p><strong>Setting/Curing Time:</strong> ' + res.setting_time_hr + ' hr</p>';
+            html += '<p><strong>Total Turnaround Time:</strong> <span class="fw-bold">' + res.total_turnaround_hr + ' hr (' + res.total_turnaround_days + ' days)</span></p>';
+            html += '<div class="mt-2 p-2 bg-light rounded"><small>' + res.note + '</small></div>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('peelStrengthForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/lamination/calculate-peel-strength/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('peelStrengthResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Peel Strength Results:</h6>';
+            html += '<p><strong>Peel Strength:</strong> ' + res.peel_strength_n_per_15mm + ' N/15mm</p>';
+            html += '<p><strong>Rating:</strong> ' + res.bond_rating + '</p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('coatWeightVerificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/lamination/calculate-coat-weight-verification/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('coatWeightVerificationResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Coat Weight Verification:</h6>';
+            const methodLabel = res.weighing_method === 'supply_roll_depleted' ? 'Adhesive supply roll (weight decreased)' : 'Film/substrate roll (weight increased)';
+            html += '<p><strong>Detected Method:</strong> ' + methodLabel + '</p>';
+            html += '<p><strong>Actual Coat Weight:</strong> ' + res.actual_coat_weight_gsm + ' g/m²</p>';
+            html += '<p><strong>Material Consumed/Gained:</strong> ' + res.consumed_g + ' g over ' + res.area_laminated_m2 + ' m²</p>';
+            if (res.deviation_percent !== undefined) {
+                html += '<p><strong>Target:</strong> ' + res.target_gsm + ' g/m² | <strong>Deviation:</strong> ' + res.deviation_percent + '%</p>';
+                html += '<p><strong>Note:</strong> ' + res.deviation_note + '</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('applicationRateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/lamination/calculate-application-rate/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('applicationRateResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Application Rate Results:</h6>';
+            html += '<p><strong>Applied Rate:</strong> ' + res.applied_rate_gsm + ' g/m²</p>';
+            html += '<p><strong>Consumed:</strong> ' + res.adhesive_consumed_kg + ' kg over ' + res.total_area_m2 + ' m²</p>';
+            if (res.deviation_percent !== undefined) {
+                html += '<p><strong>Target:</strong> ' + res.target_gsm + ' g/m² | <strong>Deviation:</strong> ' + res.deviation_percent + '%</p>';
+                html += '<p><strong>Note:</strong> ' + res.deviation_note + '</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('residualSolventForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/lamination/calculate-residual-solvent/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('residualSolventResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Residual Solvent Results:</h6>';
+            html += '<p><strong>Residual Solvent:</strong> ' + res.residual_solvent_mg_m2 + ' mg/m²</p>';
+            if (res.pass_fail) {
+                const cls = res.pass_fail === 'PASS' ? 'text-success' : 'text-danger';
+                html += '<p><strong>Spec Limit:</strong> ' + res.spec_limit_mg_m2 + ' mg/m²</p>';
+                html += '<p><strong>Result:</strong> <span class="fw-bold ' + cls + '">' + res.pass_fail + '</span> (margin: ' + res.margin_mg_m2 + ' mg/m²)</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('overallLineEfficiencyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/lamination/calculate-overall-line-efficiency/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('overallLineEfficiencyResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Overall Line Efficiency:</h6>';
+            html += '<p><strong>Availability:</strong> ' + res.availability_percent + '%</p>';
+            html += '<p><strong>Production Efficiency:</strong> ' + res.production_efficiency_percent + '%</p>';
+            html += '<p><strong>Yield:</strong> ' + res.yield_percent + '%</p>';
+            html += '<p><strong>Overall Line Efficiency:</strong> <span class="fw-bold">' + res.overall_line_efficiency_percent + '%</span></p>';
+            html += '<p><strong>Rating:</strong> ' + res.rating + '</p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('adhesiveCoverageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/lamination/calculate-adhesive-coverage-per-roll/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('adhesiveCoverageResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Adhesive Coverage Results:</h6>';
+            html += '<p><strong>Roll Area:</strong> ' + res.roll_area_m2 + ' m²</p>';
+            html += '<p><strong>Adhesive Required:</strong> <span class="fw-bold">' + res.adhesive_required_kg + ' kg</span></p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
 
 // Smooth scrolling for navigation
 document.addEventListener('DOMContentLoaded', function() {

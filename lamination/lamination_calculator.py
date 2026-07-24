@@ -313,3 +313,103 @@ class LaminationCalculator:
         if from_unit in conversions and to_unit in conversions:
             return value * conversions[from_unit] / conversions[to_unit]
         return value  # Fallback to same value if units not recognized
+
+    # ---------------------------------------------------------------------
+    # WASTE ALLOWANCE
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def apply_waste_allowance(net_mass_kg, waste_percent):
+        """
+        Gross Required Mass = Net Mass * (1 + Waste% / 100)
+        Applied independently per component (film layer, adhesive, etc.)
+        """
+        waste_mass_kg = net_mass_kg * (waste_percent / 100)
+        gross_mass_kg = net_mass_kg + waste_mass_kg
+        return {'net_kg': net_mass_kg, 'waste_kg': waste_mass_kg, 'gross_kg': gross_mass_kg}
+
+    # ---------------------------------------------------------------------
+    # SETTING / CURING TIME
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_total_turnaround_time(lamination_time_hr, setting_time_hr):
+        """Total Turnaround (hr) = Lamination Time (hr) + Setting/Curing Time (hr)"""
+        return lamination_time_hr + setting_time_hr
+
+    # ---------------------------------------------------------------------
+    # PEEL / BOND STRENGTH
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_peel_strength(peel_force_N, sample_width_mm, standard_width_mm=15.0):
+        """Peel Strength (N/15mm) = Peel Force (N) / (Sample Width (mm) / 15)"""
+        if sample_width_mm <= 0:
+            return 0.0
+        return peel_force_N / (sample_width_mm / standard_width_mm)
+
+    # ---------------------------------------------------------------------
+    # COAT WEIGHT VERIFICATION
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_actual_coat_weight(roll_weight_before_g, roll_weight_after_g, area_laminated_m2):
+        """Actual Coat Weight (gsm) = (Weight Before - Weight After) (g) / Area (m2)"""
+        if area_laminated_m2 <= 0:
+            return 0.0
+        consumed_g = roll_weight_before_g - roll_weight_after_g
+        return consumed_g / area_laminated_m2
+
+    @staticmethod
+    def calculate_coat_weight_deviation(actual_gsm, target_gsm):
+        """Deviation% = ((Actual - Target) / Target) * 100"""
+        if target_gsm <= 0:
+            return 0.0
+        return ((actual_gsm - target_gsm) / target_gsm) * 100
+
+    # ---------------------------------------------------------------------
+    # ADHESIVE APPLICATION RATE
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_application_rate(adhesive_consumed_kg, total_area_m2):
+        """Applied Rate (gsm) = (Adhesive Consumed (kg) * 1000) / Total Area (m2)"""
+        if total_area_m2 <= 0:
+            return 0.0
+        return (adhesive_consumed_kg * 1000) / total_area_m2
+
+    # ---------------------------------------------------------------------
+    # RESIDUAL SOLVENT
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_residual_solvent(solvent_detected_ug, sample_area_m2):
+        """Residual Solvent (mg/m2) = Solvent Detected (ug) / Sample Area (m2) / 1000"""
+        if sample_area_m2 <= 0:
+            return 0.0
+        return solvent_detected_ug / sample_area_m2 / 1000
+
+    # ---------------------------------------------------------------------
+    # OVERALL LINE EFFICIENCY (OEE-STYLE)
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_availability_percent(total_run_time_min, downtime_min):
+        """Availability% = (Total Run Time - Downtime) / Total Run Time * 100"""
+        if total_run_time_min <= 0:
+            return 0.0
+        return ((total_run_time_min - downtime_min) / total_run_time_min) * 100
+
+    @staticmethod
+    def calculate_overall_line_efficiency(availability_percent, production_efficiency_percent, yield_percent):
+        """Overall Efficiency% = Availability% * (Production Efficiency%/100) * (Yield%/100)"""
+        return availability_percent * (production_efficiency_percent / 100) * (yield_percent / 100) / 100
+
+    # ---------------------------------------------------------------------
+    # ADHESIVE COVERAGE PER ROLL (PLANNING)
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_adhesive_coverage_per_roll(coat_weight_gsm, roll_area_m2):
+        """Adhesive Required (kg) = Coat Weight (gsm) * Roll Area (m2) / 1000"""
+        return (coat_weight_gsm * roll_area_m2) / 1000

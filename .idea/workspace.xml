@@ -6,19 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="59e339a0-e2c6-4049-b9eb-8449e35cb863" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/plastic_qc_calculator.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/plastic_qc_calculator.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/management/commands/createsuperuser_custom.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/management/commands/createsuperuser_custom.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/templates/bag_making/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/templates/bag_making/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/extrusion_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/extrusion/extrusion_calculator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/extrusion/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/templates/extrusion/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/extrusion/templates/extrusion/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/extrusion/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/extrusion/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lamination/lamination_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/lamination/lamination_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lamination/templates/lamination/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/lamination/templates/lamination/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lamination/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/lamination/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lamination/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/lamination/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
