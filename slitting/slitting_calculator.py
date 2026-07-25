@@ -659,3 +659,120 @@ class SlittingCalculator:
         if from_unit not in conversions or to_unit not in conversions:
             raise ValueError(f"Invalid speed unit: {from_unit} or {to_unit}")
         return value * conversions[from_unit] / conversions[to_unit]
+
+    # ---------------------------------------------------------------------
+    # KNIFE LAYOUT / SLIT COUNT PLANNING
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calc_knife_layout(deckle_width_mm, slit_widths_mm, slit_counts):
+        """
+        Given a master (deckle) roll width and a set of slit widths with counts,
+        compute total slit width used and resulting edge trim.
+        """
+        if len(slit_widths_mm) != len(slit_counts):
+            raise ValueError("slit_widths_mm and slit_counts must be the same length")
+
+        total_slit_width_mm = sum(w * c for w, c in zip(slit_widths_mm, slit_counts))
+        total_slit_count = sum(slit_counts)
+        trim_mm = deckle_width_mm - total_slit_width_mm
+        trim_percent = (trim_mm / deckle_width_mm) * 100 if deckle_width_mm else 0.0
+
+        return {
+            'total_slit_width_mm': total_slit_width_mm,
+            'total_slit_count': total_slit_count,
+            'trim_mm': trim_mm,
+            'trim_percent': trim_percent
+        }
+
+    @staticmethod
+    def calc_max_slits_single_width(deckle_width_mm, slit_width_mm):
+        """Max Slits = floor(Deckle Width / Slit Width), for a single repeated slit width."""
+        if slit_width_mm <= 0 or deckle_width_mm <= 0:
+            return {'max_slits': 0, 'used_width_mm': 0.0, 'trim_mm': deckle_width_mm, 'trim_percent': 100.0}
+
+        max_slits = math.floor(deckle_width_mm / slit_width_mm)
+        used_width_mm = max_slits * slit_width_mm
+        trim_mm = deckle_width_mm - used_width_mm
+        trim_percent = (trim_mm / deckle_width_mm) * 100 if deckle_width_mm else 0.0
+
+        return {
+            'max_slits': max_slits,
+            'used_width_mm': used_width_mm,
+            'trim_mm': trim_mm,
+            'trim_percent': trim_percent
+        }
+
+    # ---------------------------------------------------------------------
+    # ROLLS (PUPS) OBTAINABLE FROM TOTAL BATCH MASS
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calc_rolls_from_mass(total_batch_mass_kg, mass_per_roll_kg):
+        """Rolls Obtainable = floor(Total Batch Mass / Mass per Roll); Leftover = remainder."""
+        if mass_per_roll_kg <= 0:
+            return {'rolls_obtainable': 0, 'leftover_mass_kg': total_batch_mass_kg}
+
+        rolls_obtainable = math.floor(total_batch_mass_kg / mass_per_roll_kg)
+        leftover_mass_kg = total_batch_mass_kg - (rolls_obtainable * mass_per_roll_kg)
+
+        return {'rolls_obtainable': rolls_obtainable, 'leftover_mass_kg': leftover_mass_kg}
+
+    # ---------------------------------------------------------------------
+    # WINDING TENSION TAPER
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calc_tension_at_diameter(starting_tension, core_diameter_m, current_diameter_m, taper_percent):
+        """Tension(D) = Starting Tension * (Core Diameter / D) ^ (Taper% / 100)"""
+        if current_diameter_m <= 0 or core_diameter_m <= 0:
+            return 0.0
+        taper_fraction = taper_percent / 100
+        return starting_tension * (core_diameter_m / current_diameter_m) ** taper_fraction
+
+    @classmethod
+    def calc_tension_taper_profile(cls, starting_tension, core_diameter_m, target_diameter_m, taper_percent, steps=5):
+        """Generate a tension-vs-diameter profile from core diameter to target (fully wound) diameter."""
+        profile = []
+        if target_diameter_m <= core_diameter_m or steps < 2:
+            return profile
+
+        for i in range(steps):
+            d = core_diameter_m + (target_diameter_m - core_diameter_m) * (i / (steps - 1))
+            tension = cls.calc_tension_at_diameter(starting_tension, core_diameter_m, d, taper_percent)
+            profile.append({'diameter_m': d, 'tension': tension})
+
+        return profile
+
+    # ---------------------------------------------------------------------
+    # ROLL DENSITY / WIND QUALITY CHECK
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calc_wind_quality_deviation(average_density_g_cm3, nominal_density_g_cm3):
+        """Deviation% = ((Average Roll Density - Nominal Material Density) / Nominal Density) * 100"""
+        if nominal_density_g_cm3 <= 0:
+            return 0.0
+        return ((average_density_g_cm3 - nominal_density_g_cm3) / nominal_density_g_cm3) * 100
+
+    # ---------------------------------------------------------------------
+    # CHANGEOVER / DOWNTIME BREAKDOWN
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calc_availability_percent(total_run_time_min, total_downtime_min):
+        """Availability% = (Total Run Time - Total Downtime) / Total Run Time * 100"""
+        if total_run_time_min <= 0:
+            return 0.0
+        return ((total_run_time_min - total_downtime_min) / total_run_time_min) * 100
+
+    # ---------------------------------------------------------------------
+    # WASTE ALLOWANCE (MASS PLANNING)
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def apply_waste_allowance(net_mass_kg, waste_percent):
+        """Gross Required Mass = Net Mass * (1 + Waste% / 100)"""
+        waste_mass_kg = net_mass_kg * (waste_percent / 100)
+        gross_mass_kg = net_mass_kg + waste_mass_kg
+        return {'net_kg': net_mass_kg, 'waste_kg': waste_mass_kg, 'gross_kg': gross_mass_kg}

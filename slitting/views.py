@@ -3,7 +3,17 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from calculator.models import PlasticMaterial
-from .models import SlittingCalculation
+from .models import SlittingCalculation, SlittingLayer
+
+
+def safe_float(value, default=0.0):
+    """Safely convert value to float, handling empty strings and invalid inputs."""
+    try:
+        if value is None or value == '':
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
 from .slitting_calculator import SlittingCalculator
 import json
 
@@ -18,6 +28,12 @@ def slitting_home(request):
         {'id': 'production_rate', 'name': 'Production Rate', 'icon': 'fas fa-tachometer-alt'},
         {'id': 'yield_calculation', 'name': 'Yield Calculation', 'icon': 'fas fa-percentage'},
         {'id': 'film_length', 'name': 'Film Length from Mass', 'icon': 'fas fa-ruler'},
+        {'id': 'knife_layout', 'name': 'Knife Layout / Slit Count', 'icon': 'fas fa-th-large'},
+        {'id': 'rolls_from_mass', 'name': 'Rolls from Total Mass', 'icon': 'fas fa-boxes'},
+        {'id': 'tension_taper', 'name': 'Winding Tension Taper', 'icon': 'fas fa-compress-arrows-alt'},
+        {'id': 'wind_quality', 'name': 'Wind Quality Check', 'icon': 'fas fa-bullseye'},
+        {'id': 'downtime_breakdown', 'name': 'Downtime Breakdown', 'icon': 'fas fa-stopwatch'},
+        {'id': 'waste_allowance', 'name': 'Waste Allowance Planning', 'icon': 'fas fa-recycle'},
     ]
 
     materials = PlasticMaterial.objects.all().order_by('material_type', 'name')
@@ -671,3 +687,554 @@ def slitting_history(request):
     calculations = SlittingCalculation.objects.filter(user=request.user).select_related('material').order_by(
         '-timestamp')
     return render(request, 'slitting/history.html', {'calculations': calculations})
+
+
+def get_wind_quality_rating(deviation_percent):
+    abs_dev = abs(deviation_percent)
+    if abs_dev < 2:
+        return "Good - Consistent Winding"
+    elif abs_dev < 5:
+        return "Acceptable - Monitor"
+    elif deviation_percent >= 5:
+        return "Over-tight Winding - Risk of Core Crush/Telescoping Under Load"
+    else:
+        return "Soft Winding - Risk of Telescoping/Roll Collapse"
+
+
+def get_availability_rating(availability_percent):
+    if availability_percent >= 90:
+        return "Excellent"
+    elif availability_percent >= 80:
+        return "Good"
+    elif availability_percent >= 65:
+        return "Average"
+    else:
+        return "Needs Improvement"
+
+
+@login_required
+@csrf_exempt
+def calculate_knife_layout(request):
+    """Knife layout / slit count planning from a master (deckle) roll width"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            calculator = SlittingCalculator()
+
+            material_id = data.get('material_id')
+            layers_data = data.get('layers', [])
+            if material_id:
+                try:
+                    material = PlasticMaterial.objects.get(id=material_id)
+                except PlasticMaterial.DoesNotExist:
+                    material = PlasticMaterial.objects.first()
+            else:
+                material = PlasticMaterial.objects.first()
+
+            mode = data.get('mode', 'layout')  # 'layout' or 'max_slits'
+            deckle_width = float(data.get('deckle_width', 0))
+            deckle_width_unit = data.get('deckle_width_unit', 'mm')
+            deckle_width_mm = calculator.convert_length(deckle_width, deckle_width_unit, 'mm')
+
+            if deckle_width_mm <= 0:
+                return JsonResponse({'success': False, 'error': 'Deckle width must be greater than 0'})
+
+            if mode == 'max_slits':
+                slit_width = float(data.get('slit_width', 0))
+                slit_width_unit = data.get('slit_width_unit', 'mm')
+                slit_width_mm = calculator.convert_length(slit_width, slit_width_unit, 'mm')
+
+                if slit_width_mm <= 0:
+                    return JsonResponse({'success': False, 'error': 'Slit width must be greater than 0'})
+
+                layout = calculator.calc_max_slits_single_width(deckle_width_mm, slit_width_mm)
+                result = {
+                    'mode': 'max_slits',
+                    'deckle_width_mm': round(deckle_width_mm, 1),
+                    'slit_width_mm': round(slit_width_mm, 1),
+                    'max_slits': layout['max_slits'],
+                    'used_width_mm': round(layout['used_width_mm'], 1),
+                    'trim_mm': round(layout['trim_mm'], 1),
+                    'trim_percent': round(layout['trim_percent'], 2)
+                }
+            else:
+                slits = data.get('slits', [])
+                if not slits:
+                    return JsonResponse({'success': False, 'error': 'Please provide at least one slit width/count'})
+
+                slit_widths_mm = []
+                slit_counts = []
+                slit_labels = []
+                for s in slits:
+                    w = float(s.get('width', 0))
+                    wu = s.get('width_unit', 'mm')
+                    c = int(s.get('count', 0))
+                    w_mm = calculator.convert_length(w, wu, 'mm')
+                    slit_widths_mm.append(w_mm)
+                    slit_counts.append(c)
+                    slit_labels.append({'width_mm': round(w_mm, 1), 'count': c})
+
+                layout = calculator.calc_knife_layout(deckle_width_mm, slit_widths_mm, slit_counts)
+                result = {
+                    'mode': 'layout',
+                    'deckle_width_mm': round(deckle_width_mm, 1),
+                    'slits': slit_labels,
+                    'total_slit_width_mm': round(layout['total_slit_width_mm'], 1),
+                    'total_slit_count': layout['total_slit_count'],
+                    'trim_mm': round(layout['trim_mm'], 1),
+                    'trim_percent': round(layout['trim_percent'], 2)
+                }
+
+            if result.get('trim_mm', 0) < 0:
+                result['warning'] = 'Total slit width exceeds deckle width - layout does not fit'
+
+            if request.user.is_authenticated:
+                slitting_calc = SlittingCalculation.objects.create(
+                    calculation_type='KNIFE_LAYOUT',
+                    material=material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+                for i, layer in enumerate(layers_data):
+                    layer_material_id = layer.get('material_id')
+                    if layer_material_id:
+                        try:
+                            layer_material = PlasticMaterial.objects.get(id=layer_material_id)
+                            SlittingLayer.objects.create(
+                                calculation=slitting_calc,
+                                material=layer_material,
+                                thickness=float(layer.get('thickness', 0)),
+                                thickness_unit=layer.get('thickness_unit', 'micron'),
+                                layer_order=i
+                            )
+                        except PlasticMaterial.DoesNotExist:
+                            pass
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_rolls_from_mass(request):
+    """Number of finished slit rolls (pups) obtainable from a total batch mass"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            calculator = SlittingCalculator()
+
+            material_id = data.get('material_id')
+            layers_data = data.get('layers', [])
+            if material_id:
+                try:
+                    material = PlasticMaterial.objects.get(id=material_id)
+                except PlasticMaterial.DoesNotExist:
+                    material = PlasticMaterial.objects.first()
+            else:
+                material = PlasticMaterial.objects.first()
+
+            total_batch_mass = float(data.get('total_batch_mass', 0))
+            total_batch_mass_unit = data.get('total_batch_mass_unit', 'kg')
+            mass_per_roll = float(data.get('mass_per_roll', 0))
+            mass_per_roll_unit = data.get('mass_per_roll_unit', 'kg')
+
+            if total_batch_mass <= 0 or mass_per_roll <= 0:
+                return JsonResponse({'success': False, 'error': 'Total batch mass and mass per roll must be greater than 0'})
+
+            total_batch_mass_kg = calculator.convert_mass(total_batch_mass, total_batch_mass_unit, 'kg')
+            mass_per_roll_kg = calculator.convert_mass(mass_per_roll, mass_per_roll_unit, 'kg')
+
+            outcome = calculator.calc_rolls_from_mass(total_batch_mass_kg, mass_per_roll_kg)
+
+            result = {
+                'rolls_obtainable': outcome['rolls_obtainable'],
+                'mass_per_roll_kg': round(mass_per_roll_kg, 3),
+                'leftover_mass_kg': round(outcome['leftover_mass_kg'], 3),
+                'leftover_mass_lb': round(calculator.convert_mass(outcome['leftover_mass_kg'], 'kg', 'lb'), 3),
+                'total_batch_mass_kg': round(total_batch_mass_kg, 3)
+            }
+
+            if request.user.is_authenticated:
+                slitting_calc = SlittingCalculation.objects.create(
+                    calculation_type='ROLLS_FROM_MASS',
+                    material=material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+                for i, layer in enumerate(layers_data):
+                    layer_material_id = layer.get('material_id')
+                    if layer_material_id:
+                        try:
+                            layer_material = PlasticMaterial.objects.get(id=layer_material_id)
+                            SlittingLayer.objects.create(
+                                calculation=slitting_calc,
+                                material=layer_material,
+                                thickness=float(layer.get('thickness', 0)),
+                                thickness_unit=layer.get('thickness_unit', 'micron'),
+                                layer_order=i
+                            )
+                        except PlasticMaterial.DoesNotExist:
+                            pass
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_tension_taper(request):
+    """Winding tension taper profile from core diameter to target wound diameter"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            calculator = SlittingCalculator()
+
+            material_id = data.get('material_id')
+            layers_data = data.get('layers', [])
+            if material_id:
+                try:
+                    material = PlasticMaterial.objects.get(id=material_id)
+                except PlasticMaterial.DoesNotExist:
+                    material = PlasticMaterial.objects.first()
+            else:
+                material = PlasticMaterial.objects.first()
+
+            starting_tension = float(data.get('starting_tension', 0))
+            tension_unit = data.get('tension_unit', 'N')
+            core_diameter = float(data.get('core_diameter', 0))
+            core_diameter_unit = data.get('core_diameter_unit', 'mm')
+            target_diameter = float(data.get('target_diameter', 0))
+            target_diameter_unit = data.get('target_diameter_unit', 'mm')
+            taper_percent = float(data.get('taper_percent', 30))
+            current_diameter = safe_float(data.get('current_diameter', 0))
+            current_diameter_unit = data.get('current_diameter_unit', 'mm')
+
+            if starting_tension <= 0 or core_diameter <= 0 or target_diameter <= 0:
+                return JsonResponse({'success': False, 'error': 'Starting tension, core diameter, and target diameter must be greater than 0'})
+            if target_diameter <= core_diameter:
+                return JsonResponse({'success': False, 'error': 'Target diameter must be greater than core diameter'})
+
+            core_diameter_m = calculator.convert_length(core_diameter, core_diameter_unit, 'm')
+            target_diameter_m = calculator.convert_length(target_diameter, target_diameter_unit, 'm')
+
+            profile_raw = calculator.calc_tension_taper_profile(
+                starting_tension, core_diameter_m, target_diameter_m, taper_percent, steps=5
+            )
+            profile = [{
+                'diameter_mm': round(calculator.convert_length(p['diameter_m'], 'm', 'mm'), 1),
+                'tension': round(p['tension'], 2)
+            } for p in profile_raw]
+
+            result = {
+                'starting_tension': starting_tension,
+                'tension_unit': tension_unit,
+                'taper_percent': taper_percent,
+                'ending_tension': round(profile[-1]['tension'], 2) if profile else 0,
+                'profile': profile
+            }
+
+            if current_diameter > 0:
+                current_diameter_m = calculator.convert_length(current_diameter, current_diameter_unit, 'm')
+                tension_at_current = calculator.calc_tension_at_diameter(
+                    starting_tension, core_diameter_m, current_diameter_m, taper_percent
+                )
+                result['current_diameter_mm'] = round(calculator.convert_length(current_diameter_m, 'm', 'mm'), 1)
+                result['tension_at_current_diameter'] = round(tension_at_current, 2)
+
+            if request.user.is_authenticated:
+                slitting_calc = SlittingCalculation.objects.create(
+                    calculation_type='TENSION_TAPER',
+                    material=material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+                for i, layer in enumerate(layers_data):
+                    layer_material_id = layer.get('material_id')
+                    if layer_material_id:
+                        try:
+                            layer_material = PlasticMaterial.objects.get(id=layer_material_id)
+                            SlittingLayer.objects.create(
+                                calculation=slitting_calc,
+                                material=layer_material,
+                                thickness=float(layer.get('thickness', 0)),
+                                thickness_unit=layer.get('thickness_unit', 'micron'),
+                                layer_order=i
+                            )
+                        except PlasticMaterial.DoesNotExist:
+                            pass
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_wind_quality(request):
+    """Roll density / wind quality check vs. nominal material density"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            calculator = SlittingCalculator()
+
+            material_id = data.get('material_id')
+            layers_data = data.get('layers', [])
+            if material_id:
+                try:
+                    material = PlasticMaterial.objects.get(id=material_id)
+                except PlasticMaterial.DoesNotExist:
+                    material = PlasticMaterial.objects.first()
+            else:
+                material = PlasticMaterial.objects.first()
+
+            average_density = float(data.get('average_density', 0))
+            manual_nominal_density = safe_float(data.get('nominal_density', 0))
+            nominal_density_source = 'manual_override'
+
+            # Priority 1: laminate layer structure -> composite (effective) density
+            layer_thicknesses_um = []
+            layer_densities_g_cm3 = []
+            if layers_data:
+                for layer in layers_data:
+                    layer_material_id = layer.get('material_id')
+                    if not layer_material_id:
+                        continue
+                    try:
+                        layer_material = PlasticMaterial.objects.get(id=layer_material_id)
+                    except PlasticMaterial.DoesNotExist:
+                        continue
+                    thickness = float(layer.get('thickness', 0))
+                    thickness_unit = layer.get('thickness_unit', 'micron')
+                    thickness_um = calculator.convert_thickness(thickness, thickness_unit, 'micron')
+                    layer_thicknesses_um.append(thickness_um)
+                    layer_densities_g_cm3.append(layer_material.density)
+
+            if layer_thicknesses_um:
+                nominal_density = calculator.calculate_material_density_effective(
+                    layer_thicknesses_um, layer_densities_g_cm3
+                )
+                nominal_density_source = 'composite_density_from_laminate_layers'
+            # Priority 2: single material selected from the database
+            elif material_id and material:
+                nominal_density = material.density
+                nominal_density_source = 'material_database'
+            # Priority 3: manual override, only used if neither of the above is available
+            elif manual_nominal_density > 0:
+                nominal_density = manual_nominal_density
+                nominal_density_source = 'manual_override'
+            else:
+                nominal_density = 0.0
+
+            if average_density <= 0 or nominal_density <= 0:
+                return JsonResponse({'success': False, 'error': 'Average density must be greater than 0, and nominal density must come from a selected material, a laminate layer structure, or a manual entry'})
+
+            deviation_percent = calculator.calc_wind_quality_deviation(average_density, nominal_density)
+
+            result = {
+                'average_density_g_cm3': average_density,
+                'nominal_density_g_cm3': round(nominal_density, 4),
+                'nominal_density_source': nominal_density_source,
+                'deviation_percent': round(deviation_percent, 2),
+                'wind_quality_rating': get_wind_quality_rating(deviation_percent)
+            }
+
+            if request.user.is_authenticated:
+                slitting_calc = SlittingCalculation.objects.create(
+                    calculation_type='WIND_QUALITY',
+                    material=material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+                for i, layer in enumerate(layers_data):
+                    layer_material_id = layer.get('material_id')
+                    if layer_material_id:
+                        try:
+                            layer_material = PlasticMaterial.objects.get(id=layer_material_id)
+                            SlittingLayer.objects.create(
+                                calculation=slitting_calc,
+                                material=layer_material,
+                                thickness=float(layer.get('thickness', 0)),
+                                thickness_unit=layer.get('thickness_unit', 'micron'),
+                                layer_order=i
+                            )
+                        except PlasticMaterial.DoesNotExist:
+                            pass
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_downtime_breakdown(request):
+    """Changeover/downtime cause breakdown and availability%"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            calculator = SlittingCalculator()
+
+            material_id = data.get('material_id')
+            layers_data = data.get('layers', [])
+            if material_id:
+                try:
+                    material = PlasticMaterial.objects.get(id=material_id)
+                except PlasticMaterial.DoesNotExist:
+                    material = PlasticMaterial.objects.first()
+            else:
+                material = PlasticMaterial.objects.first()
+
+            total_run_time_min = float(data.get('total_run_time_min', 0))
+            changeover_min = float(data.get('changeover_min', 0))
+            knife_change_min = float(data.get('knife_change_min', 0))
+            core_loading_min = float(data.get('core_loading_min', 0))
+            splicing_min = float(data.get('splicing_min', 0))
+            other_min = float(data.get('other_min', 0))
+
+            if total_run_time_min <= 0:
+                return JsonResponse({'success': False, 'error': 'Total run time must be greater than 0'})
+
+            total_downtime_min = changeover_min + knife_change_min + core_loading_min + splicing_min + other_min
+            if total_downtime_min > total_run_time_min:
+                return JsonResponse({'success': False, 'error': 'Total downtime cannot exceed total run time'})
+
+            availability_percent = calculator.calc_availability_percent(total_run_time_min, total_downtime_min)
+
+            def pct_of_downtime(x):
+                return round((x / total_downtime_min) * 100, 1) if total_downtime_min > 0 else 0.0
+
+            result = {
+                'total_run_time_min': total_run_time_min,
+                'total_downtime_min': round(total_downtime_min, 1),
+                'availability_percent': round(availability_percent, 2),
+                'availability_rating': get_availability_rating(availability_percent),
+                'breakdown': {
+                    'changeover_min': changeover_min, 'changeover_percent': pct_of_downtime(changeover_min),
+                    'knife_change_min': knife_change_min, 'knife_change_percent': pct_of_downtime(knife_change_min),
+                    'core_loading_min': core_loading_min, 'core_loading_percent': pct_of_downtime(core_loading_min),
+                    'splicing_min': splicing_min, 'splicing_percent': pct_of_downtime(splicing_min),
+                    'other_min': other_min, 'other_percent': pct_of_downtime(other_min)
+                }
+            }
+
+            if request.user.is_authenticated:
+                slitting_calc = SlittingCalculation.objects.create(
+                    calculation_type='DOWNTIME_BREAKDOWN',
+                    material=material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+                for i, layer in enumerate(layers_data):
+                    layer_material_id = layer.get('material_id')
+                    if layer_material_id:
+                        try:
+                            layer_material = PlasticMaterial.objects.get(id=layer_material_id)
+                            SlittingLayer.objects.create(
+                                calculation=slitting_calc,
+                                material=layer_material,
+                                thickness=float(layer.get('thickness', 0)),
+                                thickness_unit=layer.get('thickness_unit', 'micron'),
+                                layer_order=i
+                            )
+                        except PlasticMaterial.DoesNotExist:
+                            pass
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
+@csrf_exempt
+def calculate_waste_allowance(request):
+    """Waste-adjusted mass planning for slit roll / master roll procurement"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            calculator = SlittingCalculator()
+
+            material_id = data.get('material_id')
+            layers_data = data.get('layers', [])
+            if material_id:
+                try:
+                    material = PlasticMaterial.objects.get(id=material_id)
+                except PlasticMaterial.DoesNotExist:
+                    material = PlasticMaterial.objects.first()
+            else:
+                material = PlasticMaterial.objects.first()
+
+            net_mass = float(data.get('net_mass', 0))
+            net_mass_unit = data.get('net_mass_unit', 'kg')
+            waste_percent = float(data.get('waste_percent', 5.0))
+
+            if net_mass <= 0:
+                return JsonResponse({'success': False, 'error': 'Net mass must be greater than 0'})
+
+            net_mass_kg = calculator.convert_mass(net_mass, net_mass_unit, 'kg')
+            outcome = calculator.apply_waste_allowance(net_mass_kg, waste_percent)
+
+            result = {
+                'net_mass_kg': round(outcome['net_kg'], 3),
+                'waste_percent': waste_percent,
+                'waste_mass_kg': round(outcome['waste_kg'], 3),
+                'gross_mass_kg': round(outcome['gross_kg'], 3),
+                'gross_mass_lb': round(calculator.convert_mass(outcome['gross_kg'], 'kg', 'lb'), 3)
+            }
+
+            if request.user.is_authenticated:
+                slitting_calc = SlittingCalculation.objects.create(
+                    calculation_type='WASTE_ALLOWANCE',
+                    material=material,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+
+                for i, layer in enumerate(layers_data):
+                    layer_material_id = layer.get('material_id')
+                    if layer_material_id:
+                        try:
+                            layer_material = PlasticMaterial.objects.get(id=layer_material_id)
+                            SlittingLayer.objects.create(
+                                calculation=slitting_calc,
+                                material=layer_material,
+                                thickness=float(layer.get('thickness', 0)),
+                                thickness_unit=layer.get('thickness_unit', 'micron'),
+                                layer_order=i
+                            )
+                        except PlasticMaterial.DoesNotExist:
+                            pass
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

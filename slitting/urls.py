@@ -15,6 +15,12 @@ urlpatterns = [
     path('calculate-production-rate/', views.calculate_production_rate, name='calculate_production_rate'),
     path('calculate-yield/', views.calculate_yield, name='calculate_yield'),
     path('calculate-film-length/', views.calculate_film_length, name='calculate_film_length'),
+    path('calculate-knife-layout/', views.calculate_knife_layout, name='calculate_knife_layout'),
+    path('calculate-rolls-from-mass/', views.calculate_rolls_from_mass, name='calculate_rolls_from_mass'),
+    path('calculate-tension-taper/', views.calculate_tension_taper, name='calculate_tension_taper'),
+    path('calculate-wind-quality/', views.calculate_wind_quality, name='calculate_wind_quality'),
+    path('calculate-downtime-breakdown/', views.calculate_downtime_breakdown, name='calculate_downtime_breakdown'),
+    path('calculate-waste-allowance/', views.calculate_waste_allowance, name='calculate_waste_allowance'),
 
     path('core-materials/', views.get_core_materials, name='get_core_materials'),
 

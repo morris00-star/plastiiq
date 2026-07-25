@@ -719,6 +719,567 @@
     </div>
 </div>
 
+<!-- Knife Layout / Slit Count Calculator -->
+<div class="card shadow mb-4" id="knife_layout">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-th-large"></i> Knife Layout / Slit Count Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="knifeLayoutForm">
+            <div class="mb-3">
+                <label class="form-label">Mode</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="mode" value="layout" id="layoutModeMulti" checked>
+                    <label class="form-check-label" for="layoutModeMulti">Multiple slit widths (custom layout)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="mode" value="max_slits" id="layoutModeSingle">
+                    <label class="form-check-label" for="layoutModeSingle">Single slit width (solve max count)</label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Deckle (Master Roll) Width</label>
+                <div class="input-group" style="max-width: 300px;">
+                    <input type="number" step="0.1" class="form-control" name="deckle_width" required min="0.1">
+                    <select class="form-select" name="deckle_width_unit" style="max-width: 100px;">
+                        <option value="mm">mm</option>
+                        <option value="cm">cm</option>
+                        <option value="m">m</option>
+                        <option value="inch">inch</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="layoutMultiFields">
+                <label class="form-label">Slit Widths &amp; Counts</label>
+                <div id="knifeSlitsContainer">
+                    <div class="row mb-2 slit-entry">
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="slit_width[]" placeholder="Slit width" min="0.1">
+                                <select class="form-select" name="slit_width_unit[]" style="max-width: 90px;">
+                                    <option value="mm">mm</option>
+                                    <option value="cm">cm</option>
+                                    <option value="inch">inch</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="number" step="1" class="form-control" name="slit_count[]" placeholder="Count" min="1">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addKnifeSlitRow()"><i class="fas fa-plus"></i> Add Slit Width</button>
+                <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeKnifeSlitRow()"><i class="fas fa-minus"></i> Remove</button>
+            </div>
+
+            <div id="layoutSingleFields" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Slit Width</label>
+                    <div class="input-group" style="max-width: 300px;">
+                        <input type="number" step="0.1" class="form-control" name="slit_width_single" min="0.1">
+                        <select class="form-select" name="slit_width_single_unit" style="max-width: 100px;">
+                            <option value="mm">mm</option>
+                            <option value="cm">cm</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">Material / Product</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="knifeLayoutLaminateToggle">
+                <label class="form-check-label" for="knifeLayoutLaminateToggle">This is a laminate (multi-layer) - record layer structure for history</label>
+            </div>
+            <div id="knifeLayoutLayersContainer" style="display: none;">
+                <div class="row mb-2 knifeLayout-layer-row">
+                    <div class="col-md-7">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Layer Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="layer_thickness[]" placeholder="Thickness">
+                            <select class="form-select" name="layer_thickness_unit[]" style="max-width: 90px;">
+                                <option value="micron">µm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSlittingLayerRow('knifeLayout')"><i class="fas fa-plus"></i> Add Layer</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSlittingLayerRow('knifeLayout')"><i class="fas fa-minus"></i> Remove Layer</button>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-calculator"></i> Calculate Layout</button>
+        </form>
+        <div id="knifeLayoutResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Rolls from Total Mass Calculator -->
+<div class="card shadow mb-4" id="rolls_from_mass">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-boxes"></i> Rolls (Pups) from Total Batch Mass</h5>
+    </div>
+    <div class="card-body">
+        <form id="rollsFromMassForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Total Batch Mass</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="total_batch_mass" required min="0.01">
+                            <select class="form-select" name="total_batch_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Mass per Finished Roll</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="mass_per_roll" required min="0.001">
+                            <select class="form-select" name="mass_per_roll_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">Material / Product</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="rollsFromMassLaminateToggle">
+                <label class="form-check-label" for="rollsFromMassLaminateToggle">This is a laminate (multi-layer) - record layer structure for history</label>
+            </div>
+            <div id="rollsFromMassLayersContainer" style="display: none;">
+                <div class="row mb-2 rollsFromMass-layer-row">
+                    <div class="col-md-7">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Layer Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="layer_thickness[]" placeholder="Thickness">
+                            <select class="form-select" name="layer_thickness_unit[]" style="max-width: 90px;">
+                                <option value="micron">µm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSlittingLayerRow('rollsFromMass')"><i class="fas fa-plus"></i> Add Layer</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSlittingLayerRow('rollsFromMass')"><i class="fas fa-minus"></i> Remove Layer</button>
+            </div>
+
+            <button type="submit" class="btn btn-success"><i class="fas fa-calculator"></i> Calculate Rolls</button>
+        </form>
+        <div id="rollsFromMassResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Winding Tension Taper Calculator -->
+<div class="card shadow mb-4" id="tension_taper">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="fas fa-compress-arrows-alt"></i> Winding Tension Taper Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="tensionTaperForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Starting Tension</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="starting_tension" required min="0.1">
+                            <select class="form-select" name="tension_unit" style="max-width: 90px;">
+                                <option value="N">N</option>
+                                <option value="lbf">lbf</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Core Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="core_diameter" required min="0.1">
+                            <select class="form-select" name="core_diameter_unit" style="max-width: 90px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Target (Full Wound) Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="target_diameter" required min="0.1">
+                            <select class="form-select" name="target_diameter_unit" style="max-width: 90px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Taper %</label>
+                        <div class="input-group">
+                            <input type="number" step="1" class="form-control" name="taper_percent" value="30" min="0" max="100">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <small class="form-text text-muted">Typical range 20-50%</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Current Diameter (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="current_diameter" min="0">
+                            <select class="form-select" name="current_diameter_unit" style="max-width: 90px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                        <small class="form-text text-muted">Get tension at a specific point in the wind</small>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">Material / Product</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="tensionTaperLaminateToggle">
+                <label class="form-check-label" for="tensionTaperLaminateToggle">This is a laminate (multi-layer) - record layer structure for history</label>
+            </div>
+            <div id="tensionTaperLayersContainer" style="display: none;">
+                <div class="row mb-2 tensionTaper-layer-row">
+                    <div class="col-md-7">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Layer Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="layer_thickness[]" placeholder="Thickness">
+                            <select class="form-select" name="layer_thickness_unit[]" style="max-width: 90px;">
+                                <option value="micron">µm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSlittingLayerRow('tensionTaper')"><i class="fas fa-plus"></i> Add Layer</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSlittingLayerRow('tensionTaper')"><i class="fas fa-minus"></i> Remove Layer</button>
+            </div>
+
+            <button type="submit" class="btn btn-warning"><i class="fas fa-calculator"></i> Calculate Tension Profile</button>
+        </form>
+        <div id="tensionTaperResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Wind Quality Check Calculator -->
+<div class="card shadow mb-4" id="wind_quality">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-bullseye"></i> Roll Density / Wind Quality Check</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info py-2">
+            <small><i class="fas fa-info-circle"></i> Get "Average Density" from the Roll Mass/Diameter calculator's comprehensive analysis, then compare it here against the nominal material density.</small>
+        </div>
+        <form id="windQualityForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Average Roll Density</label>
+                        <div class="input-group">
+                            <input type="number" step="0.0001" class="form-control" name="average_density" required min="0.0001">
+                            <span class="input-group-text">g/cm³</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Nominal Density (manual override)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.0001" class="form-control" name="nominal_density" min="0.0001">
+                            <span class="input-group-text">g/cm³</span>
+                        </div>
+                        <small class="form-text text-muted">Leave blank - auto-derived from the laminate layers below, or from the selected Material if not a laminate.</small>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">Material / Product</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="windQualityLaminateToggle">
+                <label class="form-check-label" for="windQualityLaminateToggle">This is a laminate (multi-layer) - record layer structure for history</label>
+            </div>
+            <div id="windQualityLayersContainer" style="display: none;">
+                <div class="row mb-2 windQuality-layer-row">
+                    <div class="col-md-7">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Layer Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="layer_thickness[]" placeholder="Thickness">
+                            <select class="form-select" name="layer_thickness_unit[]" style="max-width: 90px;">
+                                <option value="micron">µm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSlittingLayerRow('windQuality')"><i class="fas fa-plus"></i> Add Layer</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSlittingLayerRow('windQuality')"><i class="fas fa-minus"></i> Remove Layer</button>
+            </div>
+
+            <button type="submit" class="btn btn-info"><i class="fas fa-calculator"></i> Check Wind Quality</button>
+        </form>
+        <div id="windQualityResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Downtime Breakdown Calculator -->
+<div class="card shadow mb-4" id="downtime_breakdown">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-stopwatch"></i> Changeover / Downtime Breakdown</h5>
+    </div>
+    <div class="card-body">
+        <form id="downtimeBreakdownForm">
+            <div class="mb-3">
+                <label class="form-label">Total Run Time</label>
+                <div class="input-group" style="max-width: 250px;">
+                    <input type="number" step="0.1" class="form-control" name="total_run_time_min" required min="0.1">
+                    <span class="input-group-text">min</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Changeover</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="changeover_min" value="0" min="0">
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Knife Change</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="knife_change_min" value="0" min="0">
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Core Loading</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="core_loading_min" value="0" min="0">
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Splicing</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="splicing_min" value="0" min="0">
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Other</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="other_min" value="0" min="0">
+                            <span class="input-group-text">min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">Material / Product</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="downtimeBreakdownLaminateToggle">
+                <label class="form-check-label" for="downtimeBreakdownLaminateToggle">This is a laminate (multi-layer) - record layer structure for history</label>
+            </div>
+            <div id="downtimeBreakdownLayersContainer" style="display: none;">
+                <div class="row mb-2 downtimeBreakdown-layer-row">
+                    <div class="col-md-7">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Layer Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="layer_thickness[]" placeholder="Thickness">
+                            <select class="form-select" name="layer_thickness_unit[]" style="max-width: 90px;">
+                                <option value="micron">µm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSlittingLayerRow('downtimeBreakdown')"><i class="fas fa-plus"></i> Add Layer</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSlittingLayerRow('downtimeBreakdown')"><i class="fas fa-minus"></i> Remove Layer</button>
+            </div>
+
+            <button type="submit" class="btn btn-secondary"><i class="fas fa-calculator"></i> Calculate Availability</button>
+        </form>
+        <div id="downtimeBreakdownResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Waste Allowance Planning Calculator -->
+<div class="card shadow mb-4" id="waste_allowance">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-recycle"></i> Waste Allowance Planning</h5>
+    </div>
+    <div class="card-body">
+        <form id="wasteAllowanceForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Net Mass Needed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="net_mass" required min="0.01">
+                            <select class="form-select" name="net_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Waste Allowance</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="waste_percent" value="5.0" min="0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">Material / Product</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="wasteAllowanceLaminateToggle">
+                <label class="form-check-label" for="wasteAllowanceLaminateToggle">This is a laminate (multi-layer) - record layer structure for history</label>
+            </div>
+            <div id="wasteAllowanceLayersContainer" style="display: none;">
+                <div class="row mb-2 wasteAllowance-layer-row">
+                    <div class="col-md-7">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Layer Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="layer_thickness[]" placeholder="Thickness">
+                            <select class="form-select" name="layer_thickness_unit[]" style="max-width: 90px;">
+                                <option value="micron">µm</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSlittingLayerRow('wasteAllowance')"><i class="fas fa-plus"></i> Add Layer</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSlittingLayerRow('wasteAllowance')"><i class="fas fa-minus"></i> Remove Layer</button>
+            </div>
+
+            <button type="submit" class="btn btn-dark"><i class="fas fa-calculator"></i> Calculate Gross Required</button>
+        </form>
+        <div id="wasteAllowanceResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
 <div class="alert alert-info mt-4">
     <h6><i class="fas fa-info-circle"></i> Enhanced Features:</h6>
     <ul class="mb-0">
@@ -1918,6 +2479,325 @@ function displayFilmLengthResult(result) {
     }
     resultDiv.style.display = 'block';
     resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Knife Layout mode toggle
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const multiFields = document.getElementById('layoutMultiFields');
+        const singleFields = document.getElementById('layoutSingleFields');
+        if (this.value === 'max_slits') {
+            multiFields.style.display = 'none';
+            singleFields.style.display = 'block';
+        } else {
+            multiFields.style.display = 'block';
+            singleFields.style.display = 'none';
+        }
+    });
+});
+
+function addKnifeSlitRow() {
+    const container = document.getElementById('knifeSlitsContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2 slit-entry';
+    newRow.innerHTML = `
+        <div class="col-md-5">
+            <div class="input-group">
+                <input type="number" step="0.1" class="form-control" name="slit_width[]" placeholder="Slit width" min="0.1">
+                <select class="form-select" name="slit_width_unit[]" style="max-width: 90px;">
+                    <option value="mm">mm</option>
+                    <option value="cm">cm</option>
+                    <option value="inch">inch</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <input type="number" step="1" class="form-control" name="slit_count[]" placeholder="Count" min="1">
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeKnifeSlitRow() {
+    const container = document.getElementById('knifeSlitsContainer');
+    if (container.children.length > 1) {
+        container.removeChild(container.lastChild);
+    }
+}
+
+document.getElementById('knifeLayoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = document.getElementById('knifeLayoutForm');
+    const mode = form.querySelector('input[name="mode"]:checked').value;
+
+    const data = {
+        mode: mode,
+        deckle_width: form.querySelector('input[name="deckle_width"]').value,
+        deckle_width_unit: form.querySelector('select[name="deckle_width_unit"]').value
+    };
+
+    if (mode === 'max_slits') {
+        data.slit_width = form.querySelector('input[name="slit_width_single"]').value;
+        data.slit_width_unit = form.querySelector('select[name="slit_width_single_unit"]').value;
+    } else {
+        const widths = Array.from(form.querySelectorAll('input[name="slit_width[]"]')).map(i => i.value);
+        const widthUnits = Array.from(form.querySelectorAll('select[name="slit_width_unit[]"]')).map(i => i.value);
+        const counts = Array.from(form.querySelectorAll('input[name="slit_count[]"]')).map(i => i.value);
+        data.slits = widths.map((w, i) => ({ width: w, width_unit: widthUnits[i], count: counts[i] }))
+            .filter(s => s.width && s.count);
+    }
+
+    data.material_id = form.querySelector('select[name="material_id"]').value;
+    data.layers = collectSlittingLayers(form);
+
+    fetch('/slitting/calculate-knife-layout/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('knifeLayoutResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Knife Layout Results:</h6>';
+            if (res.warning) {
+                html += '<div class="alert alert-warning py-1"><small>' + res.warning + '</small></div>';
+            }
+            if (res.mode === 'max_slits') {
+                html += '<p><strong>Max Slits:</strong> ' + res.max_slits + ' x ' + res.slit_width_mm + ' mm</p>';
+                html += '<p><strong>Used Width:</strong> ' + res.used_width_mm + ' mm</p>';
+            } else {
+                html += '<p><strong>Total Slit Count:</strong> ' + res.total_slit_count + '</p>';
+                html += '<p><strong>Total Slit Width Used:</strong> ' + res.total_slit_width_mm + ' mm</p>';
+            }
+            html += '<p><strong>Deckle Width:</strong> ' + res.deckle_width_mm + ' mm</p>';
+            html += '<p><strong>Trim:</strong> ' + res.trim_mm + ' mm (' + res.trim_percent + '%)</p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('rollsFromMassForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    data.layers = collectSlittingLayers(this);
+    fetch('/slitting/calculate-rolls-from-mass/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('rollsFromMassResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Rolls from Mass Results:</h6>';
+            html += '<p><strong>Rolls Obtainable:</strong> ' + res.rolls_obtainable + '</p>';
+            html += '<p><strong>Mass per Roll:</strong> ' + res.mass_per_roll_kg + ' kg</p>';
+            html += '<p><strong>Leftover Mass:</strong> ' + res.leftover_mass_kg + ' kg (' + res.leftover_mass_lb + ' lb)</p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('tensionTaperForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    data.layers = collectSlittingLayers(this);
+    fetch('/slitting/calculate-tension-taper/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('tensionTaperResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Tension Taper Results:</h6>';
+            html += '<p><strong>Starting Tension:</strong> ' + res.starting_tension + ' ' + res.tension_unit + ' | <strong>Ending Tension:</strong> ' + res.ending_tension + ' ' + res.tension_unit + '</p>';
+            if (res.tension_at_current_diameter !== undefined) {
+                html += '<p><strong>Tension at ' + res.current_diameter_mm + ' mm:</strong> ' + res.tension_at_current_diameter + ' ' + res.tension_unit + '</p>';
+            }
+            html += '<table class="table table-sm table-bordered mt-2"><thead><tr><th>Diameter (mm)</th><th>Tension (' + res.tension_unit + ')</th></tr></thead><tbody>';
+            res.profile.forEach(function(p) {
+                html += '<tr><td>' + p.diameter_mm + '</td><td>' + p.tension + '</td></tr>';
+            });
+            html += '</tbody></table></div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('windQualityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    data.layers = collectSlittingLayers(this);
+    fetch('/slitting/calculate-wind-quality/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('windQualityResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            const sourceLabels = {
+                'composite_density_from_laminate_layers': 'Composite density (laminate layers)',
+                'material_database': 'Material database',
+                'manual_override': 'Manual entry'
+            };
+            html += '<h6><i class="fas fa-check-circle"></i> Wind Quality Results:</h6>';
+            html += '<p><strong>Average Density:</strong> ' + res.average_density_g_cm3 + ' g/cm³ vs <strong>Nominal:</strong> ' + res.nominal_density_g_cm3 + ' g/cm³ <span class="text-muted">(' + (sourceLabels[res.nominal_density_source] || res.nominal_density_source) + ')</span></p>';
+            html += '<p><strong>Deviation:</strong> ' + res.deviation_percent + '%</p>';
+            html += '<p><strong>Rating:</strong> ' + res.wind_quality_rating + '</p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('downtimeBreakdownForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    data.layers = collectSlittingLayers(this);
+    fetch('/slitting/calculate-downtime-breakdown/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('downtimeBreakdownResult');
+        if (result.success) {
+            const res = result.result;
+            const b = res.breakdown;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Downtime Breakdown Results:</h6>';
+            html += '<p><strong>Availability:</strong> ' + res.availability_percent + '% (' + res.availability_rating + ')</p>';
+            html += '<p><strong>Total Downtime:</strong> ' + res.total_downtime_min + ' min of ' + res.total_run_time_min + ' min</p>';
+            html += '<table class="table table-sm table-bordered mt-2"><thead><tr><th>Cause</th><th>Minutes</th><th>% of Downtime</th></tr></thead><tbody>';
+            html += '<tr><td>Changeover</td><td>' + b.changeover_min + '</td><td>' + b.changeover_percent + '%</td></tr>';
+            html += '<tr><td>Knife Change</td><td>' + b.knife_change_min + '</td><td>' + b.knife_change_percent + '%</td></tr>';
+            html += '<tr><td>Core Loading</td><td>' + b.core_loading_min + '</td><td>' + b.core_loading_percent + '%</td></tr>';
+            html += '<tr><td>Splicing</td><td>' + b.splicing_min + '</td><td>' + b.splicing_percent + '%</td></tr>';
+            html += '<tr><td>Other</td><td>' + b.other_min + '</td><td>' + b.other_percent + '%</td></tr>';
+            html += '</tbody></table></div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('wasteAllowanceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    data.layers = collectSlittingLayers(this);
+    fetch('/slitting/calculate-waste-allowance/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('wasteAllowanceResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Waste Allowance Results:</h6>';
+            html += '<p><strong>Net Mass:</strong> ' + res.net_mass_kg + ' kg</p>';
+            html += '<p><strong>Waste (' + res.waste_percent + '%):</strong> ' + res.waste_mass_kg + ' kg</p>';
+            html += '<p><strong>Gross Required:</strong> <span class="fw-bold">' + res.gross_mass_kg + ' kg (' + res.gross_mass_lb + ' lb)</span></p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+// Shared laminate-layer helpers for the new calculators (Knife Layout, Rolls from Mass,
+// Tension Taper, Wind Quality, Downtime Breakdown, Waste Allowance)
+const slittingLayerMaterialOptionsHtml = document.querySelector('select[name="layer_material_id[]"]')
+    ? document.querySelector('select[name="layer_material_id[]"]').innerHTML
+    : '<option value="">Select Layer Material</option>';
+
+document.querySelectorAll('[id$="LaminateToggle"]').forEach(toggle => {
+    toggle.addEventListener('change', function() {
+        const prefix = this.id.replace('LaminateToggle', '');
+        const container = document.getElementById(prefix + 'LayersContainer');
+        container.style.display = this.checked ? 'block' : 'none';
+    });
+});
+
+function addSlittingLayerRow(prefix) {
+    const container = document.getElementById(prefix + 'LayersContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2 ' + prefix + '-layer-row';
+    newRow.innerHTML = `
+        <div class="col-md-7">
+            <select class="form-select" name="layer_material_id[]">${slittingLayerMaterialOptionsHtml}</select>
+        </div>
+        <div class="col-md-5">
+            <div class="input-group">
+                <input type="number" step="0.1" class="form-control" name="layer_thickness[]" placeholder="Thickness">
+                <select class="form-select" name="layer_thickness_unit[]" style="max-width: 90px;">
+                    <option value="micron">µm</option>
+                    <option value="mm">mm</option>
+                </select>
+            </div>
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeSlittingLayerRow(prefix) {
+    const container = document.getElementById(prefix + 'LayersContainer');
+    const rows = container.querySelectorAll('.' + prefix + '-layer-row');
+    if (rows.length > 1) {
+        container.removeChild(rows[rows.length - 1]);
+    }
+}
+
+function collectSlittingLayers(form) {
+    const materials = Array.from(form.querySelectorAll('select[name="layer_material_id[]"]')).map(s => s.value);
+    const thicknesses = Array.from(form.querySelectorAll('input[name="layer_thickness[]"]')).map(i => i.value);
+    const units = Array.from(form.querySelectorAll('select[name="layer_thickness_unit[]"]')).map(s => s.value);
+    const layers = [];
+    materials.forEach((matId, idx) => {
+        if (matId && thicknesses[idx]) {
+            layers.push({ material_id: matId, thickness: thicknesses[idx], thickness_unit: units[idx] });
+        }
+    });
+    return layers;
 }
 
 // Smooth scrolling for navigation

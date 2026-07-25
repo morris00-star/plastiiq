@@ -11,6 +11,13 @@ class SlittingCalculation(models.Model):
         ('PRODUCTION_EFFICIENCY', 'Production Efficiency'),
         ('PRODUCTION_RATE', 'Production Rate'),
         ('YIELD_CALCULATION', 'Yield Calculation'),
+        ('FILM_LENGTH', 'Film Length from Mass'),
+        ('KNIFE_LAYOUT', 'Knife Layout / Slit Count'),
+        ('ROLLS_FROM_MASS', 'Rolls from Total Mass'),
+        ('TENSION_TAPER', 'Winding Tension Taper'),
+        ('WIND_QUALITY', 'Wind Quality Check'),
+        ('DOWNTIME_BREAKDOWN', 'Downtime Breakdown'),
+        ('WASTE_ALLOWANCE', 'Waste Allowance Planning'),
     ]
 
     calculation_type = models.CharField(max_length=30, choices=CALCULATION_TYPES)
