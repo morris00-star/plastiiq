@@ -1,0 +1,56 @@
+<hr>
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Material (optional)</label>
+            <select class="form-select" name="material_id">
+                <option value="">Select Material</option>
+                {% for material in materials %}
+                <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm&sup3;)</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Machine (optional)</label>
+            <select class="form-select" name="machine_name">
+                <option value="">Select Machine</option>
+                <optgroup label="Flexo">
+                    <option value="FLEXO_F01">Flexo F01</option>
+                    <option value="FLEXO_F02">Flexo F02</option>
+                    <option value="FLEXO_F03">Flexo F03</option>
+                    <option value="FLEXO_F04">Flexo F04</option>
+                    <option value="FLEXO_F05">Flexo F05</option>
+                    <option value="FLEXO_F06">Flexo F06</option>
+                    <option value="FLEXO_F07">Flexo F07</option>
+                    <option value="FLEXO_F08">Flexo F08</option>
+                    <option value="FLEXO_F09">Flexo F09</option>
+                </optgroup>
+                <optgroup label="BFM">
+                    <option value="BFM_1">BFM 1</option>
+                    <option value="BFM_2">BFM 2</option>
+                    <option value="BFM_3">BFM 3</option>
+                </optgroup>
+                <optgroup label="Rotogravure">
+                    <option value="ROTO_1">ROTO 1</option>
+                    <option value="ROTO_2">ROTO 2</option>
+                    <option value="ROTO_3">ROTO 3</option>
+                    <option value="ROTO_4">ROTO 4</option>
+                    <option value="ROTO_5">ROTO 5</option>
+                    <option value="ROTO_6">ROTO 6</option>
+                </optgroup>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Customer Name (optional)</label>
+            <input type="text" class="form-control" name="customer_name" placeholder="e.g. Acme Foods Ltd">
+        </div>
+    </div>
+</div>
+<div class="mb-3">
+    <label class="form-label">Job / Order Name (optional)</label>
+    <input type="text" class="form-control" name="job_name" placeholder="e.g. PO-2026-0143">
+</div>

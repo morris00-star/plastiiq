@@ -3,6 +3,13 @@ from calculator.models import PlasticMaterial
 from qc_project import settings
 
 
+MACHINE_CHOICES = (
+    [(f'FLEXO_F{n:02d}', f'Flexo F{n:02d}') for n in range(1, 10)] +
+    [(f'BFM_{n}', f'BFM {n}') for n in range(1, 4)] +
+    [(f'ROTO_{n}', f'ROTO {n}') for n in range(1, 7)]
+)
+
+
 class PrintingCalculation(models.Model):
     CALCULATION_TYPES = [
         ('FILM_MASS_LENGTH', 'Film Mass & Length'),
@@ -11,10 +18,22 @@ class PrintingCalculation(models.Model):
         ('GSM_CALCULATION', 'GSM Calculation'),
         ('INK_MIXING', 'Ink Mixing'),
         ('PRODUCTION_TIME', 'Production Time'),
+        ('ANILOX_COVERAGE', 'Anilox Ink Coverage'),
+        ('DOT_GAIN_CONTRAST', 'Dot Gain / Print Contrast'),
+        ('DELTA_E', 'Color Difference (Delta E)'),
+        ('REGISTRATION_REPEAT', 'Registration / Repeat Length'),
+        ('RESIDUAL_SOLVENT', 'Residual Solvent'),
+        ('WASTE_ALLOWANCE', 'Waste Allowance Planning'),
+        ('MAX_SAFE_SPEED', 'Max Safe Speed vs Drying'),
+        ('CYLINDER_COVERAGE', 'Cylinder Coverage & Ink Consumption'),
+        ('CYLINDER_WEAR_LIFE', 'Cylinder Wear & Life Planning'),
     ]
 
     calculation_type = models.CharField(max_length=20, choices=CALCULATION_TYPES)
     material = models.ForeignKey(PlasticMaterial, on_delete=models.CASCADE, null=True, blank=True)
+    machine_name = models.CharField(max_length=20, choices=MACHINE_CHOICES, blank=True)
+    customer_name = models.CharField(max_length=150, blank=True)
+    job_name = models.CharField(max_length=150, blank=True)
     input_data = models.JSONField()
     result_data = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -110,6 +110,8 @@
                 </div>
             </div>
 
+            {% include 'printing/_machine_job_only.html' %}
+
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-calculator"></i> Calculate
             </button>
@@ -186,6 +188,8 @@
                     </div>
                 </div>
             </div>
+
+            {% include 'printing/_material_machine_job.html' %}
 
             <button type="submit" class="btn btn-success">
                 <i class="fas fa-calculator"></i> Calculate Ink Requirements
@@ -275,6 +279,8 @@
                     </div>
                 </div>
             </div>
+
+            {% include 'printing/_material_machine_job.html' %}
 
             <button type="submit" class="btn btn-info">
                 <i class="fas fa-calculator"></i> Calculate
@@ -454,6 +460,8 @@
                 </div>
             </div>
 
+            {% include 'printing/_material_machine_job.html' %}
+
             <button type="submit" class="btn btn-warning">
                 <i class="fas fa-calculator"></i> Calculate GSM
             </button>
@@ -471,34 +479,89 @@
         </h5>
     </div>
     <div class="card-body">
-        <!-- Ink mixing picture -->
+        <!-- CMYK first-principles color wheel + recipe tree (self-contained, no static asset needed) -->
         <div class="text-center mb-4">
             <div class="border rounded p-3 bg-light">
-                <h6><i class="fas fa-image"></i> Ink Mixing Wheel</h6>
-                <div class="bg-white border rounded p-3 mt-2">
-                    <img src="{% static 'printing/images/ink-mixing-process.jpeg' %}"
-                         alt="Ink Mixing Process Diagram"
-                         class="img-fluid rounded shadow-sm"
-                         style="max-height: 400px;"
-                         onerror="this.style.display='none'; document.getElementById('imagePlaceholder').style.display='block';">
-                    <div id="imagePlaceholder" class="text-center" style="display: none;">
-                        <div class="p-4">
-                            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Ink Mixing Process Image</p>
-                            <small class="text-muted">Image file: ink_mixing_process.jpeg</small>
-                            <div class="mt-2">
-                                <small class="text-info">
-                                    <i class="fas fa-info-circle"></i>
-                                    Place your image in: static/printing/images/ink_mixing_process.jpeg
-                                </small>
-                            </div>
+                <h6><i class="fas fa-palette"></i> CMY Color Wheel (built from Cyan / Magenta / Yellow)</h6>
+                <div class="bg-white border rounded p-3 mt-2 d-flex justify-content-center">
+                    <div style="width: 280px; height: 280px; border-radius: 50%;
+                                background: conic-gradient(
+                                    from 0deg,
+                                    #00AEEF 0deg, #00AEEF 60deg,
+                                    #2E3192 60deg, #2E3192 120deg,
+                                    #EC008C 120deg, #EC008C 180deg,
+                                    #EE1C25 180deg, #EE1C25 240deg,
+                                    #FFF200 240deg, #FFF200 300deg,
+                                    #00A651 300deg, #00A651 360deg
+                                );
+                                position: relative; box-shadow: inset 0 0 0 4px #fff, 0 0 0 2px #ddd;">
+                        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                                    width:90px; height:90px; border-radius:50%; background:#111;
+                                    color:#fff; font-size:11px; display:flex; align-items:center;
+                                    justify-content:center; text-align:center; padding:6px;">
+                            C+M+Y+K+W only
                         </div>
                     </div>
+                </div>
+                <div class="row mt-3 text-start">
+                    <div class="col-md-4"><small><span class="badge" style="background:#00AEEF;">&nbsp;&nbsp;</span> Cyan</small></div>
+                    <div class="col-md-4"><small><span class="badge" style="background:#2E3192;">&nbsp;&nbsp;</span> Blue = C50 M50</small></div>
+                    <div class="col-md-4"><small><span class="badge" style="background:#EC008C;">&nbsp;&nbsp;</span> Magenta</small></div>
+                    <div class="col-md-4"><small><span class="badge" style="background:#EE1C25;">&nbsp;&nbsp;</span> Red = M50 Y50</small></div>
+                    <div class="col-md-4"><small><span class="badge" style="background:#FFF200;">&nbsp;&nbsp;</span> Yellow</small></div>
+                    <div class="col-md-4"><small><span class="badge" style="background:#00A651;">&nbsp;&nbsp;</span> Green = C50 Y50</small></div>
+                </div>
+
+                <h6 class="mt-4"><i class="fas fa-sitemap"></i> Every Color Traces Back to CMYK + White</h6>
+                <div class="bg-white border rounded p-3 mt-2 text-center">
+                    <svg width="100%" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" style="max-width: 900px;">
+                        <g font-family="sans-serif" font-size="12">
+                            <rect x="20" y="15" width="150" height="46" rx="8" fill="#00AEEF"/>
+                            <text x="95" y="43" text-anchor="middle" fill="#fff">Cyan (C)</text>
+
+                            <rect x="190" y="15" width="150" height="46" rx="8" fill="#EC008C"/>
+                            <text x="265" y="43" text-anchor="middle" fill="#fff">Magenta (M)</text>
+
+                            <rect x="360" y="15" width="150" height="46" rx="8" fill="#FFF200"/>
+                            <text x="435" y="43" text-anchor="middle" fill="#333">Yellow (Y)</text>
+
+                            <rect x="530" y="15" width="150" height="46" rx="8" fill="#231F20"/>
+                            <text x="605" y="43" text-anchor="middle" fill="#fff">Black (K)</text>
+
+                            <rect x="700" y="15" width="150" height="46" rx="8" fill="#FFFFFF" stroke="#999"/>
+                            <text x="775" y="43" text-anchor="middle" fill="#333">White (W)</text>
+
+                            <text x="450" y="90" text-anchor="middle" font-size="11" fill="#666">Only these 5 ink stations exist on a real press - every color below is a fixed % blend of them</text>
+
+                            <rect x="20" y="115" width="150" height="46" rx="8" fill="#7B3F00"/>
+                            <text x="95" y="138" text-anchor="middle" font-size="10" fill="#fff">Brown</text>
+                            <text x="95" y="152" text-anchor="middle" font-size="9" fill="#fff">Y50 M37.5 C12.5</text>
+
+                            <rect x="190" y="115" width="150" height="46" rx="8" fill="#00304C"/>
+                            <text x="265" y="138" text-anchor="middle" font-size="10" fill="#fff">Navy</text>
+                            <text x="265" y="152" text-anchor="middle" font-size="9" fill="#fff">C70 M20 K10</text>
+
+                            <rect x="360" y="115" width="150" height="46" rx="8" fill="#F8B7BD"/>
+                            <text x="435" y="138" text-anchor="middle" font-size="10" fill="#333">Light Red</text>
+                            <text x="435" y="152" text-anchor="middle" font-size="9" fill="#333">M15 Y15 W70</text>
+
+                            <rect x="530" y="115" width="150" height="46" rx="8" fill="#B7B7A4" stroke="#999"/>
+                            <text x="605" y="138" text-anchor="middle" font-size="10" fill="#333">Gray</text>
+                            <text x="605" y="152" text-anchor="middle" font-size="9" fill="#333">K15 W85</text>
+
+                            <rect x="700" y="115" width="170" height="46" rx="8" fill="#D4AF37" stroke="#a3841f"/>
+                            <text x="785" y="132" text-anchor="middle" font-size="10" fill="#333">Gold *</text>
+                            <text x="785" y="146" text-anchor="middle" font-size="9" fill="#333">Y88.9 M11.1 + metallic</text>
+
+                            <text x="450" y="200" text-anchor="middle" font-size="11" fill="#888">* Metallics require real metallic pigment - not producible from CMYK+White alone</text>
+                            <text x="450" y="222" text-anchor="middle" font-size="11" fill="#888">Pick any target color below to see its full recipe and calculated ink masses</text>
+                        </g>
+                    </svg>
                 </div>
                 <div class="mt-2">
                     <small class="text-muted">
                         <i class="fas fa-info-circle"></i>
-                        CMYK to complex color mixing process diagram
+                        All 30 colors (primary through metallic) follow this same rule - no color is ever mixed from another color.
                     </small>
                 </div>
             </div>
@@ -613,6 +676,14 @@
                         <div class="mb-3">
                             <label class="form-label">Target Color</label>
                             <select class="form-select" name="target_color" id="targetColorSelect">
+                                <!-- Primary Colors (real ink stations) -->
+                                <optgroup label="Primary Colors (real ink stations)">
+                                    <option value="Cyan">Cyan</option>
+                                    <option value="Magenta">Magenta</option>
+                                    <option value="Yellow">Yellow</option>
+                                    <option value="Black">Black</option>
+                                    <option value="White">White</option>
+                                </optgroup>
                                 <!-- Secondary Colors -->
                                 <optgroup label="Secondary Colors">
                                     <option value="Red">Red</option>
@@ -679,24 +750,13 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="alert alert-info">
-                            <h6><i class="fas fa-palette"></i> Color Mixing Recipe</h6>
-                            <div id="colorRatiosDisplay">
-                                <p class="mb-1">Select a target color to see mixing recipe...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Calculated Components Display -->
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="alert alert-warning" id="calculatedComponents" style="display: none;">
-                            <h6><i class="fas fa-calculator"></i> Calculated Amounts</h6>
-                            <div id="componentsList"></div>
+                            <small><i class="fas fa-info-circle"></i> Click "Calculate Mixing" below - the recipe and calculated ink amounts (Cyan/Magenta/Yellow/Black/White only) will appear in the results panel.</small>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {% include 'printing/_material_machine_job.html' %}
 
             <button type="submit" class="btn btn-danger">
                 <i class="fas fa-calculator"></i> Calculate Mixing
@@ -773,12 +833,520 @@
                 </div>
             </div>
 
+            {% include 'printing/_material_machine_job.html' %}
+
             <button type="submit" class="btn btn-dark">
                 <i class="fas fa-calculator"></i> Calculate Production Time
             </button>
         </form>
 
         <div id="productionTimeResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Anilox Ink Coverage Calculator -->
+<div class="card shadow mb-4" id="anilox_coverage">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-water"></i> Anilox Ink Coverage Cross-check</h5>
+    </div>
+    <div class="card-body">
+        <form id="aniloxCoverageForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Anilox Volume</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="anilox_volume" required>
+                            <select class="form-select" name="anilox_unit" style="max-width: 120px;">
+                                <option value="cm3_m2">cm&sup3;/m&sup2;</option>
+                                <option value="bcm">BCM (in&sup2;)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Transfer Efficiency</label>
+                        <div class="input-group">
+                            <input type="number" step="1" class="form-control" name="transfer_efficiency_percent" value="60">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <div class="form-text">Typical 50-70% cell-to-substrate transfer</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Ink Density</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="ink_density" value="1.4">
+                            <span class="input-group-text">g/cm&sup3;</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Target Coverage (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="target_gsm">
+                            <span class="input-group-text">g/m&sup2;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate Wet Film Weight</button>
+        </form>
+        <div id="aniloxCoverageResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Dot Gain & Print Contrast Calculator -->
+<div class="card shadow mb-4" id="dot_gain_contrast">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-circle-notch"></i> Dot Gain &amp; Print Contrast</h5>
+    </div>
+    <div class="card-body">
+        <form id="dotGainContrastForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Measured Dot Area (midtone)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="measured_dot_area" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Nominal (Plate) Dot Area</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="nominal_dot_area" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Solid Density (optional)</label>
+                        <input type="number" step="0.01" class="form-control" name="solid_density">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Shadow Density (optional)</label>
+                        <input type="number" step="0.01" class="form-control" name="shadow_density">
+                    </div>
+                </div>
+            </div>
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-info"><i class="fas fa-calculator"></i> Calculate</button>
+        </form>
+        <div id="dotGainContrastResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Delta E Calculator -->
+<div class="card shadow mb-4" id="delta_e">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-eye"></i> Color Difference (&Delta;E, CIE76)</h5>
+    </div>
+    <div class="card-body">
+        <form id="deltaEForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Target (L*a*b*)</h6>
+                    <div class="row">
+                        <div class="col-4"><input type="number" step="0.01" class="form-control" name="L1" placeholder="L*" required></div>
+                        <div class="col-4"><input type="number" step="0.01" class="form-control" name="a1" placeholder="a*" required></div>
+                        <div class="col-4"><input type="number" step="0.01" class="form-control" name="b1" placeholder="b*" required></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Measured (L*a*b*)</h6>
+                    <div class="row">
+                        <div class="col-4"><input type="number" step="0.01" class="form-control" name="L2" placeholder="L*" required></div>
+                        <div class="col-4"><input type="number" step="0.01" class="form-control" name="a2" placeholder="a*" required></div>
+                        <div class="col-4"><input type="number" step="0.01" class="form-control" name="b2" placeholder="b*" required></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 mt-3">
+                <label class="form-label">Tolerance (&Delta;E)</label>
+                <input type="number" step="0.1" class="form-control" name="tolerance" value="2.0" style="max-width: 150px;">
+            </div>
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-dark"><i class="fas fa-calculator"></i> Calculate &Delta;E</button>
+        </form>
+        <div id="deltaEResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Registration & Repeat Length Calculator -->
+<div class="card shadow mb-4" id="registration_repeat">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-crosshairs"></i> Registration &amp; Repeat Length</h5>
+    </div>
+    <div class="card-body">
+        <form id="registrationRepeatForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Registration Error</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Measured Position</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="measured_position">
+                            <span class="input-group-text">mm</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Target Position</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="target_position">
+                            <span class="input-group-text">mm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Repeat Length Deviation</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Actual Repeat</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="actual_repeat">
+                            <span class="input-group-text">mm</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cylinder Circumference</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="cylinder_circumference">
+                            <span class="input-group-text">mm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-secondary"><i class="fas fa-calculator"></i> Calculate</button>
+        </form>
+        <div id="registrationRepeatResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Residual Solvent Calculator -->
+<div class="card shadow mb-4" id="residual_solvent">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="fas fa-smog"></i> Residual Solvent Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="residualSolventPrintForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Solvent Detected</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="solvent_detected_ug" required>
+                            <span class="input-group-text">&micro;g</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Sample Area</label>
+                        <div class="input-group">
+                            <input type="number" step="0.0001" class="form-control" name="sample_area_m2" required>
+                            <span class="input-group-text">m&sup2;</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Spec Limit (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="spec_limit_mg_m2">
+                            <span class="input-group-text">mg/m&sup2;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-warning"><i class="fas fa-calculator"></i> Calculate Residual Solvent</button>
+        </form>
+        <div id="residualSolventPrintResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Ink Waste Allowance Calculator -->
+<div class="card shadow mb-4" id="ink_waste_allowance">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-recycle"></i> Ink Waste Allowance Planning</h5>
+    </div>
+    <div class="card-body">
+        <form id="inkWasteAllowanceForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Net Ink Mass Needed</label>
+                        <div class="input-group">
+                            <input type="number" step="0.001" class="form-control" name="net_mass" required>
+                            <select class="form-select" name="net_mass_unit" style="max-width: 100px;">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Waste Allowance</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="waste_percent" value="5.0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-success"><i class="fas fa-calculator"></i> Calculate Gross Required</button>
+        </form>
+        <div id="inkWasteAllowanceResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Max Safe Speed vs Drying Capacity Calculator -->
+<div class="card shadow mb-4" id="max_safe_speed">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="fas fa-fire-alt"></i> Max Safe Speed vs Drying/Curing Capacity</h5>
+    </div>
+    <div class="card-body">
+        <form id="maxSafeSpeedForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Dryer/Oven Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="dryer_length" required>
+                            <select class="form-select" name="dryer_length_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="ft">ft</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Required Dwell Time</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="dwell_time" required>
+                            <select class="form-select" name="dwell_time_unit" style="max-width: 100px;">
+                                <option value="sec">sec</option>
+                                <option value="min">min</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Requested Speed (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="requested_speed">
+                            <select class="form-select" name="requested_speed_unit" style="max-width: 100px;">
+                                <option value="m_min">m/min</option>
+                                <option value="m_hr">m/hr</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-danger"><i class="fas fa-calculator"></i> Calculate Max Safe Speed</button>
+        </form>
+        <div id="maxSafeSpeedResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Gravure Cylinder Coverage & Ink Consumption Calculator -->
+<div class="card shadow mb-4" id="cylinder_coverage">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-circle"></i> Rotogravure Cylinder Coverage &amp; Ink Consumption</h5>
+    </div>
+    <div class="card-body">
+        <form id="cylinderCoverageForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Cylinder Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="diameter" required>
+                            <select class="form-select" name="diameter_unit" style="max-width: 90px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Face Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="face_width" required>
+                            <select class="form-select" name="face_width_unit" style="max-width: 90px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Job Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="job_length" required>
+                            <select class="form-select" name="job_length_unit" style="max-width: 90px;">
+                                <option value="m">m</option>
+                                <option value="ft">ft</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Image/Engraved Area Input Method</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="coverage_mode" value="image_area" id="coverageModeArea" checked>
+                    <label class="form-check-label" for="coverageModeArea">Enter engraved area directly</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="coverage_mode" value="coverage_percent" id="coverageModePercent">
+                    <label class="form-check-label" for="coverageModePercent">Enter coverage % directly</label>
+                </div>
+            </div>
+
+            <div id="coverageAreaFields">
+                <div class="mb-3">
+                    <label class="form-label">Image/Engraved Area</label>
+                    <div class="input-group" style="max-width: 300px;">
+                        <input type="number" step="0.0001" class="form-control" name="image_area">
+                        <select class="form-select" name="image_area_unit" style="max-width: 100px;">
+                            <option value="m2">m&sup2;</option>
+                            <option value="cm2">cm&sup2;</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="coveragePercentFields" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Coverage</label>
+                    <div class="input-group" style="max-width: 200px;">
+                        <input type="number" step="0.1" class="form-control" name="coverage_percent">
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Cell Volume</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="cell_volume" required>
+                            <select class="form-select" name="cell_volume_unit" style="max-width: 120px;">
+                                <option value="cm3_m2">cm&sup3;/m&sup2;</option>
+                                <option value="bcm">BCM (in&sup2;)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Ink Density</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="ink_density" value="1.4">
+                            <span class="input-group-text">g/cm&sup3;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate</button>
+        </form>
+        <div id="cylinderCoverageResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Cylinder Wear & Life Planning Calculator -->
+<div class="card shadow mb-4" id="cylinder_wear_life">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-history"></i> Cylinder Wear &amp; Life Planning</h5>
+    </div>
+    <div class="card-body">
+        <form id="cylinderWearLifeForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Original Cell Volume</label>
+                        <input type="number" step="0.01" class="form-control" name="original_cell_volume" required>
+                        <div class="form-text">Same units as engraving spec (e.g. cm&sup3;/m&sup2; or BCM)</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Current (Measured) Cell Volume</label>
+                        <input type="number" step="0.01" class="form-control" name="current_cell_volume" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info py-2">
+                <small><i class="fas fa-info-circle"></i> Optionally add rated life and diameter to also estimate max job length before re-engraving is due.</small>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Rated Cylinder Life (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="1" class="form-control" name="rated_life_revolutions">
+                            <span class="input-group-text">rev</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Cylinder Diameter (optional)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="diameter">
+                            <select class="form-select" name="diameter_unit" style="max-width: 90px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include 'printing/_material_machine_job.html' %}
+
+            <button type="submit" class="btn btn-secondary"><i class="fas fa-calculator"></i> Calculate Wear &amp; Life</button>
+        </form>
+        <div id="cylinderWearLifeResult" class="mt-3" style="display: none;"></div>
     </div>
 </div>
 
@@ -833,373 +1401,6 @@ document.getElementById('productionTimeForm').addEventListener('submit', functio
     calculateProductionTime();
 });
 
-// Color mixing ratios data
-const colorMixingRatios = {
-    // Secondary Colors
-    'Red': {
-        type: 'Secondary',
-        recipe: [
-            { color: 'Magenta', percentage: 50.00, ratio: '1:1' },
-            { color: 'Yellow', percentage: 50.00, ratio: '1:1' }
-        ],
-        description: 'Mix equal parts Magenta and Yellow',
-        baseType: 'CMYK'
-    },
-    'Green': {
-        type: 'Secondary',
-        recipe: [
-            { color: 'Cyan', percentage: 50.00, ratio: '1:1' },
-            { color: 'Yellow', percentage: 50.00, ratio: '1:1' }
-        ],
-        description: 'Mix equal parts Cyan and Yellow',
-        baseType: 'CMYK'
-    },
-    'Blue': {
-        type: 'Secondary',
-        recipe: [
-            { color: 'Cyan', percentage: 50.00, ratio: '1:1' },
-            { color: 'Magenta', percentage: 50.00, ratio: '1:1' }
-        ],
-        description: 'Mix equal parts Cyan and Magenta',
-        baseType: 'CMYK'
-    },
-
-    // Tertiary Colors
-    'Orange': {
-        type: 'Tertiary',
-        recipe: [
-            { color: 'Yellow', percentage: 66.67, ratio: '2:1' },
-            { color: 'Magenta', percentage: 33.33, ratio: '1:2' }
-        ],
-        description: 'Mix 2 parts Yellow with 1 part Magenta',
-        baseType: 'CMYK'
-    },
-    'Purple': {
-        type: 'Tertiary',
-        recipe: [
-            { color: 'Magenta', percentage: 66.67, ratio: '2:1' },
-            { color: 'Cyan', percentage: 33.33, ratio: '1:2' }
-        ],
-        description: 'Mix 2 parts Magenta with 1 part Cyan',
-        baseType: 'CMYK'
-    },
-    'Brown': {
-        type: 'Tertiary',
-        recipe: [
-            { color: 'Yellow', percentage: 50.00, ratio: '2:1:0.5' },
-            { color: 'Magenta', percentage: 37.50, ratio: '1.5:1:0.5' },
-            { color: 'Cyan', percentage: 12.50, ratio: '0.5:2:2' }
-        ],
-        description: 'Mix 2 parts Yellow, 1.5 parts Magenta, 0.5 parts Cyan',
-        baseType: 'CMYK'
-    },
-    'Teal': {
-        type: 'Tertiary',
-        recipe: [
-            { color: 'Cyan', percentage: 66.67, ratio: '2:1' },
-            { color: 'Yellow', percentage: 33.33, ratio: '1:2' }
-        ],
-        description: 'Mix 2 parts Cyan with 1 part Yellow',
-        baseType: 'CMYK'
-    },
-    'Olive': {
-        type: 'Tertiary',
-        recipe: [
-            { color: 'Yellow', percentage: 62.50, ratio: '5:2:1' },
-            { color: 'Cyan', percentage: 25.00, ratio: '2:5:1' },
-            { color: 'Magenta', percentage: 12.50, ratio: '1:2:5' }
-        ],
-        description: 'Mix 5 parts Yellow, 2 parts Cyan, 1 part Magenta',
-        baseType: 'CMYK'
-    },
-    'Maroon': {
-        type: 'Tertiary',
-        recipe: [
-            { color: 'Magenta', percentage: 60.00, ratio: '3:1:1' },
-            { color: 'Yellow', percentage: 30.00, ratio: '1.5:1:1' },
-            { color: 'Black', percentage: 10.00, ratio: '0.5:3:3' }
-        ],
-        description: 'Mix 3 parts Magenta, 1.5 parts Yellow, 0.5 parts Black',
-        baseType: 'CMYK'
-    },
-    'Navy': {
-        type: 'Tertiary',
-        recipe: [
-            { color: 'Cyan', percentage: 70.00, ratio: '7:2:1' },
-            { color: 'Magenta', percentage: 20.00, ratio: '2:7:1' },
-            { color: 'Black', percentage: 10.00, ratio: '1:2:7' }
-        ],
-        description: 'Mix 7 parts Cyan, 2 parts Magenta, 1 part Black',
-        baseType: 'CMYK'
-    },
-
-    // Metallic Colors
-    'Gold': {
-        type: 'Metallic',
-        recipe: [
-            { color: 'Yellow', percentage: 80.00, ratio: '8:1:1' },
-            { color: 'Magenta', percentage: 10.00, ratio: '1:8:1' },
-            { color: 'Metallic Gold Powder', percentage: 10.00, ratio: '1:1:8' }
-        ],
-        description: 'Base: 8 parts Yellow, 1 part Magenta + 10% Metallic Gold Powder',
-        baseType: 'Special'
-    },
-    'Silver': {
-        type: 'Metallic',
-        recipe: [
-            { color: 'White', percentage: 85.00, ratio: '8.5:1.5' },
-            { color: 'Black', percentage: 5.00, ratio: '0.5:8.5' },
-            { color: 'Metallic Silver Powder', percentage: 10.00, ratio: '1:0.5:8.5' }
-        ],
-        description: 'Base: 85% White, 5% Black + 10% Metallic Silver Powder',
-        baseType: 'Special'
-    },
-    'Bronze': {
-        type: 'Metallic',
-        recipe: [
-            { color: 'Yellow', percentage: 60.00, ratio: '6:2:2' },
-            { color: 'Magenta', percentage: 20.00, ratio: '2:6:2' },
-            { color: 'Brown', percentage: 10.00, ratio: '1:2:6' },
-            { color: 'Metallic Bronze Powder', percentage: 10.00, ratio: '1:1:1:7' }
-        ],
-        description: 'Base: 6 parts Yellow, 2 parts Magenta, 1 part Brown + 10% Metallic Bronze Powder',
-        baseType: 'Special'
-    },
-    'Copper': {
-        type: 'Metallic',
-        recipe: [
-            { color: 'Orange', percentage: 75.00, ratio: '7.5:1.5:1' },
-            { color: 'Brown', percentage: 15.00, ratio: '1.5:7.5:1' },
-            { color: 'Metallic Copper Powder', percentage: 10.00, ratio: '1:1.5:7.5' }
-        ],
-        description: 'Base: 75% Orange, 15% Brown + 10% Metallic Copper Powder',
-        baseType: 'Special'
-    },
-
-    // Light Colors
-    'Light Red': {
-        type: 'Light',
-        recipe: [
-            { color: 'Red', percentage: 30.00, ratio: '3:7' },
-            { color: 'White', percentage: 70.00, ratio: '7:3' }
-        ],
-        description: 'Mix 3 parts Red with 7 parts White (Pink)',
-        baseType: 'CMYK+White'
-    },
-    'Light Blue': {
-        type: 'Light',
-        recipe: [
-            { color: 'Blue', percentage: 25.00, ratio: '1:3' },
-            { color: 'White', percentage: 75.00, ratio: '3:1' }
-        ],
-        description: 'Mix 1 part Blue with 3 parts White',
-        baseType: 'CMYK+White'
-    },
-    'Light Green': {
-        type: 'Light',
-        recipe: [
-            { color: 'Green', percentage: 20.00, ratio: '1:4' },
-            { color: 'White', percentage: 80.00, ratio: '4:1' }
-        ],
-        description: 'Mix 1 part Green with 4 parts White',
-        baseType: 'CMYK+White'
-    },
-    'Light Yellow': {
-        type: 'Light',
-        recipe: [
-            { color: 'Yellow', percentage: 40.00, ratio: '2:3' },
-            { color: 'White', percentage: 60.00, ratio: '3:2' }
-        ],
-        description: 'Mix 2 parts Yellow with 3 parts White',
-        baseType: 'CMYK+White'
-    },
-    'Light Orange': {
-        type: 'Light',
-        recipe: [
-            { color: 'Orange', percentage: 35.00, ratio: '3.5:6.5' },
-            { color: 'White', percentage: 65.00, ratio: '6.5:3.5' }
-        ],
-        description: 'Mix 3.5 parts Orange with 6.5 parts White',
-        baseType: 'CMYK+White'
-    },
-    'Light Purple': {
-        type: 'Light',
-        recipe: [
-            { color: 'Purple', percentage: 30.00, ratio: '3:7' },
-            { color: 'White', percentage: 70.00, ratio: '7:3' }
-        ],
-        description: 'Mix 3 parts Purple with 7 parts White (Lavender)',
-        baseType: 'CMYK+White'
-    },
-
-    // Dark Colors
-    'Dark Red': {
-        type: 'Dark',
-        recipe: [
-            { color: 'Red', percentage: 80.00, ratio: '8:2' },
-            { color: 'Black', percentage: 20.00, ratio: '2:8' }
-        ],
-        description: 'Mix 8 parts Red with 2 parts Black',
-        baseType: 'CMYK+Black'
-    },
-    'Dark Blue': {
-        type: 'Dark',
-        recipe: [
-            { color: 'Blue', percentage: 85.00, ratio: '8.5:1.5' },
-            { color: 'Black', percentage: 15.00, ratio: '1.5:8.5' }
-        ],
-        description: 'Mix 8.5 parts Blue with 1.5 parts Black',
-        baseType: 'CMYK+Black'
-    },
-    'Dark Green': {
-        type: 'Dark',
-        recipe: [
-            { color: 'Green', percentage: 75.00, ratio: '7.5:2.5' },
-            { color: 'Black', percentage: 25.00, ratio: '2.5:7.5' }
-        ],
-        description: 'Mix 7.5 parts Green with 2.5 parts Black',
-        baseType: 'CMYK+Black'
-    },
-    'Dark Purple': {
-        type: 'Dark',
-        recipe: [
-            { color: 'Purple', percentage: 70.00, ratio: '7:3' },
-            { color: 'Black', percentage: 30.00, ratio: '3:7' }
-        ],
-        description: 'Mix 7 parts Purple with 3 parts Black',
-        baseType: 'CMYK+Black'
-    },
-    'Dark Brown': {
-        type: 'Dark',
-        recipe: [
-            { color: 'Brown', percentage: 90.00, ratio: '9:1' },
-            { color: 'Black', percentage: 10.00, ratio: '1:9' }
-        ],
-        description: 'Mix 9 parts Brown with 1 part Black',
-        baseType: 'CMYK+Black'
-    },
-
-    // Special Colors
-    'White': {
-        type: 'Special',
-        recipe: [
-            { color: 'Titanium White', percentage: 95.00, ratio: '19:1' },
-            { color: 'Extender Base', percentage: 5.00, ratio: '1:19' }
-        ],
-        description: '95% Titanium White Pigment in Extender Base',
-        baseType: 'Special'
-    },
-    'Black': {
-        type: 'Special',
-        recipe: [
-            { color: 'Carbon Black', percentage: 25.00, ratio: '1:3' },
-            { color: 'Extender Base', percentage: 75.00, ratio: '3:1' }
-        ],
-        description: '25% Carbon Black Pigment in Extender Base',
-        baseType: 'Special'
-    },
-    'Gray': {
-        type: 'Special',
-        recipe: [
-            { color: 'Black', percentage: 15.00, ratio: '1.5:8.5' },
-            { color: 'White', percentage: 85.00, ratio: '8.5:1.5' }
-        ],
-        description: 'Mix 1.5 parts Black with 8.5 parts White',
-        baseType: 'Special'
-    },
-    'Beige': {
-        type: 'Special',
-        recipe: [
-            { color: 'White', percentage: 85.00, ratio: '8.5:1:0.5' },
-            { color: 'Yellow', percentage: 10.00, ratio: '1:8.5:0.5' },
-            { color: 'Brown', percentage: 5.00, ratio: '0.5:1:8.5' }
-        ],
-        description: 'Mix 8.5 parts White, 1 part Yellow, 0.5 parts Brown',
-        baseType: 'Special'
-    },
-    'Ivory': {
-        type: 'Special',
-        recipe: [
-            { color: 'White', percentage: 92.00, ratio: '9.2:0.8' },
-            { color: 'Yellow', percentage: 8.00, ratio: '0.8:9.2' }
-        ],
-        description: 'Mix 9.2 parts White with 0.8 parts Yellow',
-        baseType: 'Special'
-    }
-};
-
-// Update color ratios display
-document.getElementById('targetColorSelect').addEventListener('change', function() {
-    updateColorRatiosDisplay(this.value);
-});
-
-// Update color ratios display and calculate amounts
-function updateColorRatiosDisplay(targetColor) {
-    const ratiosDisplay = document.getElementById('colorRatiosDisplay');
-    const calculatedComponents = document.getElementById('calculatedComponents');
-    const componentsList = document.getElementById('componentsList');
-    const batchSizeInput = document.getElementById('colorBatchSize');
-    const batchSize = parseFloat(batchSizeInput.value) || 1;
-
-    const colorData = colorMixingRatios[targetColor];
-
-    if (colorData) {
-        let html = `<p class="mb-2"><strong>${targetColor}</strong> (${colorData.type} Color)</p>`;
-        html += `<p class="mb-2"><small>${colorData.description}</small></p>`;
-        html += '<div class="row mt-3">';
-
-        let componentsHtml = '<div class="row">';
-
-        colorData.recipe.forEach(ingredient => {
-            const amountKg = (batchSize * ingredient.percentage / 100).toFixed(6);
-            const percentage = ingredient.percentage.toFixed(4);
-
-            html += `
-                <div class="col-md-6 mb-2">
-                    <div class="d-flex justify-content-between border-bottom pb-1">
-                        <span><strong>${ingredient.color}:</strong></span>
-                        <span>${percentage}% (Ratio: ${ingredient.ratio})</span>
-                    </div>
-                </div>
-            `;
-
-            componentsHtml += `
-                <div class="col-md-6 mb-2">
-                    <div class="d-flex justify-content-between">
-                        <span>${ingredient.color}:</span>
-                        <span><strong>${amountKg} kg</strong> (${percentage}%)</span>
-                    </div>
-                </div>
-            `;
-        });
-
-        html += '</div>';
-        componentsHtml += '</div>';
-        componentsHtml += `<div class="mt-2 text-center"><strong>Total Batch: ${batchSize.toFixed(6)} kg</strong></div>`;
-
-        ratiosDisplay.innerHTML = html;
-        componentsList.innerHTML = componentsHtml;
-        calculatedComponents.style.display = 'block';
-    } else {
-        ratiosDisplay.innerHTML = `<p class="mb-1">Recipe for ${targetColor} not found.</p>`;
-        calculatedComponents.style.display = 'none';
-    }
-}
-
-// Update calculations when batch size changes
-document.getElementById('colorBatchSize').addEventListener('input', function() {
-    const targetColorSelect = document.getElementById('targetColorSelect');
-    updateColorRatiosDisplay(targetColorSelect.value);
-});
-
-// Update color ratios display when color selection changes
-document.getElementById('targetColorSelect').addEventListener('change', function() {
-    updateColorRatiosDisplay(this.value);
-});
-
-
-// Initialize color ratios display
-updateColorRatiosDisplay('Red');
 
 // Toggle calculation types
 document.querySelectorAll('input[name="calculation_type"]').forEach(radio => {
@@ -1416,7 +1617,7 @@ function displayFilmMassLengthResult(result) {
             resultDiv.innerHTML = `
                 <div class="alert alert-success">
                     <h6><i class="fas fa-check-circle"></i> Film Length Results:</h6>
-                    <p><strong>Film Length:</strong> ${res.film_length_m.toFixed(4)} meters</p>
+                    <p><strong>Film Length:</strong> ${res.film_length_m.toFixed(4) * 100} meters</p>
                     <p><strong>Equivalent:</strong> ${res.film_length_ft.toFixed(4)} feet | ${res.film_length_yd.toFixed(4)} yards</p>
                     <p class="mb-0"><small class="text-muted">Calculated from mass input</small></p>
                 </div>
@@ -1560,36 +1761,36 @@ function displayInkMixingResult(result) {
             if (res.error) {
                 resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ${res.error}</div>`;
             } else {
-                const colorData = colorMixingRatios[res.target_color];
-                let recipeHtml = '';
-                let calculatedHtml = '';
-
-                if (colorData && res.calculated_components) {
-                    // Show the recipe
-                    recipeHtml = `<p><strong>${res.target_color}</strong> (${colorData.type} Color)</p>`;
-                    recipeHtml += `<p><small>${colorData.description}</small></p>`;
-
-                    // Show calculated amounts
-                    calculatedHtml = '<div class="mt-3"><h6>Final Calculated Amounts:</h6><div class="row">';
-                    res.calculated_components.forEach(component => {
-                        calculatedHtml += `
-                            <div class="col-md-6 mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <span>${component.color}:</span>
-                                    <span><strong>${component.amount_kg.toFixed(6)} kg</strong> (${component.percentage.toFixed(4)}%)</span>
-                                </div>
+                let componentsHtml = '<div class="row mt-2">';
+                res.components.forEach(component => {
+                    componentsHtml += `
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex justify-content-between border-bottom pb-1">
+                                <span>${component.ink_name} (${component.ink_code}):</span>
+                                <span><strong>${component.percentage}%</strong>${res.total_batch_kg > 0 ? ' - ' + component.mass_kg.toFixed(6) + ' kg' : ''}</span>
                             </div>
-                        `;
-                    });
-                    calculatedHtml += `</div></div><p class="mb-0 text-center"><strong>Total Mixed Color: ${res.total_batch_kg.toFixed(6)} kg</strong></p>`;
+                        </div>
+                    `;
+                });
+                componentsHtml += '</div>';
+
+                let metallicHtml = '';
+                if (res.requires_special_ink) {
+                    metallicHtml = `
+                        <div class="alert alert-warning mt-2 mb-0">
+                            <small><i class="fas fa-exclamation-triangle"></i> ${res.metallic_note}<br>
+                            <strong>${res.metallic_name}:</strong> ${res.metallic_additive_percent}%${res.total_batch_kg > 0 ? ' (' + res.metallic_additive_mass_kg.toFixed(6) + ' kg, on top of the 100% hue base)' : ''}</small>
+                        </div>
+                    `;
                 }
 
                 resultDiv.innerHTML = `
                     <div class="alert alert-success">
-                        <h6><i class="fas fa-check-circle"></i> ${res.target_color} Color Recipe:</h6>
-                        ${recipeHtml}
-                        ${calculatedHtml}
-                        <h6>Recipe already calculated above.</h6>
+                        <h6><i class="fas fa-check-circle"></i> ${res.target_color} Color Recipe (${res.category})</h6>
+                        <p class="mb-1"><small>${res.note}</small></p>
+                        ${componentsHtml}
+                        ${res.total_batch_kg > 0 ? '<p class="mb-0 text-center"><strong>Total Batch: ' + res.total_batch_kg.toFixed(6) + ' kg</strong></p>' : '<p class="mb-0 text-muted"><small>Enter a batch size above to see calculated kg amounts.</small></p>'}
+                        ${metallicHtml}
                     </div>
                 `;
             }
@@ -1622,6 +1823,309 @@ function displayProductionTimeResult(result) {
     resultDiv.style.display = 'block';
     resultDiv.scrollIntoView({ behavior: 'smooth' });
 }
+
+document.getElementById('aniloxCoverageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-anilox-coverage/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('aniloxCoverageResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Anilox Coverage Results:</h6>';
+            html += '<p><strong>Wet Film Weight:</strong> ' + res.wet_film_weight_gsm + ' g/m&sup2;</p>';
+            html += '<p><strong>Anilox Volume Used:</strong> ' + res.anilox_volume_cm3_m2 + ' cm&sup3;/m&sup2;</p>';
+            if (res.deviation_percent !== undefined) {
+                html += '<p><strong>Target:</strong> ' + res.target_gsm + ' g/m&sup2; | <strong>Deviation:</strong> ' + res.deviation_percent + '%</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('dotGainContrastForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-dot-gain-contrast/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('dotGainContrastResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Dot Gain Results:</h6>';
+            html += '<p><strong>Dot Gain:</strong> ' + res.dot_gain_percent + '%</p>';
+            html += '<p><strong>Rating:</strong> ' + res.dot_gain_rating + '</p>';
+            if (res.print_contrast_percent !== undefined) {
+                html += '<p><strong>Print Contrast:</strong> ' + res.print_contrast_percent + '%</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('deltaEForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-delta-e/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('deltaEResult');
+        if (result.success) {
+            const res = result.result;
+            const cls = res.pass_fail === 'PASS' ? 'text-success' : 'text-danger';
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Color Difference Results:</h6>';
+            html += '<p><strong>&Delta;E:</strong> ' + res.delta_e + ' (tolerance: ' + res.tolerance + ')</p>';
+            html += '<p><strong>Result:</strong> <span class="fw-bold ' + cls + '">' + res.pass_fail + '</span></p>';
+            html += '<p><strong>Rating:</strong> ' + res.rating + '</p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('registrationRepeatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-registration-repeat/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('registrationRepeatResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Results:</h6>';
+            if (res.registration_error_mm !== undefined) {
+                html += '<p><strong>Registration Error:</strong> ' + res.registration_error_mm + ' mm</p>';
+            }
+            if (res.repeat_length_deviation_percent !== undefined) {
+                html += '<p><strong>Repeat Length Deviation:</strong> ' + res.repeat_length_deviation_percent + '%</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('residualSolventPrintForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-residual-solvent/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('residualSolventPrintResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Residual Solvent Results:</h6>';
+            html += '<p><strong>Residual Solvent:</strong> ' + res.residual_solvent_mg_m2 + ' mg/m&sup2;</p>';
+            if (res.pass_fail) {
+                const cls = res.pass_fail === 'PASS' ? 'text-success' : 'text-danger';
+                html += '<p><strong>Spec Limit:</strong> ' + res.spec_limit_mg_m2 + ' mg/m&sup2;</p>';
+                html += '<p><strong>Result:</strong> <span class="fw-bold ' + cls + '">' + res.pass_fail + '</span> (margin: ' + res.margin_mg_m2 + ' mg/m&sup2;)</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('inkWasteAllowanceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-ink-waste-allowance/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('inkWasteAllowanceResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Waste Allowance Results:</h6>';
+            html += '<p><strong>Net Mass:</strong> ' + res.net_mass_kg + ' kg</p>';
+            html += '<p><strong>Waste (' + res.waste_percent + '%):</strong> ' + res.waste_mass_kg + ' kg</p>';
+            html += '<p><strong>Gross Required:</strong> <span class="fw-bold">' + res.gross_mass_kg + ' kg</span></p>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('maxSafeSpeedForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-max-safe-speed/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('maxSafeSpeedResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Max Safe Speed Results:</h6>';
+            html += '<p><strong>Max Safe Speed:</strong> ' + res.max_safe_speed_m_min + ' m/min</p>';
+            if (res.requested_speed_m_min !== undefined) {
+                const cls = res.within_safe_limit ? 'text-success' : 'text-danger';
+                html += '<p><strong>Requested Speed:</strong> ' + res.requested_speed_m_min + ' m/min</p>';
+                html += '<p class="' + cls + '"><strong>' + res.note + '</strong></p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+// Cylinder coverage input-mode toggle
+document.querySelectorAll('input[name="coverage_mode"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const areaFields = document.getElementById('coverageAreaFields');
+        const percentFields = document.getElementById('coveragePercentFields');
+        if (this.value === 'coverage_percent') {
+            areaFields.style.display = 'none';
+            percentFields.style.display = 'block';
+        } else {
+            areaFields.style.display = 'block';
+            percentFields.style.display = 'none';
+        }
+    });
+});
+
+let lastCylinderCircumferenceMm = null;
+
+function useCircumferenceInRegistration() {
+    if (lastCylinderCircumferenceMm === null) return;
+    const field = document.querySelector('#registrationRepeatForm input[name="cylinder_circumference"]');
+    if (field) {
+        field.value = lastCylinderCircumferenceMm.toFixed(2);
+        document.getElementById('registration_repeat').scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+document.getElementById('cylinderCoverageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-cylinder-coverage/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('cylinderCoverageResult');
+        if (result.success) {
+            const res = result.result;
+            lastCylinderCircumferenceMm = res.circumference_mm;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Cylinder Coverage Results:</h6>';
+            html += '<p><strong>Circumference:</strong> ' + res.circumference_mm + ' mm (' + res.circumference_m + ' m)</p>';
+            html += '<p><strong>Surface Area:</strong> ' + res.surface_area_m2 + ' m&sup2;</p>';
+            html += '<p><strong>Image Area:</strong> ' + res.image_area_m2 + ' m&sup2; | <strong>Coverage:</strong> ' + res.coverage_percent + '%</p>';
+            html += '<p><strong>Revolutions for Job:</strong> ' + res.revolutions + '</p>';
+            html += '<hr>';
+            html += '<p><strong>Ink Volume/Revolution:</strong> ' + res.ink_volume_per_rev_cm3 + ' cm&sup3;</p>';
+            html += '<p><strong>Ink Mass/Revolution:</strong> ' + res.ink_mass_per_rev_g + ' g</p>';
+            html += '<p><strong>Total Ink for Job:</strong> <span class="fw-bold">' + res.total_ink_kg + ' kg</span></p>';
+            html += '<button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="useCircumferenceInRegistration()"><i class="fas fa-arrow-right"></i> Use this circumference in Registration/Repeat calculator</button>';
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('cylinderWearLifeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/printing/calculate-cylinder-wear-life/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        const resultDiv = document.getElementById('cylinderWearLifeResult');
+        if (result.success) {
+            const res = result.result;
+            let html = '<div class="alert alert-success">';
+            html += '<h6><i class="fas fa-check-circle"></i> Cylinder Wear Results:</h6>';
+            html += '<p><strong>Cell Volume Depletion:</strong> ' + res.cell_volume_depletion_percent + '%</p>';
+            html += '<p><strong>Rating:</strong> ' + res.wear_rating + '</p>';
+            if (res.max_job_length_m !== undefined) {
+                html += '<hr>';
+                html += '<p><strong>Circumference:</strong> ' + res.circumference_m + ' m</p>';
+                html += '<p><strong>Max Job Length Before Re-engraving:</strong> ' + res.max_job_length_m + ' m (' + res.max_job_length_km + ' km)</p>';
+            }
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Error: ' + result.error + '</div>';
+        }
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => console.error('Error:', error));
+});
 
 // Smooth scrolling for navigation
 document.addEventListener('DOMContentLoaded', function() {
