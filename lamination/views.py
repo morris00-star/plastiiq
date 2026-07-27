@@ -8,6 +8,14 @@ from .lamination_calculator import LaminationCalculator
 import json
 
 
+def resolve_common_fields(data):
+    """Resolve optional machine/customer/job context shared across all lamination calculators."""
+    machine_name = data.get('machine_name') or ''
+    customer_name = data.get('customer_name') or ''
+    job_name = data.get('job_name') or ''
+    return machine_name, customer_name, job_name
+
+
 @login_required
 def lamination_home(request):
     calculators = [
@@ -43,6 +51,7 @@ def calculate_gsm(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             thickness = float(data.get('thickness', 0))
             thickness_unit = data.get('thickness_unit', 'micron')
@@ -66,6 +75,9 @@ def calculate_gsm(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='GSM_CALCULATION',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type='SOLVENTLESS',  # Default for GSM calc
                     input_data=data,
                     result_data=result,
@@ -86,6 +98,7 @@ def calculate_multilayer_gsm(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             layers_data = data.get('layers', [])
             adhesive_gsm = float(data.get('adhesive_gsm', 0))
 
@@ -137,6 +150,9 @@ def calculate_multilayer_gsm(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='MULTILAYER_GSM',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type='SOLVENTLESS',  # Default for GSM calc
                     input_data=data,
                     result_data=result,
@@ -157,6 +173,7 @@ def calculate_weight_breakdown(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             total_mass = float(data.get('total_mass', 0))
             total_mass_unit = data.get('total_mass_unit', 'kg')
             adhesive_gsm_per_layer = float(data.get('adhesive_gsm', 0))  # GSM per bonding layer
@@ -245,6 +262,9 @@ def calculate_weight_breakdown(request):
             if request.user.is_authenticated:
                 calculation = LaminationCalculation.objects.create(
                     calculation_type='WEIGHT_BREAKDOWN',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=data.get('adhesive_type', 'SOLVENTLESS'),
                     input_data=data,
                     result_data=result,
@@ -275,6 +295,7 @@ def calculate_adhesive_components(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             adhesive_type = data.get('adhesive_type', 'SOLVENTLESS')
             coat_weight_gsm = float(data.get('coat_weight_gsm', 0))
             total_mass = float(data.get('total_mass', 0))
@@ -367,6 +388,9 @@ def calculate_adhesive_components(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='ADHESIVE_COMPONENTS',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=adhesive_type,
                     input_data=data,
                     result_data=result,
@@ -387,6 +411,7 @@ def calculate_lamination_time(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             roll_length = float(data.get('roll_length', 0))
             roll_length_unit = data.get('roll_length_unit', 'm')
             machine_speed = float(data.get('machine_speed', 0))
@@ -411,6 +436,9 @@ def calculate_lamination_time(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='LAMINATION_TIME',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type='SOLVENTLESS',  # Default
                     input_data=data,
                     result_data=result,
@@ -431,6 +459,7 @@ def calculate_production_efficiency(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             lamination_time = float(data.get('lamination_time', 0))
             lamination_time_unit = data.get('lamination_time_unit', 'min')
             total_run_time = float(data.get('total_run_time', 0))
@@ -463,6 +492,9 @@ def calculate_production_efficiency(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='PRODUCTION_EFFICIENCY',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type='SOLVENTLESS',
                     input_data=data,
                     result_data=result,
@@ -483,6 +515,7 @@ def calculate_yield(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             input_mass = float(data.get('input_mass', 0))
             input_mass_unit = data.get('input_mass_unit', 'kg')
             output_mass = float(data.get('output_mass', 0))
@@ -508,6 +541,9 @@ def calculate_yield(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='MATERIAL_YIELD',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type='SOLVENTLESS',
                     input_data=data,
                     result_data=result,
@@ -569,6 +605,7 @@ def calculate_setting_time(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             roll_length = float(data.get('roll_length', 0))
             roll_length_unit = data.get('roll_length_unit', 'm')
             machine_speed = float(data.get('machine_speed', 0))
@@ -601,6 +638,9 @@ def calculate_setting_time(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='SETTING_TIME',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=adhesive_type,
                     input_data=data,
                     result_data=result,
@@ -633,6 +673,7 @@ def calculate_peel_strength(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             peel_force = float(data.get('peel_force', 0))
             peel_force_unit = data.get('peel_force_unit', 'N')
             sample_width_mm = float(data.get('sample_width_mm', 15))
@@ -659,6 +700,9 @@ def calculate_peel_strength(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='PEEL_STRENGTH',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=data.get('adhesive_type', 'SOLVENTLESS'),
                     input_data=data,
                     result_data=result,
@@ -689,6 +733,7 @@ def calculate_coat_weight_verification(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             roll_weight_before = float(data.get('roll_weight_before', 0))
             roll_weight_after = float(data.get('roll_weight_after', 0))
             weight_unit = data.get('weight_unit', 'kg')
@@ -729,6 +774,9 @@ def calculate_coat_weight_verification(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='COAT_WEIGHT_VERIFICATION',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=data.get('adhesive_type', 'SOLVENTLESS'),
                     input_data=data,
                     result_data=result,
@@ -750,6 +798,7 @@ def calculate_application_rate(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             adhesive_consumed = float(data.get('adhesive_consumed', 0))
             adhesive_consumed_unit = data.get('adhesive_consumed_unit', 'kg')
             total_area_m2 = float(data.get('total_area_m2', 0))
@@ -778,6 +827,9 @@ def calculate_application_rate(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='APPLICATION_RATE',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=data.get('adhesive_type', 'SOLVENTLESS'),
                     input_data=data,
                     result_data=result,
@@ -799,6 +851,7 @@ def calculate_residual_solvent(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             solvent_detected_ug = float(data.get('solvent_detected_ug', 0))
             sample_area_m2 = float(data.get('sample_area_m2', 0))
             spec_limit_mg_m2 = float(data.get('spec_limit_mg_m2', 0))
@@ -823,6 +876,9 @@ def calculate_residual_solvent(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='RESIDUAL_SOLVENT',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=data.get('adhesive_type', 'SOLVENT_BASE'),
                     input_data=data,
                     result_data=result,
@@ -855,6 +911,7 @@ def calculate_overall_line_efficiency(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             total_run_time_min = float(data.get('total_run_time_min', 0))
             downtime_min = float(data.get('downtime_min', 0))
             lamination_time_min = float(data.get('lamination_time_min', 0))
@@ -887,6 +944,9 @@ def calculate_overall_line_efficiency(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='OVERALL_LINE_EFFICIENCY',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=data.get('adhesive_type', 'SOLVENTLESS'),
                     input_data=data,
                     result_data=result,
@@ -908,6 +968,7 @@ def calculate_adhesive_coverage_per_roll(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, job_name = resolve_common_fields(data)
             coat_weight_gsm = float(data.get('coat_weight_gsm', 0))
             roll_width = float(data.get('roll_width', 0))
             roll_width_unit = data.get('roll_width_unit', 'm')
@@ -933,6 +994,9 @@ def calculate_adhesive_coverage_per_roll(request):
             if request.user.is_authenticated:
                 LaminationCalculation.objects.create(
                     calculation_type='ADHESIVE_COVERAGE_PER_ROLL',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    job_name=job_name,
                     adhesive_type=data.get('adhesive_type', 'SOLVENTLESS'),
                     input_data=data,
                     result_data=result,

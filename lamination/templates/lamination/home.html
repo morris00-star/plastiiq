@@ -66,6 +66,8 @@
                     </div>
                 </div>
 
+                {% include 'lamination/_machine_job.html' %}
+
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-calculator"></i> Calculate Single Layer GSM
                 </button>
@@ -104,6 +106,8 @@
                         </div>
                     </div>
                 </div>
+
+                {% include 'lamination/_machine_job.html' %}
 
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-calculator"></i> Calculate Multi-layer GSM
@@ -178,6 +182,8 @@
                 </div>
                 <div class="form-text">Applied individually to each film layer and to the adhesive (default 5%)</div>
             </div>
+
+                {% include 'lamination/_machine_job.html' %}
 
             <button type="submit" class="btn btn-success" id="weightBreakdownBtn">
                 <i class="fas fa-calculator"></i> Calculate Weight Breakdown
@@ -474,6 +480,8 @@
                 </div>
             </div>
 
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-info">
                 <i class="fas fa-calculator"></i> Calculate Lamination Time
             </button>
@@ -534,6 +542,8 @@
                     </div>
                 </div>
             </div>
+
+                {% include 'lamination/_machine_job.html' %}
 
             <button type="submit" class="btn btn-secondary">
                 <i class="fas fa-calculator"></i> Calculate Efficiency
@@ -596,6 +606,8 @@
                 </div>
             </div>
 
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-dark">
                 <i class="fas fa-calculator"></i> Calculate Yield
             </button>
@@ -654,6 +666,8 @@
                     </div>
                 </div>
             </div>
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate Turnaround Time</button>
         </form>
         <div id="settingTimeResult" class="mt-3" style="display: none;"></div>
@@ -701,6 +715,8 @@
                     </div>
                 </div>
             </div>
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-danger"><i class="fas fa-calculator"></i> Calculate Peel Strength</button>
         </form>
         <div id="peelStrengthResult" class="mt-3" style="display: none;"></div>
@@ -752,6 +768,8 @@
                     </div>
                 </div>
             </div>
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-info"><i class="fas fa-calculator"></i> Verify Coat Weight</button>
         </form>
         <div id="coatWeightVerificationResult" class="mt-3" style="display: none;"></div>
@@ -798,6 +816,8 @@
                     </div>
                 </div>
             </div>
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-warning"><i class="fas fa-calculator"></i> Check Application Rate</button>
         </form>
         <div id="applicationRateResult" class="mt-3" style="display: none;"></div>
@@ -840,6 +860,8 @@
                     </div>
                 </div>
             </div>
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-secondary"><i class="fas fa-calculator"></i> Calculate Residual Solvent</button>
         </form>
         <div id="residualSolventResult" class="mt-3" style="display: none;"></div>
@@ -894,6 +916,8 @@
                     </div>
                 </div>
             </div>
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-dark"><i class="fas fa-calculator"></i> Calculate Overall Efficiency</button>
         </form>
         <div id="overallLineEfficiencyResult" class="mt-3" style="display: none;"></div>
@@ -943,6 +967,8 @@
                     </div>
                 </div>
             </div>
+                {% include 'lamination/_machine_job.html' %}
+
             <button type="submit" class="btn btn-success"><i class="fas fa-calculator"></i> Calculate Adhesive Required</button>
         </form>
         <div id="adhesiveCoverageResult" class="mt-3" style="display: none;"></div>
@@ -1321,7 +1347,10 @@ function calculateMultilayerGSM() {
 
     const requestData = {
         adhesive_gsm: adhesive_gsm,
-        layers: layers
+        layers: layers,
+        machine_name: formData.get('machine_name'),
+        customer_name: formData.get('customer_name'),
+        job_name: formData.get('job_name')
     };
 
     fetch('/lamination/calculate-multilayer-gsm/', {
@@ -1384,7 +1413,10 @@ function calculateGSM() {
     const data = {
         material_id: formData.get('material_id'),
         thickness: parseFloat(formData.get('thickness')),
-        thickness_unit: formData.get('thickness_unit')
+        thickness_unit: formData.get('thickness_unit'),
+        machine_name: formData.get('machine_name'),
+        customer_name: formData.get('customer_name'),
+        job_name: formData.get('job_name')
     };
 
     fetch('/lamination/calculate-gsm/', {
@@ -1437,7 +1469,10 @@ function calculateWeightBreakdown() {
         adhesive_type: formData.get('adhesive_type'),
         adhesive_gsm: parseFloat(formData.get('adhesive_gsm')),
         waste_percent: parseFloat(formData.get('waste_percent')) || 5.0,
-        layers: layers
+        layers: layers,
+        machine_name: formData.get('machine_name'),
+        customer_name: formData.get('customer_name'),
+        job_name: formData.get('job_name')
     };
 
     fetch('/lamination/calculate-weight-breakdown/', {
@@ -1544,7 +1579,10 @@ function calculateAdhesiveComponents() {
         total_film_gsm: total_film_gsm,
         calculated_from_layers: useLayers,
         use_custom_ratio: isCustomSystem,
-        waste_percent: parseFloat(formData.get('waste_percent')) || 5.0
+        waste_percent: parseFloat(formData.get('waste_percent')) || 5.0,
+        machine_name: formData.get('machine_name'),
+        customer_name: formData.get('customer_name'),
+        job_name: formData.get('job_name')
     };
 
     // Add custom ratio data if using custom system
@@ -1581,7 +1619,10 @@ function calculateLaminationTime() {
         roll_length: parseFloat(formData.get('roll_length')),
         roll_length_unit: formData.get('roll_length_unit'),
         machine_speed: parseFloat(formData.get('machine_speed')),
-        machine_speed_unit: formData.get('machine_speed_unit')
+        machine_speed_unit: formData.get('machine_speed_unit'),
+        machine_name: formData.get('machine_name'),
+        customer_name: formData.get('customer_name'),
+        job_name: formData.get('job_name')
     };
 
     fetch('/lamination/calculate-lamination-time/', {
@@ -1607,7 +1648,10 @@ function calculateProductionEfficiency() {
         lamination_time: parseFloat(formData.get('lamination_time')),
         lamination_time_unit: formData.get('lamination_time_unit'),
         total_run_time: parseFloat(formData.get('total_run_time')),
-        total_run_time_unit: formData.get('total_run_time_unit')
+        total_run_time_unit: formData.get('total_run_time_unit'),
+        machine_name: formData.get('machine_name'),
+        customer_name: formData.get('customer_name'),
+        job_name: formData.get('job_name')
     };
 
     fetch('/lamination/calculate-production-efficiency/', {
@@ -1633,7 +1677,10 @@ function calculateYield() {
         input_mass: parseFloat(formData.get('input_mass')),
         input_mass_unit: formData.get('input_mass_unit'),
         output_mass: parseFloat(formData.get('output_mass')),
-        output_mass_unit: formData.get('output_mass_unit')
+        output_mass_unit: formData.get('output_mass_unit'),
+        machine_name: formData.get('machine_name'),
+        customer_name: formData.get('customer_name'),
+        job_name: formData.get('job_name')
     };
 
     fetch('/lamination/calculate-yield/', {

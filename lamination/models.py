@@ -3,6 +3,14 @@ from calculator.models import PlasticMaterial
 from qc_project import settings
 
 
+MACHINE_CHOICES = [
+    ('UFLEX', 'Uflex'),
+    ('CENTER', 'Center'),
+    ('SIMPLEX', 'Simplex'),
+    ('FADIA', 'Fadia'),
+]
+
+
 class LaminationCalculation(models.Model):
     ADHESIVE_TYPES = [
         ('SOLVENTLESS', 'Solventless'),
@@ -11,6 +19,9 @@ class LaminationCalculation(models.Model):
 
     calculation_type = models.CharField(max_length=50)
     adhesive_type = models.CharField(max_length=20, choices=ADHESIVE_TYPES)
+    machine_name = models.CharField(max_length=20, choices=MACHINE_CHOICES, blank=True)
+    customer_name = models.CharField(max_length=150, blank=True)
+    job_name = models.CharField(max_length=150, blank=True)
     input_data = models.JSONField()
     result_data = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)
