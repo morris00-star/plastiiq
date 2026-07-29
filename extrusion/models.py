@@ -2,6 +2,20 @@ from django.db import models
 from calculator.models import PlasticMaterial
 from qc_project import settings
 
+MACHINE_CHOICES = (
+        [(f'RAJOO_{n:02d}', f'Rajoo {n:02d}') for n in range(1, 4)] +
+        [(f'MAMATA_{n:02d}', f'Mamata {n:02d}') for n in range(1, 3)] +
+        [('WINDSOR', 'Windsor')] +
+        [('JINMING', 'Jinming')] +
+        [(f'PP_{n:02d}', f'PP {n:02d}') for n in range(1, 3)] +
+        [(f'TAIWAN_{n:02d}', f'Taiwan {n:02d}') for n in range(1, 7)] +
+        [(f'HEMINGSTON_{n:02d}', f'Hemingston {n:02d}') for n in range(1, 5)] +
+        [(f'GURUCHARANI_{n:02d}', f'Gurucharani {n:02d}') for n in range(1, 4)] +
+        [(f'CHINA_{n:02d}', f'China {n:02d}') for n in range(1, 4)] +
+        [('CONCORD', 'Concord')] +
+        [('SHOWMAN', 'Showman')]
+)
+
 
 class ExtrusionCalculation(models.Model):
     CALCULATION_TYPES = [
@@ -45,6 +59,11 @@ class ExtrusionCalculation(models.Model):
         blank=True
     )
 
+    # Added machine-related fields
+    machine_name = models.CharField(max_length=20, choices=MACHINE_CHOICES, blank=True, null=True)
+    customer_name = models.CharField(max_length=100, blank=True, null=True)
+    order_name = models.CharField(max_length=100, blank=True, null=True)
+
     def __str__(self):
         return f"{self.get_calculation_type_display()} - {self.material.name}"
 
@@ -53,7 +72,7 @@ class ThicknessMeasurement(models.Model):
     calculation = models.ForeignKey(ExtrusionCalculation, on_delete=models.CASCADE,
                                     related_name='thickness_measurements')
     position = models.CharField(max_length=50)
-    thickness_microns = models.FloatField()
+    thickness = models.FloatField()
     measurement_order = models.IntegerField()
 
     class Meta:

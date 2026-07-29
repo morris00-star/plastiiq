@@ -31,6 +31,29 @@ def safe_int(value, default=0):
         return default
 
 
+def resolve_common_fields(data):
+    """Resolve optional machine/customer/order context shared across all extrusion calculators."""
+    machine_name = data.get('machine_name') or ''
+    customer_name = data.get('customer_name') or ''
+    order_name = data.get('order_name') or ''
+    return machine_name, customer_name, order_name
+
+
+def resolve_material_with_fallback(data):
+    """
+    Resolve material_id from the request. Falls back to the first material in the
+    database if not provided, since ExtrusionCalculation.material has no null=True -
+    a real value must always be saved.
+    """
+    material_id = data.get('material_id')
+    if material_id:
+        try:
+            return PlasticMaterial.objects.get(id=material_id)
+        except PlasticMaterial.DoesNotExist:
+            pass
+    return PlasticMaterial.objects.first()
+
+
 @login_required
 def extrusion_home(request):
     calculators = [
@@ -74,6 +97,7 @@ def calculate_pieces_weight(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             thickness = safe_float(data.get('thickness', 0))
             thickness_unit = data.get('thickness_unit', 'micron')
@@ -137,7 +161,10 @@ def calculate_pieces_weight(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -157,6 +184,7 @@ def calculate_roll_radius_from_mass(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             core_diameter = safe_float(data.get('core_diameter', 0))
             core_diameter_unit = data.get('core_diameter_unit', 'mm')
@@ -203,7 +231,10 @@ def calculate_roll_radius_from_mass(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -220,6 +251,7 @@ def calculate_thickness(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             method = data.get('method', 'cut_weigh')
 
@@ -341,7 +373,10 @@ def calculate_thickness(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -362,6 +397,7 @@ def calculate_takeup_speed(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             old_speed = safe_float(data.get('old_speed', 0))
             old_speed_unit = data.get('old_speed_unit', 'm_min')
             old_thickness = safe_float(data.get('old_thickness', 0))
@@ -385,13 +421,16 @@ def calculate_takeup_speed(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='TAKEUP_SPEED',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -408,6 +447,7 @@ def calculate_roll_properties(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             calculation_type = data.get('calculation_type', 'length')  # 'length' or 'mass'
 
@@ -460,7 +500,10 @@ def calculate_roll_properties(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -477,6 +520,7 @@ def calculate_film_length(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             film_weight = safe_float(data.get('film_weight', 0))
             film_weight_unit = data.get('film_weight_unit', 'kg')
@@ -507,7 +551,10 @@ def calculate_film_length(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -524,6 +571,7 @@ def calculate_production_time(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             quantity = safe_float(data.get('quantity', 0))
             quantity_unit = data.get('quantity_unit', 'kg')
@@ -556,7 +604,10 @@ def calculate_production_time(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -573,6 +624,7 @@ def calculate_bur_ddr(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
 
             material = PlasticMaterial.objects.get(id=material_id)
@@ -608,7 +660,10 @@ def calculate_bur_ddr(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -634,6 +689,7 @@ def calculate_tensile_strength(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             max_load = safe_float(data.get('max_load', 0))
             load_unit = data.get('load_unit', 'N')
             width = safe_float(data.get('width', 0))
@@ -657,13 +713,16 @@ def calculate_tensile_strength(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='TENSILE',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -690,6 +749,7 @@ def calculate_elongation(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             initial_length = safe_float(data.get('initial_length', 0))
             initial_length_unit = data.get('initial_length_unit', 'mm')
             final_length = safe_float(data.get('final_length', 0))
@@ -710,13 +770,16 @@ def calculate_elongation(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='ELONGATION',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -743,6 +806,7 @@ def calculate_cof(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
 
             # Get test configuration
             test_method = data.get('test_method', 'film_to_film')
@@ -793,13 +857,16 @@ def calculate_cof(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='COF',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -882,6 +949,7 @@ def calculate_dart_impact(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             weights_g = [safe_float(w) for w in data.get('weights_g', [])]
             failures = [safe_int(f) for f in data.get('failures', [])]
             total_drops = [safe_int(td) for td in data.get('total_drops', [])]
@@ -930,7 +998,10 @@ def calculate_dart_impact(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -969,6 +1040,7 @@ def calculate_gauge_variation(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             thickness_measurements = [safe_float(m) for m in data.get('thickness_measurements', [])]
 
             if not thickness_measurements:
@@ -993,13 +1065,16 @@ def calculate_gauge_variation(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='GAUGE_VARIATION',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1027,6 +1102,7 @@ def calculate_composite_density(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             layer_densities = [safe_float(d) for d in data.get('layer_densities', [])]
             layer_thicknesses = [safe_float(t) for t in data.get('layer_thicknesses', [])]
 
@@ -1054,13 +1130,16 @@ def calculate_composite_density(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='COMPOSITE_DENSITY',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1077,6 +1156,7 @@ def calculate_yield_basis_weight(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             thickness = safe_float(data.get('thickness', 0))
             thickness_unit = data.get('thickness_unit', 'micron')
@@ -1103,7 +1183,10 @@ def calculate_yield_basis_weight(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1129,6 +1212,7 @@ def calculate_weight_from_length(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             film_length = safe_float(data.get('film_length', 0))
             film_length_unit = data.get('film_length_unit', 'm')
@@ -1158,7 +1242,10 @@ def calculate_weight_from_length(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1176,6 +1263,7 @@ def calculate_roll_radius(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             material_id = data.get('material_id')
             core_diameter = safe_float(data.get('core_diameter', 0))
             core_diameter_unit = data.get('core_diameter_unit', 'mm')
@@ -1210,7 +1298,10 @@ def calculate_roll_radius(request):
                     material=material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1231,6 +1322,7 @@ def calculate_layer_distribution(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             config = data.get('layer_config', '3layer')  # '3layer' or '5layer'
             total_kg = safe_float(data.get('total_kg', 0))
             total_microns = safe_float(data.get('total_microns', 0))
@@ -1270,13 +1362,16 @@ def calculate_layer_distribution(request):
 
             if request.user.is_authenticated:
                 calc_type = 'LAYER_DISTRIBUTION_5' if config == '5layer' else 'LAYER_DISTRIBUTION_3'
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type=calc_type,
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1298,6 +1393,7 @@ def calculate_composite_density(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             method = data.get('method', 'thickness')
             layer_densities = [safe_float(d) for d in data.get('layer_densities', [])]
 
@@ -1357,13 +1453,16 @@ def calculate_composite_density(request):
                 }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='COMPOSITE_DENSITY',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1381,6 +1480,7 @@ def calculate_masterbatch_dosing(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             target_percent = safe_float(data.get('target_percent', 0))
             total_batch = safe_float(data.get('total_batch', 0))
             total_batch_unit = data.get('total_batch_unit', 'kg')
@@ -1403,13 +1503,16 @@ def calculate_masterbatch_dosing(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='MASTERBATCH_DOSING',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1427,6 +1530,7 @@ def calculate_regrind_blend(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             regrind_percent = safe_float(data.get('regrind_percent', 0))
             total_batch = safe_float(data.get('total_batch', 0))
             total_batch_unit = data.get('total_batch_unit', 'kg')
@@ -1452,13 +1556,16 @@ def calculate_regrind_blend(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='REGRIND_BLEND',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1476,6 +1583,7 @@ def calculate_specific_output(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             mass_flow = safe_float(data.get('mass_flow', 0))
             mass_flow_unit = data.get('mass_flow_unit', 'kg_hr')
             screw_rpm = safe_float(data.get('screw_rpm', 0))
@@ -1502,13 +1610,16 @@ def calculate_specific_output(request):
                 result['deviation_note'] = get_specific_output_deviation_note(deviation_percent)
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='SPECIFIC_OUTPUT',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1535,6 +1646,7 @@ def calculate_neck_in_draw(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             die_width = safe_float(data.get('die_width', 0))
             die_width_unit = data.get('die_width_unit', 'm')
             final_width = safe_float(data.get('final_width', 0))
@@ -1562,13 +1674,16 @@ def calculate_neck_in_draw(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='NECK_IN_DRAW',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1586,6 +1701,7 @@ def calculate_puncture_energy(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             method = data.get('method', 'simplified')  # 'simplified' or 'trapezoidal'
 
             calculator = ExtrusionCalculator()
@@ -1621,13 +1737,16 @@ def calculate_puncture_energy(request):
                 }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='PUNCTURE_ENERGY',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1645,6 +1764,7 @@ def calculate_secant_modulus(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             load_at_2pct = safe_float(data.get('load_at_2pct', 0))
             load_unit = data.get('load_unit', 'N')
             width = safe_float(data.get('width', 0))
@@ -1672,13 +1792,16 @@ def calculate_secant_modulus(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='SECANT_MODULUS',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1707,6 +1830,7 @@ def calculate_waste_percent(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             waste = safe_float(data.get('waste', 0))
             waste_unit = data.get('waste_unit', 'kg')
             total_input = safe_float(data.get('total_input', 0))
@@ -1731,13 +1855,16 @@ def calculate_waste_percent(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='WASTE_PERCENT',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
@@ -1766,6 +1893,7 @@ def calculate_barrier_normalization(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             property_type = data.get('property_type', 'WVTR')
             measured_value = safe_float(data.get('measured_value', 0))
             measured_thickness = safe_float(data.get('measured_thickness', 0))
@@ -1788,13 +1916,16 @@ def calculate_barrier_normalization(request):
             }
 
             if request.user.is_authenticated:
-                default_material = PlasticMaterial.objects.first()
+                default_material = resolve_material_with_fallback(data)
                 ExtrusionCalculation.objects.create(
                     calculation_type='BARRIER_NORMALIZATION',
                     material=default_material,
                     input_data=data,
                     result_data=result,
-                    user=request.user
+                    user=request.user,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name
                 )
 
             return JsonResponse({'success': True, 'result': result})
