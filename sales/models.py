@@ -13,10 +13,17 @@ class SalesCalculation(models.Model):
         ('ORDER_QUANTITY_PIECE', 'Order Quantity from pieces'),
         ('ROLL_COST', 'Roll Cost Calculation'),
         ('LAMINATED_COST', 'Laminated Material Cost'),
+        ('MARGIN_MARKUP', 'Margin / Markup / Selling Price'),
+        ('COST_PER_SQM', 'Cost per Square Meter'),
+        ('BREAKEVEN_QTY', 'Breakeven Quantity'),
+        ('VAT_CALCULATION', 'VAT Inclusive/Exclusive'),
+        ('BULK_DISCOUNT', 'Bulk/Quantity-Break Discount'),
     ]
 
     calculation_type = models.CharField(max_length=25, choices=CALCULATION_TYPES)
     material = models.ForeignKey(PlasticMaterial, on_delete=models.CASCADE, null=True, blank=True)
+    customer_name = models.CharField(max_length=150, blank=True)
+    order_name = models.CharField(max_length=150, blank=True)
     input_data = models.JSONField()
     result_data = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -29,6 +36,18 @@ class SalesCalculation(models.Model):
 
     def __str__(self):
         return f"{self.get_calculation_type_display()} - {self.timestamp}"
+
+
+class SalesCalculationLayer(models.Model):
+    """Real per-layer cost data for laminate costing - fixes the old flat single-cost bug."""
+    calculation = models.ForeignKey(SalesCalculation, on_delete=models.CASCADE, related_name='layers')
+    material = models.ForeignKey(PlasticMaterial, on_delete=models.CASCADE)
+    cost_per_kg = models.FloatField()
+    weight_kg = models.FloatField()
+    layer_order = models.IntegerField()
+
+    class Meta:
+        ordering = ['layer_order']
 
 
 class LaminatedStructure(models.Model):

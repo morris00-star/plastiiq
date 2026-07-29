@@ -17,4 +17,9 @@ urlpatterns = [
          name='calculate_order_quantity_piece'),
     path('calculate-roll-cost/', views.calculate_roll_cost, name='calculate_roll_cost'),
     path('calculate-laminated-cost/', views.calculate_laminated_cost, name='calculate_laminated_cost'),
+    path('calculate-margin-markup/', views.calculate_margin_markup, name='calculate_margin_markup'),
+    path('calculate-cost-per-sqm/', views.calculate_cost_per_sqm, name='calculate_cost_per_sqm'),
+    path('calculate-breakeven/', views.calculate_breakeven, name='calculate_breakeven'),
+    path('calculate-vat/', views.calculate_vat, name='calculate_vat'),
+    path('calculate-bulk-discount/', views.calculate_bulk_discount, name='calculate_bulk_discount'),
 ]
