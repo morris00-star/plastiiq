@@ -31,6 +31,9 @@ def calculation_history(request):
             calc.section = 'extrusion'
             calc.is_recent = is_recent(calc.timestamp)
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading extrusion calculations: {e}")
@@ -45,6 +48,9 @@ def calculation_history(request):
             calc.section = 'printing'
             calc.is_recent = is_recent(calc.timestamp)
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading printing calculations: {e}")
@@ -59,6 +65,9 @@ def calculation_history(request):
             calc.section = 'lamination'
             calc.is_recent = is_recent(calc.timestamp)
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading lamination calculations: {e}")
@@ -73,6 +82,9 @@ def calculation_history(request):
             calc.section = 'slitting'
             calc.is_recent = is_recent(calc.timestamp)
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading slitting calculations: {e}")
@@ -87,6 +99,9 @@ def calculation_history(request):
             calc.section = 'bag_making'
             calc.is_recent = is_recent(calc.timestamp)
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading bag making calculations: {e}")
@@ -98,6 +113,9 @@ def calculation_history(request):
             calc.section = 'sales'
             calc.is_recent = is_recent(calc.timestamp)
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading sales calculations: {e}")
@@ -116,14 +134,48 @@ def calculation_history(request):
 
 
 def get_display_material(calculation):
-    """Get material information for display in history"""
-    # If calculation has a direct material foreign key and it's set
-    if hasattr(calculation, 'material') and calculation.material:
-        return calculation.material
+    """
+    Get material information for display in history.
 
-    # For calculations with material stored in input_data
+    Priority order matters here: explicit multi-layer/laminate structures the
+    user actually selected must win over calculation.material, since several
+    models (e.g. SlittingCalculation) require a non-null material FK and fall
+    back to a default material internally even when the real selection was a
+    multi-layer laminate captured separately via a "layers" structure. Checking
+    the FK first would silently show that fallback instead of the real layers.
+    """
     if hasattr(calculation, 'input_data') and calculation.input_data:
         input_data = calculation.input_data
+
+        # Explicit multi-layer structure (list of dicts with material_id) - used by
+        # slitting's roll mass/diameter (single OR multi-layer film structure),
+        # lamination weight-breakdown/adhesive-components, and sales' Laminated Cost.
+        if 'layers' in input_data and input_data['layers']:
+            materials = []
+            for layer in input_data['layers']:
+                layer_material_id = layer.get('material_id') if isinstance(layer, dict) else None
+                if layer_material_id:
+                    try:
+                        mat = PlasticMaterial.objects.get(id=layer_material_id)
+                        materials.append({'name': mat.name, 'density': mat.density})
+                    except (PlasticMaterial.DoesNotExist, ValueError):
+                        pass
+            if materials:
+                return create_laminated_material_object(materials)
+
+        # Generic "layer_material_ids" (flat list) - used by sales' universal
+        # single/laminate material toggle.
+        if 'layer_material_ids' in input_data and input_data['layer_material_ids']:
+            materials = []
+            for layer_material_id in input_data['layer_material_ids']:
+                if layer_material_id:
+                    try:
+                        mat = PlasticMaterial.objects.get(id=layer_material_id)
+                        materials.append({'name': mat.name, 'density': mat.density})
+                    except (PlasticMaterial.DoesNotExist, ValueError):
+                        pass
+            if materials:
+                return create_laminated_material_object(materials)
 
         # Check for material_id in input_data (single material)
         if 'material_id' in input_data and input_data['material_id']:
@@ -137,7 +189,6 @@ def get_display_material(calculation):
         if 'material_details' in input_data and input_data['material_details']:
             materials = input_data['material_details']
             if materials and len(materials) > 0:
-                # Create a special "Laminated" material object
                 return create_laminated_material_object(materials)
 
         # Check for material_detail in input_data (for roll calculations)
@@ -154,7 +205,7 @@ def get_display_material(calculation):
         if 'primary_material_id' in input_data and input_data['primary_material_id']:
             return create_laminated_material_from_structure(input_data)
 
-    # For Sales laminated calculations, check the layers structure
+    # For Sales laminated calculations, check the layers structure in result_data
     if hasattr(calculation, 'section') and calculation.section == 'sales':
         if hasattr(calculation, 'result_data') and calculation.result_data:
             result_data = calculation.result_data
@@ -166,7 +217,51 @@ def get_display_material(calculation):
                 if materials:
                     return create_laminated_material_object(materials)
 
+    # Last resort: the raw material FK. This is a fallback for models that
+    # require it (e.g. SlittingCalculation), so it must never be checked before
+    # the explicit structures above.
+    if hasattr(calculation, 'material') and calculation.material:
+        return calculation.material
+
     return None
+
+
+def get_display_machine(calculation):
+    """Get machine name for display, checking the model field first, then input_data."""
+    if hasattr(calculation, 'machine_name') and calculation.machine_name:
+        return calculation.machine_name.replace('_', ' ').title()
+    if hasattr(calculation, 'input_data') and calculation.input_data:
+        machine = calculation.input_data.get('machine_name')
+        if machine:
+            return str(machine).replace('_', ' ').title()
+    return ''
+
+
+def get_display_customer(calculation):
+    """Get customer name for display, checking the model field first, then input_data."""
+    if hasattr(calculation, 'customer_name') and calculation.customer_name:
+        return calculation.customer_name
+    if hasattr(calculation, 'input_data') and calculation.input_data:
+        customer = calculation.input_data.get('customer_name')
+        if customer:
+            return customer
+    return ''
+
+
+def get_display_order(calculation):
+    """
+    Get order/job name for display. Different apps named this field differently
+    (order_name vs job_name) - check both, on the model field and in input_data.
+    """
+    for field_name in ('order_name', 'job_name'):
+        if hasattr(calculation, field_name) and getattr(calculation, field_name):
+            return getattr(calculation, field_name)
+    if hasattr(calculation, 'input_data') and calculation.input_data:
+        for key in ('order_name', 'job_name'):
+            value = calculation.input_data.get(key)
+            if value:
+                return value
+    return 
 
 
 def create_laminated_material_object(materials):
@@ -313,6 +408,9 @@ def download_calculation_history(request, format_type):
         for calc in extrusion_calculations:
             calc.section = 'extrusion'
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading extrusion calculations for export: {e}")
@@ -324,6 +422,9 @@ def download_calculation_history(request, format_type):
         for calc in printing_calculations:
             calc.section = 'printing'
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading printing calculations for export: {e}")
@@ -335,6 +436,9 @@ def download_calculation_history(request, format_type):
         for calc in lamination_calculations:
             calc.section = 'lamination'
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading lamination calculations for export: {e}")
@@ -346,6 +450,9 @@ def download_calculation_history(request, format_type):
         for calc in slitting_calculations:
             calc.section = 'slitting'
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading slitting calculations for export: {e}")
@@ -357,6 +464,9 @@ def download_calculation_history(request, format_type):
         for calc in bag_making_calculations:
             calc.section = 'bag_making'
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading bag making calculations for export: {e}")
@@ -366,6 +476,9 @@ def download_calculation_history(request, format_type):
         for calc in sales_calculations:
             calc.section = 'sales'
             calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading sales calculations for export: {e}")
@@ -399,6 +512,9 @@ def download_json_history(calculations, username):
             'section': get_section_name(calc),
             'calculation_type': get_calculation_type_display(calc),
             'material': material_info,
+            'machine': getattr(calc, 'display_machine', '') or '',
+            'customer': getattr(calc, 'display_customer', '') or '',
+            'order': getattr(calc, 'display_order', '') or '',
             'timestamp': calc.timestamp.isoformat(),
             'input_data': calc.input_data,
             'result_data': calc.result_data,
@@ -418,7 +534,7 @@ def download_csv_history(calculations, username):
         'Content-Disposition'] = f'attachment; filename="{username}_calculations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Section', 'Calculation Type', 'Material', 'Timestamp', 'Input Data', 'Result Data'])
+    writer.writerow(['Section', 'Calculation Type', 'Material', 'Machine', 'Customer', 'Order/Job', 'Timestamp', 'Input Data', 'Result Data'])
 
     for calc in calculations:
         # Use the display_material we set earlier
@@ -430,6 +546,9 @@ def download_csv_history(calculations, username):
             get_section_name(calc),
             get_calculation_type_display(calc),
             material_info,
+            getattr(calc, 'display_machine', '') or 'N/A',
+            getattr(calc, 'display_customer', '') or 'N/A',
+            getattr(calc, 'display_order', '') or 'N/A',
             calc.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             json.dumps(calc.input_data),
             json.dumps(calc.result_data)
@@ -455,6 +574,9 @@ def download_text_history(calculations, username):
         content += f"Section: {get_section_name(calc)}\n"
         content += f"Type: {get_calculation_type_display(calc)}\n"
         content += f"Material: {material_info}\n"
+        content += f"Machine: {getattr(calc, 'display_machine', '') or 'N/A'}\n"
+        content += f"Customer: {getattr(calc, 'display_customer', '') or 'N/A'}\n"
+        content += f"Order/Job: {getattr(calc, 'display_order', '') or 'N/A'}\n"
         content += f"Timestamp: {calc.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n"
         content += "Input Data:\n"
 

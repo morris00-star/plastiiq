@@ -187,6 +187,22 @@
                         <input type="date" class="form-control" id="dateFilter">
                     </div>
                 </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-3">
+                        <label class="form-label">Machine</label>
+                        <select class="form-select" id="machineFilter">
+                            <option value="">All Machines</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Customer</label>
+                        <select class="form-select" id="customerFilter">
+                            <option value="">All Customers</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <div class="form-check">
@@ -219,6 +235,9 @@
                                 <th>Section</th>
                                 <th>Calculation Type</th>
                                 <th>Material</th>
+                                <th>Machine</th>
+                                <th>Customer</th>
+                                <th>Order/Job</th>
                                 <th>Input Parameters</th>
                                 <th>Results</th>
                                 <th>Actions</th>
@@ -230,7 +249,9 @@
                             <tr class="calculation-row"
                                 data-section="{{ calculation|get_section_name|lower }}"
                                 data-type="{{ calculation.calculation_type }}"
-                                data-material="{% if calculation.material %}{{ calculation.material.name }}{% endif %}"
+                                data-material="{% if calculation.display_material %}{{ calculation.display_material.name }}{% endif %}"
+                                data-machine="{% if calculation.display_machine %}{{ calculation.display_machine }}{% endif %}"
+                                data-customer="{% if calculation.display_customer %}{{ calculation.display_customer }}{% endif %}"
                                 data-date="{{ calculation.timestamp|date:'Y-m-d' }}"
                                 data-recent="{% if calculation.is_recent %}true{% else %}false{% endif %}">
                                 <td>
@@ -262,15 +283,39 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if calculation.material %}
-                                    <div class="d-flex align-items-center">
+                                    {% if calculation.display_material %}
+                                    <div class="d-flex align-items-center flex-wrap">
                                         <span class="badge bg-light text-dark me-2">
-                                            {{ calculation.material.name }}
+                                            {{ calculation.display_material.name }}
                                         </span>
-                                        <small class="text-muted">({{ calculation.material.density }} g/cm³)</small>
+                                        <small class="text-muted">({{ calculation.display_material.density }} g/cm³)</small>
+                                        {% if calculation.display_material.is_laminated %}
+                                        <span class="badge bg-info text-dark ms-2">Laminate</span>
+                                        {% endif %}
                                     </div>
                                     {% else %}
                                     <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if calculation.display_machine %}
+                                    <span class="badge bg-secondary">{{ calculation.display_machine }}</span>
+                                    {% else %}
+                                    <span class="text-muted">&mdash;</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if calculation.display_customer %}
+                                    {{ calculation.display_customer }}
+                                    {% else %}
+                                    <span class="text-muted">&mdash;</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if calculation.display_order %}
+                                    {{ calculation.display_order }}
+                                    {% else %}
+                                    <span class="text-muted">&mdash;</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -315,7 +360,7 @@
                             {% endtimezone %}
                             {% empty %}
                             <tr>
-                                <td colspan="8" class="text-center py-5">
+                                <td colspan="11" class="text-center py-5">
                                     <div class="text-muted">
                                         <i class="fas fa-calculator fa-4x mb-3"></i>
                                         <h4>No calculations found</h4>
@@ -531,6 +576,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sectionFilter').addEventListener('change', filterCalculations);
     document.getElementById('typeFilter').addEventListener('change', filterCalculations);
     document.getElementById('materialFilter').addEventListener('change', filterCalculations);
+    document.getElementById('machineFilter').addEventListener('change', filterCalculations);
+    document.getElementById('customerFilter').addEventListener('change', filterCalculations);
     document.getElementById('dateFilter').addEventListener('change', filterCalculations);
     document.getElementById('showOnlyRecent').addEventListener('change', filterCalculations);
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
@@ -545,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupModalHandlers();
 
     // Also update when any filter changes
-    document.querySelectorAll('#sectionFilter, #typeFilter, #materialFilter, #dateFilter, #showOnlyRecent')
+    document.querySelectorAll('#sectionFilter, #typeFilter, #materialFilter, #machineFilter, #customerFilter, #dateFilter, #showOnlyRecent')
         .forEach(element => {
             element.addEventListener('change', updateStatistics);
         });
@@ -622,12 +669,46 @@ function initializeFilters() {
         option.textContent = material;
         materialFilter.appendChild(option);
     });
+
+    // Populate machine filter
+    const machines = new Set();
+    document.querySelectorAll('.calculation-row').forEach(row => {
+        if (row.dataset.machine) {
+            machines.add(row.dataset.machine);
+        }
+    });
+
+    const machineFilter = document.getElementById('machineFilter');
+    machines.forEach(machine => {
+        const option = document.createElement('option');
+        option.value = machine;
+        option.textContent = machine;
+        machineFilter.appendChild(option);
+    });
+
+    // Populate customer filter
+    const customers = new Set();
+    document.querySelectorAll('.calculation-row').forEach(row => {
+        if (row.dataset.customer) {
+            customers.add(row.dataset.customer);
+        }
+    });
+
+    const customerFilter = document.getElementById('customerFilter');
+    customers.forEach(customer => {
+        const option = document.createElement('option');
+        option.value = customer;
+        option.textContent = customer;
+        customerFilter.appendChild(option);
+    });
 }
 
 function filterCalculations() {
     const sectionFilter = document.getElementById('sectionFilter').value;
     const typeFilter = document.getElementById('typeFilter').value;
     const materialFilter = document.getElementById('materialFilter').value;
+    const machineFilter = document.getElementById('machineFilter').value;
+    const customerFilter = document.getElementById('customerFilter').value;
     const dateFilter = document.getElementById('dateFilter').value;
     const showOnlyRecent = document.getElementById('showOnlyRecent').checked;
 
@@ -645,6 +726,14 @@ function filterCalculations() {
         }
 
         if (materialFilter && row.dataset.material !== materialFilter) {
+            show = false;
+        }
+
+        if (machineFilter && row.dataset.machine !== machineFilter) {
+            show = false;
+        }
+
+        if (customerFilter && row.dataset.customer !== customerFilter) {
             show = false;
         }
 
@@ -672,6 +761,8 @@ function clearFilters() {
     document.getElementById('sectionFilter').value = '';
     document.getElementById('typeFilter').value = '';
     document.getElementById('materialFilter').value = '';
+    document.getElementById('machineFilter').value = '';
+    document.getElementById('customerFilter').value = '';
     document.getElementById('dateFilter').value = '';
     document.getElementById('showOnlyRecent').checked = false;
     filterCalculations();

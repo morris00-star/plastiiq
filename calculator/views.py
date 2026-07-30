@@ -84,57 +84,6 @@ def material_reference(request):
     })
 
 
-"""@login_required
-def calculation_history(request):
-   '''Display comprehensive calculation history across all sections'''
-    # Get calculations from all sections
-    sections_data = {}
-
-    # Extrusion calculations
-    try:
-        from extrusion.models import ExtrusionCalculation
-        extrusion_calcs = ExtrusionCalculation.objects.filter(user=request.user).select_related('material').order_by(
-            '-timestamp')
-        sections_data['extrusion'] = {
-            'calculations': extrusion_calcs,
-            'count': extrusion_calcs.count(),
-            'name': 'Extrusion',
-            'icon': 'fas fa-industry'
-        }
-    except ImportError:
-        sections_data['extrusion'] = {'calculations': [], 'count': 0, 'name': 'Extrusion', 'icon': 'fas fa-industry'}
-
-    # Density calculations (from main calculator)
-    density_calcs = DensityCalculation.objects.filter(user=request.user).select_related('material').order_by(
-        '-timestamp')
-    sections_data['density'] = {
-        'calculations': density_calcs,
-        'count': density_calcs.count(),
-        'name': 'Density',
-        'icon': 'fas fa-weight-scale'
-    }
-
-    # Add other sections as they are implemented
-    sections_data['printing'] = {'calculations': [], 'count': 0, 'name': 'Printing', 'icon': 'fas fa-print'}
-    sections_data['lamination'] = {'calculations': [], 'count': 0, 'name': 'Lamination', 'icon': 'fas fa-layer-group'}
-    sections_data['slitting'] = {'calculations': [], 'count': 0, 'name': 'Slitting', 'icon': 'fas fa-cut'}
-    sections_data['bag_making'] = {'calculations': [], 'count': 0, 'name': 'Bag Making', 'icon': 'fas fa-shopping-bag'}
-    sections_data['sales'] = {'calculations': [], 'count': 0, 'name': 'Sales', 'icon': 'fas fa-money-bill-wave'}
-    sections_data['extrusion'] = {'calculations': [], 'count': 0, 'name': 'Extrusion', 'icon': 'fas fa-industry'}
-
-    # Get selected section from query parameter
-    selected_section = request.GET.get('section', 'all')
-
-    # Prepare data for template
-    context = {
-        'sections_data': sections_data,
-        'selected_section': selected_section,
-        'total_calculations': sum(section['count'] for section in sections_data.values()),
-    }
-
-    return render(request, 'calculator/history.html', context)"""
-
-
 @login_required
 def download_calculation_history(request):
     """Download calculation history as CSV"""
