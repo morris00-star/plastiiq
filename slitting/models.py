@@ -3,6 +3,14 @@ from calculator.models import PlasticMaterial
 from qc_project import settings
 
 
+MACHINE_CHOICES = (
+    [(f'HCI_{n:02d}', f'HCI {n:02d}') for n in range(1, 3)] +
+    [('BIMEC', 'Bimec')] +
+    [(f'NISSI_{n:02d}', f'Nissi {n:02d}') for n in range(2, 4)] +
+    [('FADIA', 'Fadia')]
+)
+
+
 class SlittingCalculation(models.Model):
     CALCULATION_TYPES = [
         ('ROLL_MASS', 'Roll Mass from Diameter'),
@@ -22,6 +30,9 @@ class SlittingCalculation(models.Model):
 
     calculation_type = models.CharField(max_length=30, choices=CALCULATION_TYPES)
     material = models.ForeignKey(PlasticMaterial, on_delete=models.CASCADE)
+    machine_name = models.CharField(max_length=20, choices=MACHINE_CHOICES, blank=True)
+    customer_name = models.CharField(max_length=150, blank=True)
+    order_name = models.CharField(max_length=150, blank=True)
     input_data = models.JSONField()
     result_data = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)

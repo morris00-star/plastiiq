@@ -84,9 +84,9 @@ def material_reference(request):
     })
 
 
-@login_required
+"""@login_required
 def calculation_history(request):
-    """Display comprehensive calculation history across all sections"""
+   '''Display comprehensive calculation history across all sections'''
     # Get calculations from all sections
     sections_data = {}
 
@@ -132,7 +132,7 @@ def calculation_history(request):
         'total_calculations': sum(section['count'] for section in sections_data.values()),
     }
 
-    return render(request, 'calculator/history.html', context)
+    return render(request, 'calculator/history.html', context)"""
 
 
 @login_required

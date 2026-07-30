@@ -14,6 +14,14 @@ def safe_float(value, default=0.0):
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def resolve_common_fields(data):
+    """Resolve optional machine/customer/order context shared across all slitting calculators."""
+    machine_name = data.get('machine_name') or ''
+    customer_name = data.get('customer_name') or ''
+    order_name = data.get('order_name') or ''
+    return machine_name, customer_name, order_name
 from .slitting_calculator import SlittingCalculator
 import json
 
@@ -51,6 +59,7 @@ def calculate_roll_mass(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             # Get roll dimensions
@@ -162,6 +171,9 @@ def calculate_roll_mass(request):
                     id=material_id) if not layers_data else PlasticMaterial.objects.first()
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='ROLL_MASS',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -186,6 +198,7 @@ def calculate_roll_diameter(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             # Get roll mass and dimensions
@@ -308,6 +321,9 @@ def calculate_roll_diameter(request):
                     id=material_id) if not layers_data else PlasticMaterial.objects.first()
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='ROLL_DIAMETER',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -372,6 +388,7 @@ def calculate_slitting_time(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             roll_length = float(data.get('roll_length', 0))
@@ -396,6 +413,9 @@ def calculate_slitting_time(request):
                 default_material = PlasticMaterial.objects.first()
                 SlittingCalculation.objects.create(
                     calculation_type='SLITTING_TIME',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=default_material,
                     input_data=data,
                     result_data=result,
@@ -416,6 +436,7 @@ def calculate_production_efficiency(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             slitting_time = float(data.get('slitting_time', 0))
@@ -447,6 +468,9 @@ def calculate_production_efficiency(request):
                 default_material = PlasticMaterial.objects.first()
                 SlittingCalculation.objects.create(
                     calculation_type='PRODUCTION_EFFICIENCY',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=default_material,
                     input_data=data,
                     result_data=result,
@@ -467,6 +491,7 @@ def calculate_production_rate(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             roll_mass = float(data.get('roll_mass', 0))
@@ -496,6 +521,9 @@ def calculate_production_rate(request):
                 default_material = PlasticMaterial.objects.first()
                 SlittingCalculation.objects.create(
                     calculation_type='PRODUCTION_RATE',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=default_material,
                     input_data=data,
                     result_data=result,
@@ -516,6 +544,7 @@ def calculate_yield(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             total_input = float(data.get('total_input', 0))
@@ -542,6 +571,9 @@ def calculate_yield(request):
                 default_material = PlasticMaterial.objects.first()
                 SlittingCalculation.objects.create(
                     calculation_type='YIELD_CALCULATION',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=default_material,
                     input_data=data,
                     result_data=result,
@@ -562,6 +594,7 @@ def calculate_film_length(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             mass = float(data.get('mass', 0))
@@ -622,6 +655,9 @@ def calculate_film_length(request):
                     id=material_id) if not layers_data else PlasticMaterial.objects.first()
                 SlittingCalculation.objects.create(
                     calculation_type='FILM_LENGTH',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -719,6 +755,7 @@ def calculate_knife_layout(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             material_id = data.get('material_id')
@@ -791,6 +828,9 @@ def calculate_knife_layout(request):
             if request.user.is_authenticated:
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='KNIFE_LAYOUT',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -827,6 +867,7 @@ def calculate_rolls_from_mass(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             material_id = data.get('material_id')
@@ -863,6 +904,9 @@ def calculate_rolls_from_mass(request):
             if request.user.is_authenticated:
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='ROLLS_FROM_MASS',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -899,6 +943,7 @@ def calculate_tension_taper(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             material_id = data.get('material_id')
@@ -956,6 +1001,9 @@ def calculate_tension_taper(request):
             if request.user.is_authenticated:
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='TENSION_TAPER',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -992,6 +1040,7 @@ def calculate_wind_quality(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             material_id = data.get('material_id')
@@ -1058,6 +1107,9 @@ def calculate_wind_quality(request):
             if request.user.is_authenticated:
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='WIND_QUALITY',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -1094,6 +1146,7 @@ def calculate_downtime_breakdown(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             material_id = data.get('material_id')
@@ -1142,6 +1195,9 @@ def calculate_downtime_breakdown(request):
             if request.user.is_authenticated:
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='DOWNTIME_BREAKDOWN',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
@@ -1178,6 +1234,7 @@ def calculate_waste_allowance(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = SlittingCalculator()
 
             material_id = data.get('material_id')
@@ -1211,6 +1268,9 @@ def calculate_waste_allowance(request):
             if request.user.is_authenticated:
                 slitting_calc = SlittingCalculation.objects.create(
                     calculation_type='WASTE_ALLOWANCE',
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     material=material,
                     input_data=data,
                     result_data=result,
