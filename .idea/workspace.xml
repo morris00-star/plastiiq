@@ -7,9 +7,10 @@
     <list default="true" id="59e339a0-e2c6-4049-b9eb-8449e35cb863" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../main.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/calculator/templates/calculator/history.html" beforeDir="false" afterPath="$PROJECT_DIR$/calculator/templates/calculator/history.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/calculator/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/calculator/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/calculator/views_history.py" beforeDir="false" afterPath="$PROJECT_DIR$/calculator/views_history.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/bag_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/bag_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/templates/bag_making/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/templates/bag_making/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/bag_making/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -3,12 +3,76 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from calculator.models import PlasticMaterial
-from .models import BagMakingCalculation, AddonComponent
+from .models import BagMakingCalculation, AddonComponent, BagLayer
 from .bag_calculator import BagMakingCalculator
 import json
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_common_fields(data):
+    """Resolve optional machine/customer/order context shared across all bag making calculators."""
+    machine_name = data.get('machine_name') or ''
+    customer_name = data.get('customer_name') or ''
+    order_name = data.get('order_name') or ''
+    return machine_name, customer_name, order_name
+
+
+def save_material_selection(calculation, data):
+    """
+    Resolve and persist material selection (single OR laminate) for a calculation,
+    run AFTER the BagMakingCalculation record already exists. Handles both the
+    plain "layers" list shape (pieces-weight) and the indexed dimensions-mode
+    field shape ("dimensions_layer_material_0", "dimensions_layer_material_1", ...).
+    """
+    bag_type = calculation.bag_type
+
+    if bag_type.startswith('LAMINATED'):
+        layers_data = data.get('layers', [])
+        if layers_data:
+            for layer_order, layer in enumerate(layers_data):
+                material_id = layer.get('material_id') if isinstance(layer, dict) else None
+                if not material_id:
+                    continue
+                try:
+                    material_obj = PlasticMaterial.objects.get(id=material_id)
+                    BagLayer.objects.create(
+                        calculation=calculation,
+                        material=material_obj,
+                        thickness=float(layer.get('thickness_microns', 0) or 0),
+                        thickness_unit=layer.get('thickness_unit', 'micron'),
+                        layer_order=layer_order
+                    )
+                except (PlasticMaterial.DoesNotExist, ValueError):
+                    pass
+        else:
+            layer_index = 0
+            while f'dimensions_layer_material_{layer_index}' in data:
+                material_id = data.get(f'dimensions_layer_material_{layer_index}')
+                thickness = data.get(f'dimensions_layer_thickness_{layer_index}', 0)
+                thickness_unit = data.get(f'dimensions_layer_thickness_unit_{layer_index}', 'micron')
+                if material_id:
+                    try:
+                        material_obj = PlasticMaterial.objects.get(id=material_id)
+                        BagLayer.objects.create(
+                            calculation=calculation,
+                            material=material_obj,
+                            thickness=float(thickness) if thickness else 0.0,
+                            thickness_unit=thickness_unit,
+                            layer_order=layer_index
+                        )
+                    except (PlasticMaterial.DoesNotExist, ValueError):
+                        pass
+                layer_index += 1
+    else:
+        material_id = data.get('material_id') or data.get('dimensions_material_id')
+        if material_id:
+            try:
+                calculation.material = PlasticMaterial.objects.get(id=material_id)
+                calculation.save(update_fields=['material'])
+            except PlasticMaterial.DoesNotExist:
+                pass
 
 
 @login_required
@@ -60,6 +124,7 @@ def calculate_pieces_weight(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculation_direction = data.get('calculation_direction', 'pieces_to_weight')
             bag_type = data.get('bag_type', 'FLAT_SHEET')
 
@@ -77,8 +142,9 @@ def calculate_pieces_weight(request):
 
             # Calculate area with flap support
             area_m2 = calculator.calculate_single_piece_area(
-                width, height, bag_type, gusset_width, flap_length,
-                width_unit, height_unit, gusset_unit, flap_unit
+                width=width, height=height, bag_type=bag_type, gusset_width=gusset_width,
+                flap_length=flap_length, width_unit=width_unit, height_unit=height_unit,
+                gusset_unit=gusset_unit, flap_unit=flap_unit
             )
 
             # Calculate GSM based on material type
@@ -162,14 +228,21 @@ def calculate_pieces_weight(request):
                     bag_type=bag_type,
                     addon_type=data.get('addon_type', 'NONE'),
                     material=material if not bag_type.startswith('LAMINATED') else None,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     input_data=data,
                     result_data=result,
                     user=request.user
                 )
 
+                # Save laminate layer structure (bag_type.startswith('LAMINATED') case,
+                # which used to be discarded here despite BagLayer existing for this)
+                save_material_selection(calculation, data)
+
                 # Save addon components if any
                 if addon_weight_g > 0:
-                    self._save_addon_components(calculation, addon_data)
+                    _save_addon_components(calculation, addon_data)
 
             return JsonResponse({'success': True, 'result': result})
 
@@ -187,6 +260,7 @@ def reverse_calculate_zipper(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = BagMakingCalculator()
 
             total_addon_weight_g = float(data.get('total_addon_weight_g', 0))
@@ -239,6 +313,7 @@ def calculate_packet_weight(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculation_direction = data.get('calculation_direction', 'forward')
             input_method = data.get('input_method', 'direct_weight')
 
@@ -251,15 +326,19 @@ def calculate_packet_weight(request):
                 result = calculate_packet_weight_from_direct_data(data, calculator)
 
             if request.user.is_authenticated:
-                BagMakingCalculation.objects.create(
+                calculation = BagMakingCalculation.objects.create(
                     calculation_type='PACKET_WEIGHT',
-                    bag_type=data.get('bag_type', 'FLAT_SHEET'),
+                    bag_type=data.get('dimensions_bag_type') or data.get('bag_type', 'FLAT_SHEET'),
                     addon_type=data.get('addon_type', 'NONE'),
                     material=None,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     input_data=data,
                     result_data=result,
                     user=request.user
                 )
+                save_material_selection(calculation, data)
 
             return JsonResponse({'success': True, 'result': result})
 
@@ -291,8 +370,9 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
 
     # Calculate area
     area_m2 = calculator.calculate_single_piece_area(
-        width, height, bag_type, gusset_width, flap_length,
-        width_unit, height_unit, gusset_unit, flap_unit
+        width=width, height=height, bag_type=bag_type, gusset_width=gusset_width,
+        flap_length=flap_length, width_unit=width_unit, height_unit=height_unit,
+        gusset_unit=gusset_unit, flap_unit=flap_unit
     )
 
     # Calculate GSM based on material type
@@ -457,6 +537,7 @@ def calculate_bundle_weight(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculation_direction = data.get('calculation_direction', 'forward')
             input_method = data.get('input_method', 'direct_weight')
 
@@ -469,15 +550,19 @@ def calculate_bundle_weight(request):
                 result = calculate_bundle_weight_from_direct_data(data, calculator)
 
             if request.user.is_authenticated:
-                BagMakingCalculation.objects.create(
+                calculation = BagMakingCalculation.objects.create(
                     calculation_type='BUNDLE_WEIGHT',
-                    bag_type=data.get('bag_type', 'FLAT_SHEET'),
+                    bag_type=data.get('dimensions_bag_type') or data.get('bag_type', 'FLAT_SHEET'),
                     addon_type=data.get('addon_type', 'NONE'),
                     material=None,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     input_data=data,
                     result_data=result,
                     user=request.user
                 )
+                save_material_selection(calculation, data)
 
             return JsonResponse({'success': True, 'result': result})
 
@@ -567,8 +652,9 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
 
     # Calculate area
     area_m2 = calculator.calculate_single_piece_area(
-        width, height, bag_type, gusset_width, flap_length,
-        width_unit, height_unit, gusset_unit, flap_unit
+        width=width, height=height, bag_type=bag_type, gusset_width=gusset_width,
+        flap_length=flap_length, width_unit=width_unit, height_unit=height_unit,
+        gusset_unit=gusset_unit, flap_unit=flap_unit
     )
 
     # Calculate GSM based on material type
@@ -683,6 +769,7 @@ def calculate_production_metrics(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
             calculator = BagMakingCalculator()
 
             # Production time calculation
@@ -733,15 +820,19 @@ def calculate_production_metrics(request):
             }
 
             if request.user.is_authenticated:
-                BagMakingCalculation.objects.create(
+                calculation = BagMakingCalculation.objects.create(
                     calculation_type='PRODUCTION_TIME',
                     bag_type=data.get('bag_type', 'FLAT_SHEET'),
                     addon_type='NONE',
                     material=None,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
                     input_data=data,
                     result_data=result,
                     user=request.user
                 )
+                save_material_selection(calculation, data)
 
             return JsonResponse({'success': True, 'result': result})
 

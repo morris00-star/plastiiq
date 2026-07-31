@@ -113,12 +113,12 @@ class BagMakingCalculator:
         elif bag_type in ['GUSSETED_SIDE', 'LAMINATED_GUSSETED_SIDE']:
             # Side gusseted: Total width = Width + Gusset (both sides)
             # Area = (Width + Gusset) * Height
-            area_m2 = (width_m + gusset_m) * height_m
+            area_m2 = (width_m + gusset_m) * height_m * 2
 
         elif bag_type in ['GUSSETED_BOTTOM', 'LAMINATED_GUSSETED_BOTTOM']:
             # Bottom gusseted: Total length = Height + Gusset
             # Area = Width * (Height + Gusset)
-            area_m2 = width_m * (height_m + gusset_m)
+            area_m2 = width_m * (height_m + gusset_m) * 2
 
         else:
             # Flat bags (FLAT_SHEET, LAMINATED_FLAT)

@@ -31,10 +31,14 @@
                     <select class="form-select" name="bag_type" id="bagType" required>
                         <option value="FLAT_SHEET">Flat Sheet Bag</option>
                         <option value="TUBULAR">Tubular Bag</option>
-                        <option value="GUSSETED">Gusseted Bag</option>
+                        <option value="GUSSETED_SIDE">Side Gusseted Bag</option>
+                        <option value="GUSSETED_BOTTOM">Bottom Gusseted Bag</option>
+                        <option value="TUBULAR_WITH_FLAP">Tubular Bag with Flap</option>
                         <option value="LAMINATED_FLAT">Laminated Flat Bag</option>
                         <option value="LAMINATED_TUBULAR">Laminated Tubular Bag</option>
-                        <option value="LAMINATED_GUSSETED">Laminated Gusseted Bag</option>
+                        <option value="LAMINATED_GUSSETED_SIDE">Laminated Side Gusseted Bag</option>
+                        <option value="LAMINATED_GUSSETED_BOTTOM">Laminated Bottom Gusseted Bag</option>
+                        <option value="LAMINATED_TUBULAR_FLAP">Laminated Tubular with Flap</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -83,6 +87,21 @@
                     <div class="input-group">
                         <input type="number" step="0.01" class="form-control" name="gusset_width"  value="0">
                         <select class="form-select" name="gusset_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3" id="piecesFlapSection" style="display: none;">
+                <div class="col-md-4">
+                    <label class="form-label">Flap Length</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="flap_length" value="0">
+                        <select class="form-select" name="flap_unit" style="max-width: 100px;">
                             <option value="cm">cm</option>
                             <option value="mm">mm</option>
                             <option value="m">m</option>
@@ -185,6 +204,9 @@
                     </select>
                 </div>
             </div>
+
+            {% include 'bag_making/_machine_customer_order.html' %}
+
 
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-calculator"></i> Calculate
@@ -294,13 +316,17 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Bag Type</label>
-                        <select class="form-select" name="dimensions_bag_type">
+                        <select class="form-select" name="dimensions_bag_type" id="packetBagType">
                             <option value="FLAT_SHEET">Flat Sheet Bag</option>
                             <option value="TUBULAR">Tubular Bag</option>
-                            <option value="GUSSETED">Gusseted Bag</option>
+                            <option value="GUSSETED_SIDE">Side Gusseted Bag</option>
+                            <option value="GUSSETED_BOTTOM">Bottom Gusseted Bag</option>
+                            <option value="TUBULAR_WITH_FLAP">Tubular Bag with Flap</option>
                             <option value="LAMINATED_FLAT">Laminated Flat Bag</option>
                             <option value="LAMINATED_TUBULAR">Laminated Tubular Bag</option>
-                            <option value="LAMINATED_GUSSETED">Laminated Gusseted Bag</option>
+                            <option value="LAMINATED_GUSSETED_SIDE">Laminated Side Gusseted Bag</option>
+                            <option value="LAMINATED_GUSSETED_BOTTOM">Laminated Bottom Gusseted Bag</option>
+                            <option value="LAMINATED_TUBULAR_FLAP">Laminated Tubular with Flap</option>
                         </select>
                     </div>
                 </div>
@@ -336,6 +362,21 @@
                         <div class="input-group">
                             <input type="number" step="0.01" class="form-control" name="dimensions_gusset_width" value="0" placeholder="e.g., 5">
                             <select class="form-select" name="dimensions_gusset_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3" id="dimensionsFlapSection" style="display: none;">
+                    <div class="col-md-4">
+                        <label class="form-label">Flap Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_flap_length" value="0" placeholder="e.g., 3">
+                            <select class="form-select" name="dimensions_flap_unit" style="max-width: 100px;">
                                 <option value="cm">cm</option>
                                 <option value="mm">mm</option>
                                 <option value="m">m</option>
@@ -441,6 +482,9 @@
                 </div>
             </div>
 
+            {% include 'bag_making/_machine_customer_order.html' %}
+
+
             <button type="submit" class="btn btn-success">
                 <i class="fas fa-calculator"></i> Calculate Packet Weight
             </button>
@@ -527,13 +571,13 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Packets per Bundle</label>
-                            <input type="number" class="form-control" name="packets_per_bundle" placeholder="e.g., 20" min="1">
+                            <input type="number" class="form-control" name="packets_per_bundle_reverse" placeholder="e.g., 20" min="1">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Bundle Packaging Weight</label>
                             <div class="input-group">
-                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight" placeholder="e.g., 2">
-                                <select class="form-select" name="packaging_unit" style="max-width: 100px;">
+                                <input type="number" step="0.001" class="form-control" name="bundle_packaging_weight_reverse" placeholder="e.g., 2">
+                                <select class="form-select" name="packaging_unit_reverse" style="max-width: 100px;">
                                     <option value="kg" selected>kg</option>
                                     <option value="g">g</option>
                                 </select>
@@ -552,10 +596,14 @@
                         <select class="form-select" name="dimensions_bag_type" id="bundleBagType">
                             <option value="FLAT_SHEET">Flat Sheet Bag</option>
                             <option value="TUBULAR">Tubular Bag</option>
-                            <option value="GUSSETED">Gusseted Bag</option>
+                            <option value="GUSSETED_SIDE">Side Gusseted Bag</option>
+                            <option value="GUSSETED_BOTTOM">Bottom Gusseted Bag</option>
+                            <option value="TUBULAR_WITH_FLAP">Tubular Bag with Flap</option>
                             <option value="LAMINATED_FLAT">Laminated Flat Bag</option>
                             <option value="LAMINATED_TUBULAR">Laminated Tubular Bag</option>
-                            <option value="LAMINATED_GUSSETED">Laminated Gusseted Bag</option>
+                            <option value="LAMINATED_GUSSETED_SIDE">Laminated Side Gusseted Bag</option>
+                            <option value="LAMINATED_GUSSETED_BOTTOM">Laminated Bottom Gusseted Bag</option>
+                            <option value="LAMINATED_TUBULAR_FLAP">Laminated Tubular with Flap</option>
                         </select>
                     </div>
                 </div>
@@ -591,6 +639,21 @@
                         <div class="input-group">
                             <input type="number" step="0.01" class="form-control" name="dimensions_gusset_width" value="0">
                             <select class="form-select" name="dimensions_gusset_unit" style="max-width: 100px;">
+                                <option value="cm">cm</option>
+                                <option value="mm">mm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3" id="bundleFlapSection" style="display: none;">
+                    <div class="col-md-4">
+                        <label class="form-label">Flap Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="dimensions_flap_length" value="0">
+                            <select class="form-select" name="dimensions_flap_unit" style="max-width: 100px;">
                                 <option value="cm">cm</option>
                                 <option value="mm">mm</option>
                                 <option value="m">m</option>
@@ -700,6 +763,9 @@
                 </div>
             </div>
 
+            {% include 'bag_making/_machine_customer_order.html' %}
+
+
             <button type="submit" class="btn btn-warning">
                 <i class="fas fa-calculator"></i> Calculate Bundle Weight
             </button>
@@ -777,6 +843,9 @@
                 </div>
             </div>
 
+            {% include 'bag_making/_machine_customer_order.html' %}
+
+
             <button type="submit" class="btn btn-info">
                 <i class="fas fa-calculator"></i> Calculate Production Metrics
             </button>
@@ -811,11 +880,40 @@
 
 {% block scripts %}
 <script>
+let __lastSubmittedForm = null;
+document.addEventListener('submit', function(e) {
+    __lastSubmittedForm = e.target;
+}, true);
+
+(function() {
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+        if (typeof url === 'string' && url.indexOf('/bag-making/calculate-') === 0 &&
+            options && typeof options.body === 'string' && __lastSubmittedForm) {
+            try {
+                const bodyObj = JSON.parse(options.body);
+                const machineField = __lastSubmittedForm.querySelector('select[name="machine_name"]');
+                const customerField = __lastSubmittedForm.querySelector('input[name="customer_name"]');
+                const orderField = __lastSubmittedForm.querySelector('input[name="order_name"]');
+                if (machineField) bodyObj.machine_name = machineField.value;
+                if (customerField) bodyObj.customer_name = customerField.value;
+                if (orderField) bodyObj.order_name = orderField.value;
+                options = Object.assign({}, options, { body: JSON.stringify(bodyObj) });
+            } catch (e) {
+                // Body wasn't JSON - send unmodified.
+            }
+        }
+        return originalFetch.call(this, url, options);
+    };
+})();
+
 // Bag Type Toggle for Pieces ↔ Weight Converter
 document.getElementById('bagType').addEventListener('change', function() {
     const isLaminated = this.value.startsWith('LAMINATED');
+    const hasFlap = this.value.includes('FLAP');
     document.getElementById('singleLayerSection').style.display = isLaminated ? 'none' : 'block';
     document.getElementById('laminatedSection').style.display = isLaminated ? 'block' : 'none';
+    document.getElementById('piecesFlapSection').style.display = hasFlap ? 'block' : 'none';
 
     if (isLaminated) {
         document.getElementById('materialSelect').removeAttribute('required');
@@ -825,17 +923,21 @@ document.getElementById('bagType').addEventListener('change', function() {
 });
 
 // Bag Type Toggle for Packet Calculator Dimensions
-document.querySelector('select[name="dimensions_bag_type"]').addEventListener('change', function() {
+document.getElementById('packetBagType').addEventListener('change', function() {
     const isLaminated = this.value.startsWith('LAMINATED');
+    const hasFlap = this.value.includes('FLAP');
     document.getElementById('dimensionsSingleLayerSection').style.display = isLaminated ? 'none' : 'block';
     document.getElementById('dimensionsLaminatedSection').style.display = isLaminated ? 'block' : 'none';
+    document.getElementById('dimensionsFlapSection').style.display = hasFlap ? 'block' : 'none';
 });
 
 // Bag Type Toggle for Bundle Calculator Dimensions
 document.getElementById('bundleBagType').addEventListener('change', function() {
     const isLaminated = this.value.startsWith('LAMINATED');
+    const hasFlap = this.value.includes('FLAP');
     document.getElementById('bundleDimensionsSingleLayerSection').style.display = isLaminated ? 'none' : 'block';
     document.getElementById('bundleDimensionsLaminatedSection').style.display = isLaminated ? 'block' : 'none';
+    document.getElementById('bundleFlapSection').style.display = hasFlap ? 'block' : 'none';
 });
 
 // Pieces ↔ Weight Direction Toggle
@@ -1145,9 +1247,11 @@ function preparePacketWeightData(data) {
         requestData.dimensions_width = parseFloat(data.dimensions_width) || 0;
         requestData.dimensions_height = parseFloat(data.dimensions_height) || 0;
         requestData.dimensions_gusset_width = parseFloat(data.dimensions_gusset_width) || 0;
+        requestData.dimensions_flap_length = parseFloat(data.dimensions_flap_length) || 0;
         requestData.dimensions_width_unit = data.dimensions_width_unit || 'cm';
         requestData.dimensions_height_unit = data.dimensions_height_unit || 'cm';
         requestData.dimensions_gusset_unit = data.dimensions_gusset_unit || 'cm';
+        requestData.dimensions_flap_unit = data.dimensions_flap_unit || 'cm';
         requestData.dimensions_pieces_per_packet = parseInt(data.dimensions_pieces_per_packet) || 0;
         requestData.dimensions_packet_packaging_weight = parseFloat(data.dimensions_packet_packaging_weight) || 0;
         requestData.dimensions_packaging_unit = data.dimensions_packaging_unit || 'g';
@@ -1359,7 +1463,18 @@ function calculateBundleWeight() {
         });
 
     } else {
-        // Direct weight input mode
+        // Direct weight input mode - forward/reverse each have their own field instance
+        // (avoids stale/empty values bleeding across directions); normalize to the
+        // canonical field names the backend expects before sending.
+        if (data.calculation_direction === 'reverse') {
+            data.packets_per_bundle = data.packets_per_bundle_reverse;
+            data.bundle_packaging_weight = data.bundle_packaging_weight_reverse;
+            data.packaging_unit = data.packaging_unit_reverse;
+        }
+        delete data.packets_per_bundle_reverse;
+        delete data.bundle_packaging_weight_reverse;
+        delete data.packaging_unit_reverse;
+
         fetch('/bag-making/calculate-bundle-weight/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
