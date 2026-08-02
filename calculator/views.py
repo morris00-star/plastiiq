@@ -8,7 +8,7 @@ from .models import PlasticMaterial, DensityCalculation
 from django.views.decorators.csrf import csrf_exempt
 import json
 from .templatetags.history_filters import get_calculation_type_display, get_section_name
-from .views_history import get_display_material, download_csv_history
+from .views_history import get_display_material, download_excel_history, download_word_history, download_pdf_history
 
 
 def home(request):

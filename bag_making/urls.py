@@ -4,6 +4,7 @@ from . import views
 app_name = 'bag_making'
 
 urlpatterns = [
+    path('list-cutout-geometries/', views.list_cutout_geometries, name='list_cutout_geometries'),
     path('', views.bag_making_home, name='bag_making_home'),
     path('calculate-pieces-weight/', views.calculate_pieces_weight, name='calculate_pieces_weight'),
     path('calculate-packet-weight/', views.calculate_packet_weight, name='calculate_packet_weight'),

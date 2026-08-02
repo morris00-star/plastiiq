@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from calculator.models import PlasticMaterial
-from .models import BagMakingCalculation, AddonComponent, BagLayer
+from .models import BagMakingCalculation, AddonComponent, BagLayer, CutoutGeometry
 from .bag_calculator import BagMakingCalculator
 import json
 import logging
@@ -17,6 +17,123 @@ def resolve_common_fields(data):
     customer_name = data.get('customer_name') or ''
     order_name = data.get('order_name') or ''
     return machine_name, customer_name, order_name
+
+
+def resolve_material_with_fallback(data):
+    """
+    Resolve material selection with fallback handling for laminated vs single layer.
+    Returns material object or None.
+    """
+    bag_type = data.get('bag_type', 'FLAT_SHEET')
+
+    if bag_type.startswith('LAMINATED'):
+        # For laminated, try to get first layer material
+        layers_data = data.get('layers', [])
+        if layers_data:
+            material_id = layers_data[0].get('material_id')
+            if material_id:
+                try:
+                    return PlasticMaterial.objects.get(id=material_id)
+                except PlasticMaterial.DoesNotExist:
+                    pass
+        return None
+    else:
+        material_id = data.get('material_id')
+        if material_id:
+            try:
+                return PlasticMaterial.objects.get(id=material_id)
+            except PlasticMaterial.DoesNotExist:
+                pass
+        return None
+
+
+def apply_optional_feature(calculator, feature_type, data, single_piece_weight_g,
+                             thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type):
+    """
+    Apply at most one optional accessory/cut-out feature to a bag's single-piece
+    weight, per the Accessories & Cut-Outs spec. Returns a dict describing the
+    outcome, or {'error': ...} if a business rule is violated.
+    """
+    defaults = BagMakingCalculator.ACCESSORY_DEFAULTS
+
+    if feature_type in ('ZIPPER', 'SPOUT_ASSEMBLY') and not is_ldpe_bag:
+        return {'error': f'{feature_type.replace("_", " ").title()} requires an LDPE bag or an LDPE sealing layer'}
+
+    if feature_type == 'TAPE' and 'FLAP' not in bag_type:
+        return {'error': 'Adhesive Tape requires a bag with a flap'}
+
+    if feature_type == 'ZIPPER':
+        zipper_key = data.get('zipper_type', 'ZIPPER_18MM')
+        if zipper_key not in defaults:
+            return {'error': f'Unknown zipper_type: {zipper_key}'}
+        cz = float(data.get('zipper_cz_override') or defaults[zipper_key]['Cz_g_per_100mm'])
+        feature_weight_g = calculator.calculate_zipper_weight(width_mm, cz)
+        final_weight_g = single_piece_weight_g + feature_weight_g
+        return {
+            'feature_type': feature_type, 'feature_label': defaults[zipper_key]['label'],
+            'coefficient_used': round(cz, 4), 'feature_weight_g': round(feature_weight_g, 4),
+            'operation': 'added', 'final_weight_g': final_weight_g
+        }
+
+    if feature_type == 'TAPE':
+        tape_key = data.get('tape_type', 'TAPE_PERMANENT')
+        if tape_key not in defaults:
+            return {'error': f'Unknown tape_type: {tape_key}'}
+        ct = float(data.get('tape_ct_override') or defaults[tape_key]['Ct_g_per_100mm'])
+        # Calculated from bag width automatically, same as Zipper - no manual length input needed
+        feature_weight_g = calculator.calculate_tape_weight(width_mm, ct)
+        final_weight_g = single_piece_weight_g + feature_weight_g
+        return {
+            'feature_type': feature_type, 'feature_label': defaults[tape_key]['label'],
+            'coefficient_used': round(ct, 4), 'feature_weight_g': round(feature_weight_g, 4),
+            'operation': 'added', 'final_weight_g': final_weight_g
+        }
+
+    if feature_type in ('SPOUT_ASSEMBLY', 'LOOP_HANDLE', 'BREATHER_VENT'):
+        default_weight = defaults[feature_type]['weight_g']
+        feature_weight_g = float(data.get('accessory_weight_override') or default_weight)
+        final_weight_g = single_piece_weight_g + feature_weight_g
+        return {
+            'feature_type': feature_type, 'feature_label': defaults[feature_type]['label'],
+            'default_weight_g': default_weight, 'feature_weight_g': round(feature_weight_g, 4),
+            'operation': 'added', 'final_weight_g': final_weight_g
+        }
+
+    if feature_type == 'CARRY_HANDLE':
+        try:
+            dpunch = CutoutGeometry.objects.get(name=BagMakingCalculator.CARRY_HANDLE_DPUNCH_NAME, is_active=True)
+        except CutoutGeometry.DoesNotExist:
+            return {'error': 'D Punch (30mm x 75mm) geometry not found - required for Carry Handle'}
+        k = dpunch.calculate_k(density_g_cm3=density_g_cm3)
+        dpunch_weight_g = calculator.calculate_cutout_weight(k, thickness_um)
+        handle_weight_g = float(data.get('accessory_weight_override') or defaults['CARRY_HANDLE']['weight_g'])
+        final_weight_g = single_piece_weight_g - dpunch_weight_g + handle_weight_g
+        return {
+            'feature_type': feature_type, 'feature_label': defaults['CARRY_HANDLE']['label'],
+            'dpunch_geometry': dpunch.name, 'dpunch_area_cm2': dpunch.area_cm2, 'dpunch_k': round(k, 6),
+            'dpunch_deduction_g': round(dpunch_weight_g, 4), 'handle_weight_g': round(handle_weight_g, 4),
+            'operation': 'deducted_dpunch_then_added_handle', 'final_weight_g': final_weight_g
+        }
+
+    if feature_type in ('D_PUNCH', 'VEST_BAG'):
+        geometry_id = data.get('cutout_geometry_id')
+        if not geometry_id:
+            return {'error': f'Select a {feature_type.replace("_", " ").title()} geometry'}
+        try:
+            geometry = CutoutGeometry.objects.get(id=geometry_id, is_active=True)
+        except CutoutGeometry.DoesNotExist:
+            return {'error': 'Selected cut-out geometry not found'}
+        k = geometry.calculate_k(density_g_cm3=density_g_cm3)
+        cutout_weight_g = calculator.calculate_cutout_weight(k, thickness_um)
+        final_weight_g = single_piece_weight_g - cutout_weight_g
+        return {
+            'feature_type': feature_type, 'feature_label': geometry.name,
+            'geometry_area_cm2': geometry.area_cm2, 'density_used_g_cm3': round(density_g_cm3, 4),
+            'k': round(k, 6), 'feature_weight_g': round(cutout_weight_g, 4),
+            'operation': 'deducted', 'final_weight_g': final_weight_g
+        }
+
+    return {'error': f'Unknown feature_type: {feature_type}'}
 
 
 def save_material_selection(calculation, data):
@@ -148,12 +265,37 @@ def calculate_pieces_weight(request):
             )
 
             # Calculate GSM based on material type
+            material = None
             if bag_type.startswith('LAMINATED'):
                 # For laminated bags, use composite GSM
                 layers_data = data.get('layers', [])
                 if not layers_data:
                     return JsonResponse({'success': False, 'error': 'No layers provided for laminated bag'})
                 composite_gsm = calculator.calculate_composite_gsm(layers_data)
+
+                # Total thickness across all layers (mirrors calculate_composite_gsm's own
+                # unit-conversion logic) - needed for the optional cut-out/accessory step below.
+                thickness_um = 0.0
+                is_ldpe_bag = False
+                for layer in layers_data:
+                    layer_thickness_um = layer['thickness_microns']
+                    if layer.get('thickness_unit') and layer['thickness_unit'] != 'micron':
+                        layer_thickness_m = calculator.convert_thickness(
+                            layer['thickness_microns'], layer['thickness_unit'], 'm'
+                        )
+                        layer_thickness_um = layer_thickness_m * 1e6
+                    thickness_um += layer_thickness_um
+
+                    layer_material_id = layer.get('material_id')
+                    if layer_material_id:
+                        try:
+                            if PlasticMaterial.objects.get(id=layer_material_id).is_ldpe:
+                                is_ldpe_bag = True
+                        except PlasticMaterial.DoesNotExist:
+                            pass
+
+                # Effective/composite density that reproduces the same total GSM at this thickness
+                density_g_cm3 = (composite_gsm / thickness_um) if thickness_um > 0 else 0.0
             else:
                 # For single layer bags
                 material_id = data.get('material_id')
@@ -167,6 +309,8 @@ def calculate_pieces_weight(request):
                 thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
                 thickness_um = thickness_m * 1e6
                 composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
+                density_g_cm3 = material.density
+                is_ldpe_bag = material.is_ldpe
 
             # Calculate add-on weight
             addon_data = data.get('addons', {})
@@ -179,6 +323,23 @@ def calculate_pieces_weight(request):
             single_piece_weight_g = calculator.calculate_single_piece_weight(
                 area_m2, composite_gsm, addon_weight_g
             )
+
+            # --- Optional accessory / cut-out feature (applied after base weight) ---
+            feature_type = data.get('feature_type', 'NONE')
+            feature_result = None
+            if feature_type and feature_type != 'NONE':
+                length_conversions = {'mm': 1.0, 'cm': 10.0, 'm': 1000.0, 'inch': 25.4}
+                width_mm = width * length_conversions.get(width_unit, 10.0)
+                feature_result = apply_optional_feature(
+                    calculator, feature_type, data, single_piece_weight_g,
+                    thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type
+                )
+                if feature_result.get('error'):
+                    return JsonResponse({'success': False, 'error': feature_result['error']})
+                if 'final_weight_g' not in feature_result:
+                    logger.error(f"apply_optional_feature returned no final_weight_g for feature_type={feature_type}: {feature_result}")
+                    return JsonResponse({'success': False, 'error': f'Internal error applying feature "{feature_type}" - missing final_weight_g in result'})
+                single_piece_weight_g = feature_result['final_weight_g']
 
             result = {}
 
@@ -236,13 +397,15 @@ def calculate_pieces_weight(request):
                     user=request.user
                 )
 
-                # Save laminate layer structure (bag_type.startswith('LAMINATED') case,
-                # which used to be discarded here despite BagLayer existing for this)
+                # Save laminate layer structure
                 save_material_selection(calculation, data)
 
                 # Save addon components if any
                 if addon_weight_g > 0:
                     _save_addon_components(calculation, addon_data)
+
+            if feature_result:
+                result['feature'] = feature_result
 
             return JsonResponse({'success': True, 'result': result})
 
@@ -326,11 +489,13 @@ def calculate_packet_weight(request):
                 result = calculate_packet_weight_from_direct_data(data, calculator)
 
             if request.user.is_authenticated:
+                # Get material for non-laminated
+                material = resolve_material_with_fallback(data)
                 calculation = BagMakingCalculation.objects.create(
                     calculation_type='PACKET_WEIGHT',
                     bag_type=data.get('dimensions_bag_type') or data.get('bag_type', 'FLAT_SHEET'),
                     addon_type=data.get('addon_type', 'NONE'),
-                    material=None,
+                    material=material,
                     machine_name=machine_name,
                     customer_name=customer_name,
                     order_name=order_name,
@@ -379,6 +544,7 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
     if bag_type.startswith('LAMINATED'):
         layers_data = []
         layer_index = 0
+        is_ldpe_bag = False
         while f'dimensions_layer_material_{layer_index}' in data:
             material_id = data.get(f'dimensions_layer_material_{layer_index}')
             thickness = float(data.get(f'dimensions_layer_thickness_{layer_index}', 0))
@@ -392,6 +558,8 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
                         'density_g_cm3': material.density,
                         'thickness_unit': thickness_unit
                     })
+                    if material.is_ldpe:
+                        is_ldpe_bag = True
                 except PlasticMaterial.DoesNotExist:
                     pass
             layer_index += 1
@@ -400,6 +568,19 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
             raise ValueError('No valid layers provided for laminated bag')
 
         composite_gsm = calculator.calculate_composite_gsm(layers_data)
+
+        # Total thickness across all layers - needed for the optional cut-out/accessory step below
+        thickness_um = 0.0
+        for layer in layers_data:
+            layer_thickness_um = layer['thickness_microns']
+            if layer.get('thickness_unit') and layer['thickness_unit'] != 'micron':
+                layer_thickness_m = calculator.convert_thickness(
+                    layer['thickness_microns'], layer['thickness_unit'], 'm'
+                )
+                layer_thickness_um = layer_thickness_m * 1e6
+            thickness_um += layer_thickness_um
+
+        density_g_cm3 = (composite_gsm / thickness_um) if thickness_um > 0 else 0.0
     else:
         material_id = data.get('dimensions_material_id')
         if not material_id:
@@ -412,6 +593,8 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
         thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
         thickness_um = thickness_m * 1e6
         composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
+        density_g_cm3 = material.density
+        is_ldpe_bag = material.is_ldpe
 
     # Calculate add-on weight
     addon_data = data.get('dimensions_addons', {})
@@ -422,6 +605,22 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
 
     # Calculate single piece weight including add-ons
     single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm, addon_weight_g)
+
+    # --- Optional accessory / cut-out feature (applied after base weight) ---
+    feature_type = data.get('feature_type', 'NONE')
+    feature_result = None
+    if feature_type and feature_type != 'NONE':
+        length_conversions = {'mm': 1.0, 'cm': 10.0, 'm': 1000.0, 'inch': 25.4}
+        width_mm = width * length_conversions.get(width_unit, 10.0)
+        feature_result = apply_optional_feature(
+            calculator, feature_type, data, single_piece_weight_g,
+            thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type
+        )
+        if feature_result.get('error'):
+            raise ValueError(feature_result['error'])
+        if 'final_weight_g' not in feature_result:
+            raise ValueError(f'Internal error applying feature "{feature_type}"')
+        single_piece_weight_g = feature_result['final_weight_g']
 
     if calculation_direction == 'forward':
         packet_result = calculator.calculate_packet_weight(
@@ -469,6 +668,9 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
             'packaging_weight_g': reverse_result['packaging_weight_g'],
             'packaging_percentage': reverse_result['packaging_percentage']
         }
+
+    if feature_result:
+        result['feature'] = feature_result
 
     return result
 
@@ -550,11 +752,12 @@ def calculate_bundle_weight(request):
                 result = calculate_bundle_weight_from_direct_data(data, calculator)
 
             if request.user.is_authenticated:
+                material = resolve_material_with_fallback(data)
                 calculation = BagMakingCalculation.objects.create(
                     calculation_type='BUNDLE_WEIGHT',
                     bag_type=data.get('dimensions_bag_type') or data.get('bag_type', 'FLAT_SHEET'),
                     addon_type=data.get('addon_type', 'NONE'),
-                    material=None,
+                    material=material,
                     machine_name=machine_name,
                     customer_name=customer_name,
                     order_name=order_name,
@@ -661,6 +864,7 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
     if bag_type.startswith('LAMINATED'):
         layers_data = []
         layer_index = 0
+        is_ldpe_bag = False
         while f'dimensions_layer_material_{layer_index}' in data:
             material_id = data.get(f'dimensions_layer_material_{layer_index}')
             thickness = float(data.get(f'dimensions_layer_thickness_{layer_index}', 0))
@@ -674,6 +878,8 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
                         'density_g_cm3': material.density,
                         'thickness_unit': thickness_unit
                     })
+                    if material.is_ldpe:
+                        is_ldpe_bag = True
                 except PlasticMaterial.DoesNotExist:
                     pass
             layer_index += 1
@@ -682,6 +888,19 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
             raise ValueError('No valid layers provided for laminated bag')
 
         composite_gsm = calculator.calculate_composite_gsm(layers_data)
+
+        # Total thickness across all layers - needed for the optional cut-out/accessory step below
+        thickness_um = 0.0
+        for layer in layers_data:
+            layer_thickness_um = layer['thickness_microns']
+            if layer.get('thickness_unit') and layer['thickness_unit'] != 'micron':
+                layer_thickness_m = calculator.convert_thickness(
+                    layer['thickness_microns'], layer['thickness_unit'], 'm'
+                )
+                layer_thickness_um = layer_thickness_m * 1e6
+            thickness_um += layer_thickness_um
+
+        density_g_cm3 = (composite_gsm / thickness_um) if thickness_um > 0 else 0.0
     else:
         material_id = data.get('dimensions_material_id')
         if not material_id:
@@ -694,6 +913,8 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
         thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
         thickness_um = thickness_m * 1e6
         composite_gsm = calculator.calculate_gsm_from_thickness(thickness_um, material.density)
+        density_g_cm3 = material.density
+        is_ldpe_bag = material.is_ldpe
 
     # Calculate add-on weight
     addon_data = data.get('dimensions_addons', {})
@@ -704,6 +925,22 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
 
     # Calculate single piece weight including add-ons
     single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm, addon_weight_g)
+
+    # --- Optional accessory / cut-out feature (applied after base weight) ---
+    feature_type = data.get('feature_type', 'NONE')
+    feature_result = None
+    if feature_type and feature_type != 'NONE':
+        length_conversions = {'mm': 1.0, 'cm': 10.0, 'm': 1000.0, 'inch': 25.4}
+        width_mm = width * length_conversions.get(width_unit, 10.0)
+        feature_result = apply_optional_feature(
+            calculator, feature_type, data, single_piece_weight_g,
+            thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type
+        )
+        if feature_result.get('error'):
+            raise ValueError(feature_result['error'])
+        if 'final_weight_g' not in feature_result:
+            raise ValueError(f'Internal error applying feature "{feature_type}"')
+        single_piece_weight_g = feature_result['final_weight_g']
 
     # Calculate packet weight
     packet_weight_kg = (single_piece_weight_g * pieces_per_packet) / 1000
@@ -820,11 +1057,12 @@ def calculate_production_metrics(request):
             }
 
             if request.user.is_authenticated:
+                material = resolve_material_with_fallback(data)
                 calculation = BagMakingCalculation.objects.create(
                     calculation_type='PRODUCTION_TIME',
                     bag_type=data.get('bag_type', 'FLAT_SHEET'),
                     addon_type='NONE',
-                    material=None,
+                    material=material,
                     machine_name=machine_name,
                     customer_name=customer_name,
                     order_name=order_name,
@@ -858,3 +1096,17 @@ def get_production_recommendations(yield_percent, efficiency_percent):
         recommendations.append("High efficiency - Excellent performance")
 
     return recommendations if recommendations else ["Process running within normal parameters"]
+
+
+def list_cutout_geometries(request):
+    """Return active cut-out geometries, grouped by geometry_type, for the feature selector."""
+    geometries = CutoutGeometry.objects.filter(is_active=True).order_by('geometry_type', 'name')
+    data = {}
+    for g in geometries:
+        data.setdefault(g.geometry_type, []).append({
+            'id': g.id,
+            'name': g.name,
+            'area_cm2': g.area_cm2,
+            'calibration_material': g.calibration_material,
+        })
+    return JsonResponse({'success': True, 'geometries': data})

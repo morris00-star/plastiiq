@@ -1,0 +1,53 @@
+<div class="card mb-3">
+    <div class="card-header bg-light">
+        <strong><i class="fas fa-layer-group"></i> Material (optional)</strong>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="material_mode" value="single" checked>
+                <label class="form-check-label">Single Material</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="material_mode" value="laminate">
+                <label class="form-check-label">Laminate (multiple materials)</label>
+            </div>
+        </div>
+        <div class="material-single-field">
+            <select class="form-select" name="material_id">
+                <option value="">Select Material</option>
+                {% for material in materials %}
+                <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm&sup3;)</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="material-laminate-field" style="display:none;">
+            <div class="laminate-material-rows">
+                <div class="row mb-2 laminate-material-row">
+                    <div class="col-12">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm&sup3;)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-2 laminate-material-row">
+                    <div class="col-12">
+                        <select class="form-select" name="layer_material_id[]">
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm&sup3;)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addBagMaterialLaminateRow(this)"><i class="fas fa-plus"></i> Add Material</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeBagMaterialLaminateRow(this)"><i class="fas fa-minus"></i> Remove Material</button>
+            </div>
+        </div>
+    </div>
+</div>

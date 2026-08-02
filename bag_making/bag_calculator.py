@@ -120,6 +120,13 @@ class BagMakingCalculator:
             # Area = Width * (Height + Gusset)
             area_m2 = width_m * (height_m + gusset_m) * 2
 
+        elif bag_type in ['GUSSETED_BOTTOM_FLAP', 'LAMINATED_GUSSETED_BOTTOM_FLAP']:
+            # Bottom gusseted with flap: combines the bottom-gusset extra length with
+            # the flap's half-length addition (same convention as TUBULAR_WITH_FLAP)
+            # Area = Width * (Height + Gusset + Flap/2)
+            effective_height = height_m + gusset_m + (flap_m / 2)
+            area_m2 = width_m * effective_height * 2
+
         else:
             # Flat bags (FLAT_SHEET, LAMINATED_FLAT)
             area_m2 = width_m * height_m
@@ -410,3 +417,53 @@ class BagMakingCalculator:
         if actual_run_time_min == 0:
             return 0.0
         return (total_pieces_produced / actual_run_time_min) * 60
+
+    # ---------------------------------------------------------------------
+    # ACCESSORY & CUT-OUT WEIGHT CALCULATIONS
+    # (see accessories_and_cutouts spec for full derivation and business rules)
+    # ---------------------------------------------------------------------
+
+    # Configurable default coefficients / fixed weights - all override-able per calculation
+    ACCESSORY_DEFAULTS = {
+        'ZIPPER_18MM': {'label': '18mm x 100mm Zipper', 'Cz_g_per_100mm': 0.72},
+        'ZIPPER_14MM': {'label': '14mm x 100mm Zipper', 'Cz_g_per_100mm': 0.50},
+        'TAPE_PERMANENT': {'label': 'Permanent Adhesive Tape (18mm x 100mm)', 'Ct_g_per_100mm': 0.05},
+        'TAPE_TEMPORARY_10MM': {'label': 'Temporary Adhesive Tape (10mm x 100mm)', 'Ct_g_per_100mm': 0.14},
+        'TAPE_TEMPORARY_18MM': {'label': 'Temporary Adhesive Tape (18mm x 100mm)', 'Ct_g_per_100mm': 0.252},
+        'SPOUT_ASSEMBLY': {'label': 'Spout Assembly (Spout + Cap)', 'weight_g': 2.99},
+        'CARRY_HANDLE': {'label': 'Plastic Carry Handle (Injection-Molded)', 'weight_g': 8.03},
+        'LOOP_HANDLE': {'label': 'Plastic Loop Handle (LDPE)', 'weight_g': 1.36},
+        'BREATHER_VENT': {'label': 'Breather / Vent', 'weight_g': 0.59},
+    }
+
+    CARRY_HANDLE_DPUNCH_NAME = 'D Punch (30mm x 75mm)'  # the D Punch always deducted before adding a Carry Handle
+
+    @staticmethod
+    def calculate_cutout_k(area_cm2, density_g_cm3, layers=2):
+        """K (g/um) = (rho x A x L) / 10000"""
+        return (density_g_cm3 * area_cm2 * layers) / 10000
+
+    @staticmethod
+    def calculate_cutout_weight(k_g_per_um, thickness_um):
+        """Cut-Out Weight (g) = K x Film Thickness (um)"""
+        return k_g_per_um * thickness_um
+
+    @staticmethod
+    def back_calculate_area(mass_g, density_g_cm3, layers, thickness_um):
+        """
+        A (cm2) = (Mass x 10000) / (rho x L x Thickness)
+        Used once to derive a new die geometry's stored Area from a physical sample -
+        not used again afterward, since the resulting Area is then persisted.
+        """
+        denom = density_g_cm3 * layers * thickness_um
+        if denom <= 0:
+            return 0.0
+        return (mass_g * 10000) / denom
+
+    def calculate_zipper_weight(self, bag_width_mm, cz_g_per_100mm):
+        """Zipper Weight (g) = (Bag Width mm / 100) x Cz"""
+        return (bag_width_mm / 100) * cz_g_per_100mm
+
+    def calculate_tape_weight(self, tape_length_mm, ct_g_per_100mm):
+        """Tape Weight (g) = (Tape Length mm / 100) x Ct"""
+        return (tape_length_mm / 100) * ct_g_per_100mm

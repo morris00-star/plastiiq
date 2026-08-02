@@ -15,6 +15,11 @@ class PlasticMaterial(models.Model):
     code = models.CharField(max_length=50, unique=True)
     material_type = models.CharField(max_length=20, choices=MATERIAL_TYPES)
     density = models.FloatField(help_text="Density in g/cm³")
+    is_ldpe = models.BooleanField(
+        default=False,
+        help_text="True if this material IS LDPE, or is a laminate whose sealing/inner layer is LDPE - "
+                   "used to gate accessories that require an LDPE sealing surface (zipper, spout assembly)."
+    )
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

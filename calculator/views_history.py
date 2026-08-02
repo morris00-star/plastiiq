@@ -3,9 +3,23 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
 import json
-import csv
+from io import BytesIO
+from xml.sax.saxutils import escape as xml_escape
 from datetime import datetime
 from calculator.models import PlasticMaterial
+
+from docx import Document
+from docx.shared import Pt
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 
 @login_required
@@ -185,6 +199,15 @@ def get_display_material(calculation):
             except (PlasticMaterial.DoesNotExist, ValueError):
                 pass
 
+        # Check for dimensions_material_id - used by bag_making's Packet/Bundle
+        # Weight "Calculate from Dimensions" mode, a different key name than material_id
+        if 'dimensions_material_id' in input_data and input_data['dimensions_material_id']:
+            try:
+                material = PlasticMaterial.objects.get(id=input_data['dimensions_material_id'])
+                return material
+            except (PlasticMaterial.DoesNotExist, ValueError):
+                pass
+
         # Check for material_details in input_data (for laminated calculations)
         if 'material_details' in input_data and input_data['material_details']:
             materials = input_data['material_details']
@@ -261,7 +284,7 @@ def get_display_order(calculation):
             value = calculation.input_data.get(key)
             if value:
                 return value
-    return 
+    return ''
 
 
 def create_laminated_material_object(materials):
@@ -483,66 +506,99 @@ def download_calculation_history(request, format_type):
     except Exception as e:
         print(f"Error loading sales calculations for export: {e}")
 
-    if format_type == 'json':
-        return download_json_history(all_calculations, request.user.username)
-    elif format_type == 'csv':
-        return download_csv_history(all_calculations, request.user.username)
-    elif format_type == 'txt':
-        return download_text_history(all_calculations, request.user.username)
+    # Format dispatcher with Word, Excel, PDF
+    if format_type == 'word':
+        return download_word_history(all_calculations, request.user.username)
+    elif format_type == 'excel':
+        return download_excel_history(all_calculations, request.user.username)
+    elif format_type == 'pdf':
+        return download_pdf_history(all_calculations, request.user.username)
     else:
-        return JsonResponse({'error': 'Invalid format'})
+        return JsonResponse({'error': 'Invalid format. Supported formats: word, excel, pdf'})
 
 
-def download_json_history(calculations, username):
-    """Download history as JSON"""
-    data = {
-        'user': username,
-        'export_date': datetime.now().isoformat(),
-        'total_calculations': len(calculations),
-        'calculations': []
-    }
+def download_word_history(calculations, username):
+    """Download history as a Word document"""
+    doc = Document()
 
-    for calc in calculations:
-        # Use the display_material we set earlier
+    doc.add_heading('Calculation History', level=0)
+    meta = doc.add_paragraph()
+    meta.add_run(f'User: {username}\n').bold = True
+    meta.add_run(f'Exported on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
+    meta.add_run(f'Total Calculations: {len(calculations)}')
+
+    for i, calc in enumerate(calculations, 1):
         material_info = 'N/A'
         if hasattr(calc, 'display_material') and calc.display_material:
             material_info = calc.display_material.name
 
-        calculation_data = {
-            'section': get_section_name(calc),
-            'calculation_type': get_calculation_type_display(calc),
-            'material': material_info,
-            'machine': getattr(calc, 'display_machine', '') or '',
-            'customer': getattr(calc, 'display_customer', '') or '',
-            'order': getattr(calc, 'display_order', '') or '',
-            'timestamp': calc.timestamp.isoformat(),
-            'input_data': calc.input_data,
-            'result_data': calc.result_data,
-        }
-        data['calculations'].append(calculation_data)
+        doc.add_heading(f'{i}. {get_calculation_type_display(calc)}', level=1)
 
-    response = HttpResponse(json.dumps(data, indent=2), content_type='application/json')
+        table = doc.add_table(rows=0, cols=2)
+        table.style = 'Light Grid Accent 1'
+        rows_data = [
+            ('Section', get_section_name(calc)),
+            ('Material', material_info),
+            ('Machine', getattr(calc, 'display_machine', '') or 'N/A'),
+            ('Customer', getattr(calc, 'display_customer', '') or 'N/A'),
+            ('Order/Job', getattr(calc, 'display_order', '') or 'N/A'),
+            ('Timestamp', calc.timestamp.strftime('%Y-%m-%d %H:%M:%S')),
+        ]
+        for label, value in rows_data:
+            row_cells = table.add_row().cells
+            row_cells[0].text = label
+            row_cells[0].paragraphs[0].runs[0].bold = True
+            row_cells[1].text = str(value)
+
+        doc.add_paragraph()
+        p = doc.add_paragraph()
+        p.add_run('Input Parameters:').bold = True
+        for key, value in calc.input_data.items():
+            doc.add_paragraph(f'{key}: {value}', style='List Bullet')
+
+        p = doc.add_paragraph()
+        p.add_run('Results:').bold = True
+        for key, value in calc.result_data.items():
+            doc.add_paragraph(f'{key}: {value}', style='List Bullet')
+
+        doc.add_paragraph('_' * 60)
+
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
     response[
-        'Content-Disposition'] = f'attachment; filename="{username}_calculations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json"'
+        'Content-Disposition'] = f'attachment; filename="{username}_calculations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx"'
     return response
 
 
-def download_csv_history(calculations, username):
-    """Download history as CSV"""
-    response = HttpResponse(content_type='text/csv')
-    response[
-        'Content-Disposition'] = f'attachment; filename="{username}_calculations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+def download_excel_history(calculations, username):
+    """Download history as an Excel workbook"""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Calculation History'
 
-    writer = csv.writer(response)
-    writer.writerow(['Section', 'Calculation Type', 'Material', 'Machine', 'Customer', 'Order/Job', 'Timestamp', 'Input Data', 'Result Data'])
+    headers = ['Section', 'Calculation Type', 'Material', 'Machine', 'Customer', 'Order/Job', 'Timestamp', 'Input Data', 'Result Data']
+    ws.append(headers)
+
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
+    for col_num in range(1, len(headers) + 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center')
 
     for calc in calculations:
-        # Use the display_material we set earlier
         material_info = 'N/A'
         if hasattr(calc, 'display_material') and calc.display_material:
             material_info = calc.display_material.name
 
-        writer.writerow([
+        ws.append([
             get_section_name(calc),
             get_calculation_type_display(calc),
             material_info,
@@ -554,46 +610,83 @@ def download_csv_history(calculations, username):
             json.dumps(calc.result_data)
         ])
 
+    widths = [14, 28, 20, 16, 20, 20, 18, 50, 50]
+    for col_num, width in enumerate(widths, 1):
+        ws.column_dimensions[get_column_letter(col_num)].width = width
+
+    ws.freeze_panes = 'A2'
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response[
+        'Content-Disposition'] = f'attachment; filename="{username}_calculations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
     return response
 
 
-def download_text_history(calculations, username):
-    """Download history as formatted text"""
-    content = f"Calculation History for {username}\n"
-    content += f"Exported on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-    content += f"Total Calculations: {len(calculations)}\n"
-    content += "=" * 80 + "\n\n"
+def download_pdf_history(calculations, username):
+    """Download history as a PDF document"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5 * inch, bottomMargin=0.5 * inch)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph('Calculation History', styles['Title']))
+    elements.append(Paragraph(f'User: {xml_escape(username)}', styles['Normal']))
+    elements.append(Paragraph(f'Exported on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', styles['Normal']))
+    elements.append(Paragraph(f'Total Calculations: {len(calculations)}', styles['Normal']))
+    elements.append(Spacer(1, 0.3 * inch))
+
+    heading_style = ParagraphStyle('CalcHeading', parent=styles['Heading2'], spaceBefore=12, spaceAfter=6)
+    label_style = ParagraphStyle('Label', parent=styles['Normal'], fontName='Helvetica-Bold')
 
     for i, calc in enumerate(calculations, 1):
-        # Use the display_material we set earlier
         material_info = 'N/A'
         if hasattr(calc, 'display_material') and calc.display_material:
             material_info = calc.display_material.name
 
-        content += f"Calculation #{i}\n"
-        content += f"Section: {get_section_name(calc)}\n"
-        content += f"Type: {get_calculation_type_display(calc)}\n"
-        content += f"Material: {material_info}\n"
-        content += f"Machine: {getattr(calc, 'display_machine', '') or 'N/A'}\n"
-        content += f"Customer: {getattr(calc, 'display_customer', '') or 'N/A'}\n"
-        content += f"Order/Job: {getattr(calc, 'display_order', '') or 'N/A'}\n"
-        content += f"Timestamp: {calc.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        content += "Input Data:\n"
+        elements.append(Paragraph(f'{i}. {xml_escape(get_calculation_type_display(calc))}', heading_style))
 
-        # Format input data
+        meta_table_data = [
+            ['Section', get_section_name(calc)],
+            ['Material', material_info],
+            ['Machine', getattr(calc, 'display_machine', '') or 'N/A'],
+            ['Customer', getattr(calc, 'display_customer', '') or 'N/A'],
+            ['Order/Job', getattr(calc, 'display_order', '') or 'N/A'],
+            ['Timestamp', calc.timestamp.strftime('%Y-%m-%d %H:%M:%S')],
+        ]
+        meta_table = Table(meta_table_data, colWidths=[1.5 * inch, 4.5 * inch])
+        meta_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (0, -1), colors.whitesmoke),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        elements.append(meta_table)
+        elements.append(Spacer(1, 0.1 * inch))
+
+        elements.append(Paragraph('Input Parameters:', label_style))
         for key, value in calc.input_data.items():
-            content += f"  {key}: {value}\n"
+            elements.append(Paragraph(f'&bull; {xml_escape(str(key))}: {xml_escape(str(value))}', styles['Normal']))
 
-        content += "Results:\n"
-        # Format result data
+        elements.append(Paragraph('Results:', label_style))
         for key, value in calc.result_data.items():
-            content += f"  {key}: {value}\n"
+            elements.append(Paragraph(f'&bull; {xml_escape(str(key))}: {xml_escape(str(value))}', styles['Normal']))
 
-        content += "-" * 40 + "\n\n"
+        elements.append(Spacer(1, 0.25 * inch))
 
-    response = HttpResponse(content, content_type='text/plain')
+    doc.build(elements)
+    buffer.seek(0)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     response[
-        'Content-Disposition'] = f'attachment; filename="{username}_calculations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt"'
+        'Content-Disposition'] = f'attachment; filename="{username}_calculations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
     return response
 
 

@@ -39,6 +39,8 @@
                         <option value="LAMINATED_GUSSETED_SIDE">Laminated Side Gusseted Bag</option>
                         <option value="LAMINATED_GUSSETED_BOTTOM">Laminated Bottom Gusseted Bag</option>
                         <option value="LAMINATED_TUBULAR_FLAP">Laminated Tubular with Flap</option>
+                            <option value="GUSSETED_BOTTOM_FLAP">Bottom Gusseted Bag with Flap</option>
+                            <option value="LAMINATED_GUSSETED_BOTTOM_FLAP">Laminated Bottom Gusseted with Flap</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -107,6 +109,82 @@
                             <option value="m">m</option>
                             <option value="inch">inch</option>
                         </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optional Accessory / Cut-Out Feature -->
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <strong><i class="fas fa-puzzle-piece"></i> Optional Feature (choose at most one)</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Feature</label>
+                        <select class="form-select" name="feature_type" id="featureType">
+                            <option value="NONE" selected>None</option>
+                            <optgroup label="Accessories (added weight)">
+                                <option value="ZIPPER">Zipper (LDPE bags only)</option>
+                                <option value="TAPE">Adhesive Tape (flap bags only)</option>
+                                <option value="SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</option>
+                                <option value="CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</option>
+                                <option value="LOOP_HANDLE">Loop Handle</option>
+                                <option value="BREATHER_VENT">Breather / Vent</option>
+                            </optgroup>
+                            <optgroup label="Cut-Outs (deducted weight)">
+                                <option value="D_PUNCH">D Punch</option>
+                                <option value="VEST_BAG">Vest Bag</option>
+                            </optgroup>
+                        </select>
+                        <div class="form-text">Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
+                    </div>
+
+                    <div id="featureZipperFields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Zipper Type</label>
+                                <select class="form-select" name="zipper_type">
+                                    <option value="ZIPPER_18MM">18mm x 100mm Zipper (default Cz 0.72 g/100mm)</option>
+                                    <option value="ZIPPER_14MM">14mm x 100mm Zipper (default Cz 0.50 g/100mm)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Cz Override (optional)</label>
+                                <input type="number" step="0.001" class="form-control" name="zipper_cz_override" placeholder="Leave blank to use default">
+                            </div>
+                        </div>
+                        <div class="form-text">Zipper weight is calculated from bag width automatically - no length input needed.</div>
+                    </div>
+
+                    <div id="featureTapeFields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Tape Type</label>
+                                <select class="form-select" name="tape_type">
+                                    <option value="TAPE_PERMANENT">Permanent (18mm, default Ct 0.05 g/100mm)</option>
+                                    <option value="TAPE_TEMPORARY_10MM">Temporary Small (10mm, default Ct 0.14 g/100mm)</option>
+                                    <option value="TAPE_TEMPORARY_18MM">Temporary Large (18mm, default Ct 0.252 g/100mm)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ct Override (optional)</label>
+                                <input type="number" step="0.001" class="form-control" name="tape_ct_override" placeholder="Leave blank to use default">
+                            </div>
+                        </div>
+                        <div class="form-text">Tape weight is calculated from bag width automatically - no length input needed.</div>
+                    </div>
+
+                    <div id="featureFixedWeightFields" style="display: none;">
+                        <label class="form-label" id="featureFixedWeightLabel">Weight Override (optional)</label>
+                        <input type="number" step="0.01" class="form-control" name="accessory_weight_override" placeholder="Leave blank to use default" style="max-width: 300px;">
+                    </div>
+
+                    <div id="featureCutoutFields" style="display: none;">
+                        <label class="form-label">Cut-Out Geometry</label>
+                        <select class="form-select" name="cutout_geometry_id" id="cutoutGeometrySelect" style="max-width: 500px;">
+                            <option value="">Loading geometries...</option>
+                        </select>
+                        <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
                     </div>
                 </div>
             </div>
@@ -308,6 +386,8 @@
                         </div>
                     </div>
                 </div>
+
+                {% include 'bag_making/_material_or_laminate.html' %}
             </div>
 
             <!-- Dimensions Input -->
@@ -327,6 +407,8 @@
                             <option value="LAMINATED_GUSSETED_SIDE">Laminated Side Gusseted Bag</option>
                             <option value="LAMINATED_GUSSETED_BOTTOM">Laminated Bottom Gusseted Bag</option>
                             <option value="LAMINATED_TUBULAR_FLAP">Laminated Tubular with Flap</option>
+                            <option value="GUSSETED_BOTTOM_FLAP">Bottom Gusseted Bag with Flap</option>
+                            <option value="LAMINATED_GUSSETED_BOTTOM_FLAP">Laminated Bottom Gusseted with Flap</option>
                         </select>
                     </div>
                 </div>
@@ -585,6 +667,7 @@
                         </div>
                     </div>
                 </div>
+                {% include 'bag_making/_material_or_laminate.html' %}
             </div>
 
             <!-- Dimensions Input -->
@@ -604,6 +687,8 @@
                             <option value="LAMINATED_GUSSETED_SIDE">Laminated Side Gusseted Bag</option>
                             <option value="LAMINATED_GUSSETED_BOTTOM">Laminated Bottom Gusseted Bag</option>
                             <option value="LAMINATED_TUBULAR_FLAP">Laminated Tubular with Flap</option>
+                            <option value="GUSSETED_BOTTOM_FLAP">Bottom Gusseted Bag with Flap</option>
+                            <option value="LAMINATED_GUSSETED_BOTTOM_FLAP">Laminated Bottom Gusseted with Flap</option>
                         </select>
                     </div>
                 </div>
@@ -843,6 +928,8 @@
                 </div>
             </div>
 
+            {% include 'bag_making/_material_or_laminate.html' %}
+
             {% include 'bag_making/_machine_customer_order.html' %}
 
 
@@ -880,6 +967,39 @@
 
 {% block scripts %}
 <script>
+document.querySelectorAll('input[name="material_mode"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const form = this.closest('form');
+        const singleField = form.querySelector('.material-single-field');
+        const laminateField = form.querySelector('.material-laminate-field');
+        if (!singleField || !laminateField) return;
+        if (this.value === 'laminate') {
+            singleField.style.display = 'none';
+            laminateField.style.display = 'block';
+        } else {
+            singleField.style.display = 'block';
+            laminateField.style.display = 'none';
+        }
+    });
+});
+
+function addBagMaterialLaminateRow(btn) {
+    const container = btn.closest('.material-laminate-field').querySelector('.laminate-material-rows');
+    const optionsHtml = container.querySelector('select[name="layer_material_id[]"]').innerHTML;
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2 laminate-material-row';
+    newRow.innerHTML = `<div class="col-12"><select class="form-select" name="layer_material_id[]">${optionsHtml}</select></div>`;
+    container.appendChild(newRow);
+}
+
+function removeBagMaterialLaminateRow(btn) {
+    const container = btn.closest('.material-laminate-field').querySelector('.laminate-material-rows');
+    const rows = container.querySelectorAll('.laminate-material-row');
+    if (rows.length > 1) {
+        container.removeChild(rows[rows.length - 1]);
+    }
+}
+
 let __lastSubmittedForm = null;
 document.addEventListener('submit', function(e) {
     __lastSubmittedForm = e.target;
@@ -898,6 +1018,23 @@ document.addEventListener('submit', function(e) {
                 if (machineField) bodyObj.machine_name = machineField.value;
                 if (customerField) bodyObj.customer_name = customerField.value;
                 if (orderField) bodyObj.order_name = orderField.value;
+
+                // Tag-only material selector (Direct Weight Input / Production Time) -
+                // only present on forms that include _material_or_laminate.html
+                const materialModeField = __lastSubmittedForm.querySelector('input[name="material_mode"]:checked');
+                if (materialModeField) {
+                    bodyObj.material_mode = materialModeField.value;
+                    if (materialModeField.value === 'laminate') {
+                        bodyObj.layer_material_ids = Array.from(
+                            __lastSubmittedForm.querySelectorAll('select[name="layer_material_id[]"]')
+                        ).map(s => s.value).filter(v => v);
+                    } else {
+                        const materialIdField = __lastSubmittedForm.querySelector('select[name="material_id"]');
+                        if (materialIdField && materialIdField.value) {
+                            bodyObj.material_id = materialIdField.value;
+                        }
+                    }
+                }
                 options = Object.assign({}, options, { body: JSON.stringify(bodyObj) });
             } catch (e) {
                 // Body wasn't JSON - send unmodified.
@@ -906,6 +1043,101 @@ document.addEventListener('submit', function(e) {
         return originalFetch.call(this, url, options);
     };
 })();
+
+// Optional Feature toggle for Pieces ↔ Weight Converter
+let __cutoutGeometries = null;
+
+function loadCutoutGeometries() {
+    if (__cutoutGeometries) return Promise.resolve(__cutoutGeometries);
+    return fetch('/bag-making/list-cutout-geometries/')
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                __cutoutGeometries = result.geometries;
+            }
+            return __cutoutGeometries;
+        });
+}
+
+document.getElementById('featureType').addEventListener('change', function() {
+    const value = this.value;
+    document.getElementById('featureZipperFields').style.display = value === 'ZIPPER' ? 'block' : 'none';
+    document.getElementById('featureTapeFields').style.display = value === 'TAPE' ? 'block' : 'none';
+
+    const fixedWeightTypes = { 'SPOUT_ASSEMBLY': 'Spout Assembly', 'CARRY_HANDLE': 'Carry Handle', 'LOOP_HANDLE': 'Loop Handle', 'BREATHER_VENT': 'Breather/Vent' };
+    if (fixedWeightTypes[value]) {
+        document.getElementById('featureFixedWeightFields').style.display = 'block';
+        document.getElementById('featureFixedWeightLabel').textContent = fixedWeightTypes[value] + ' Weight Override (optional)';
+    } else {
+        document.getElementById('featureFixedWeightFields').style.display = 'none';
+    }
+
+    const cutoutSection = document.getElementById('featureCutoutFields');
+    if (value === 'D_PUNCH' || value === 'VEST_BAG') {
+        cutoutSection.style.display = 'block';
+        const geometryType = value === 'D_PUNCH' ? 'D_PUNCH' : 'VEST_BAG';
+        loadCutoutGeometries().then(geometries => {
+            const select = document.getElementById('cutoutGeometrySelect');
+            select.innerHTML = '';
+            const options = (geometries && geometries[geometryType]) || [];
+            if (options.length === 0) {
+                select.innerHTML = '<option value="">No geometries available</option>';
+                return;
+            }
+            options.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = `${g.name} (A=${g.area_cm2} cm², calibrated on ${g.calibration_material})`;
+                select.appendChild(opt);
+            });
+        });
+    } else {
+        cutoutSection.style.display = 'none';
+    }
+});
+
+function bindFeatureTypeToggle(prefix) {
+    const select = document.getElementById(prefix + 'FeatureType');
+    if (!select) return;
+    select.addEventListener('change', function() {
+        const value = this.value;
+        document.getElementById(prefix + 'FeatureZipperFields').style.display = value === 'ZIPPER' ? 'block' : 'none';
+        document.getElementById(prefix + 'FeatureTapeFields').style.display = value === 'TAPE' ? 'block' : 'none';
+
+        const fixedWeightTypes = { 'SPOUT_ASSEMBLY': 'Spout Assembly', 'CARRY_HANDLE': 'Carry Handle', 'LOOP_HANDLE': 'Loop Handle', 'BREATHER_VENT': 'Breather/Vent' };
+        const fixedFields = document.getElementById(prefix + 'FeatureFixedWeightFields');
+        if (fixedWeightTypes[value]) {
+            fixedFields.style.display = 'block';
+            document.getElementById(prefix + 'FeatureFixedWeightLabel').textContent = fixedWeightTypes[value] + ' Weight Override (optional)';
+        } else {
+            fixedFields.style.display = 'none';
+        }
+
+        const cutoutSection = document.getElementById(prefix + 'FeatureCutoutFields');
+        if (value === 'D_PUNCH' || value === 'VEST_BAG') {
+            cutoutSection.style.display = 'block';
+            loadCutoutGeometries().then(geometries => {
+                const geometrySelect = document.getElementById(prefix + 'CutoutGeometrySelect');
+                geometrySelect.innerHTML = '';
+                const options = (geometries && geometries[value]) || [];
+                if (options.length === 0) {
+                    geometrySelect.innerHTML = '<option value="">No geometries available</option>';
+                    return;
+                }
+                options.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = `${g.name} (A=${g.area_cm2} cm\u00b2, calibrated on ${g.calibration_material})`;
+                    geometrySelect.appendChild(opt);
+                });
+            });
+        } else {
+            cutoutSection.style.display = 'none';
+        }
+    });
+}
+bindFeatureTypeToggle('packet');
+bindFeatureTypeToggle('bundle');
 
 // Bag Type Toggle for Pieces ↔ Weight Converter
 document.getElementById('bagType').addEventListener('change', function() {
@@ -1149,6 +1381,22 @@ document.getElementById('productionMetricsForm').addEventListener('submit', func
 });
 
 // Calculation Functions
+function renderFeatureBreakdown(feature) {
+    if (!feature) return '';
+    let html = '<div class="alert alert-info mt-2"><strong>' + feature.feature_label + '</strong><br>';
+    if (feature.operation === 'added') {
+        html += `Added: ${feature.feature_weight_g} g`;
+        if (feature.coefficient_used !== undefined) html += ` (coefficient used: ${feature.coefficient_used})`;
+    } else if (feature.operation === 'deducted') {
+        html += `Deducted: ${feature.feature_weight_g} g (Area: ${feature.geometry_area_cm2} cm², K: ${feature.k}, density used: ${feature.density_used_g_cm3} g/cm³)`;
+    } else if (feature.operation === 'deducted_dpunch_then_added_handle') {
+        html += `Deducted D Punch (30x75): ${feature.dpunch_deduction_g} g (Area: ${feature.dpunch_area_cm2} cm², K: ${feature.dpunch_k})<br>`;
+        html += `Added Handle: ${feature.handle_weight_g} g`;
+    }
+    html += '</div>';
+    return html;
+}
+
 function calculatePiecesWeight() {
     const formData = new FormData(document.getElementById('piecesWeightForm'));
     const data = Object.fromEntries(formData);

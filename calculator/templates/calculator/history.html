@@ -13,7 +13,7 @@
                         <h2 class="card-title mb-0">
                             <i class="fas fa-history"></i> Calculation History
                         </h2>
-                        <p class="mb-0 mt-2">All calculations across all sections -EAT</p>
+                        <p class="mb-0 mt-2">All calculations across all sections</p>
                     </div>
                     <div class="col-md-4 text-end">
                         <div class="btn-group">
@@ -21,14 +21,14 @@
                                 <i class="fas fa-download"></i> Download History
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'download_history' 'json' %}">
-                                    <i class="fas fa-file-code"></i> JSON Format
+                                <li><a class="dropdown-item" href="{% url 'download_history' 'word' %}">
+                                    <i class="fas fa-file-word"></i> Word Format
                                 </a></li>
-                                <li><a class="dropdown-item" href="{% url 'download_history' 'csv' %}">
-                                    <i class="fas fa-file-csv"></i> CSV Format
+                                <li><a class="dropdown-item" href="{% url 'download_history' 'excel' %}">
+                                    <i class="fas fa-file-excel"></i> Excel Format
                                 </a></li>
-                                <li><a class="dropdown-item" href="{% url 'download_history' 'txt' %}">
-                                    <i class="fas fa-file-alt"></i> Text Format
+                                <li><a class="dropdown-item" href="{% url 'download_history' 'pdf' %}">
+                                    <i class="fas fa-file-pdf"></i> PDF Format
                                 </a></li>
                             </ul>
                         </div>

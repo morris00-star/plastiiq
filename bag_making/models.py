@@ -13,6 +13,46 @@ MACHINE_CHOICES = (
     [(f'BREATHER_VENT_{n:02d}', f'Breather/Vent {n:02d}') for n in range(1, 3)]
 )
 
+class CutoutGeometry(models.Model):
+    """
+    Persisted die-geometry calibration data for cut-outs (D Punch, Vest Bag, etc.).
+    Area is measured once from a physical sample and stored permanently against the
+    die shape - it does NOT change with material or thickness, only if the physical
+    die itself changes. K is derived on the fly from area x current density x layers,
+    never stored, so it always reflects whatever material/thickness a calculation uses.
+
+    Free-text geometry_type (not a fixed choices list) so new die shapes can be added
+    without a migration - just create a new row.
+    """
+    name = models.CharField(max_length=100, help_text='e.g. "D Punch (30mm x 75mm)"')
+    geometry_type = models.CharField(
+        max_length=50,
+        help_text='Free-text category tag, e.g. "D_PUNCH" or "VEST_BAG" - used for grouping/filtering in the UI'
+    )
+    calibration_material = models.CharField(max_length=100, help_text="Material used when this geometry was calibrated")
+    density_g_cm3 = models.FloatField(help_text="Density (rho) used at calibration - editable if confirmed later")
+    layers = models.IntegerField(default=2, help_text="Number of film layers (L) - normally 2")
+    area_cm2 = models.FloatField(help_text="Stored, reusable effective area (A) - back-calculated once, then fixed")
+    calibration_thickness_um = models.FloatField(null=True, blank=True, help_text="Thickness used for the calibration sample, for reference")
+    calibration_mass_g = models.FloatField(null=True, blank=True, help_text="Measured sample mass used for the back-calculation, for reference")
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['geometry_type', 'name']
+
+    def calculate_k(self, density_g_cm3=None, layers=None):
+        """K = (rho x A x L) / 10000, using the stored Area but whatever density/layers are passed in."""
+        rho = density_g_cm3 if density_g_cm3 is not None else self.density_g_cm3
+        l = layers if layers is not None else self.layers
+        return (rho * self.area_cm2 * l) / 10000
+
+    def __str__(self):
+        return f"{self.name} (A={self.area_cm2} cm2)"
+
+
 class BagMakingCalculation(models.Model):
     BAG_TYPES = [
         ('FLAT_SHEET', 'Flat Sheet Bag'),
@@ -25,6 +65,8 @@ class BagMakingCalculation(models.Model):
         ('LAMINATED_GUSSETED_SIDE', 'Laminated Side Gusseted Bag'),
         ('LAMINATED_GUSSETED_BOTTOM', 'Laminated Bottom Gusseted Bag'),
         ('LAMINATED_TUBULAR_FLAP', 'Laminated Tubular with Flap'),
+        ('GUSSETED_BOTTOM_FLAP', 'Bottom Gusseted Bag with Flap'),
+        ('LAMINATED_GUSSETED_BOTTOM_FLAP', 'Laminated Bottom Gusseted with Flap'),
     ]
 
     CALCULATION_TYPES = [
