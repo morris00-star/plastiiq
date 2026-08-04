@@ -735,13 +735,13 @@ def calculate_tensile_strength(request):
 
 def get_tensile_category(strength_mpa):
     if strength_mpa < 10:
-        return "Low Strength (e.g., LDPE)"
+        return "Low Strength"
     elif strength_mpa < 30:
-        return "Medium Strength (e.g., HDPE, PP)"
+        return "Medium Strength"
     elif strength_mpa < 50:
-        return "High Strength (e.g., PET, Nylon)"
+        return "High Strength"
     else:
-        return "Very High Strength (e.g., BOPP, BOPET)"
+        return "Very High Strength"
 
 
 @csrf_exempt

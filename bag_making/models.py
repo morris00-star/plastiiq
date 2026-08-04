@@ -53,6 +53,32 @@ class CutoutGeometry(models.Model):
         return f"{self.name} (A={self.area_cm2} cm2)"
 
 
+class BulkProduct(models.Model):
+    """
+    Extensible bulk-density lookup for the Bag Fill Volume/Capacity calculator.
+    Stores the full min/max range (not just a single number) so the calculator
+    can show the range and let the user pick or override with a custom value.
+    """
+    name = models.CharField(max_length=100)
+    category = models.CharField(
+        max_length=50,
+        help_text='e.g. "Grains & Cereals", "Powders", "Fertilizers & Chemicals", "Other"'
+    )
+    density_min_kg_m3 = models.FloatField()
+    density_max_kg_m3 = models.FloatField()
+    density_typical_kg_m3 = models.FloatField(help_text="Midpoint of min/max - used as the default")
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['category', 'name']
+
+    def __str__(self):
+        return f"{self.name} ({self.density_typical_kg_m3} kg/m3)"
+
+
 class BagMakingCalculation(models.Model):
     BAG_TYPES = [
         ('FLAT_SHEET', 'Flat Sheet Bag'),
@@ -75,6 +101,9 @@ class BagMakingCalculation(models.Model):
         ('BUNDLE_WEIGHT', 'Bundle/Bale Weight'),
         ('PRODUCTION_TIME', 'Production Time'),
         ('YIELD_EFFICIENCY', 'Yield & Efficiency'),
+        ('BAG_CAPACITY', 'Bag Fill Volume/Capacity'),
+        ('ROLL_REQUIREMENT', 'Bags per Roll / Roll Requirement'),
+        ('SEAL_STRENGTH', 'Heat Seal Strength'),
     ]
 
     ADDON_TYPES = [

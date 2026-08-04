@@ -525,6 +525,15 @@
         </h5>
     </div>
     <div class="card-body">
+        <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
         <form id="tensileForm">
             <div class="row">
                 <div class="col-md-4">
@@ -592,6 +601,15 @@
         </h5>
     </div>
     <div class="card-body">
+        <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
         <form id="elongationForm">
             <div class="row">
                 <div class="col-md-6">
@@ -643,6 +661,15 @@
         </h5>
     </div>
     <div class="card-body">
+        <div class="mb-3">
+                <label class="form-label">Material</label>
+                <select class="form-select" name="material_id" required>
+                    <option value="">Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material.id }}">{{ material.name }} ({{ material.density }} g/cm³)</option>
+                    {% endfor %}
+                </select>
+            </div>
         <form id="cofForm">
             <div class="row">
                 <div class="col-md-6">
@@ -886,7 +913,6 @@
 
             {% include 'extrusion/_machine_customer_order.html' %}
 
-
             <button type="submit" class="btn btn-info">
                 <i class="fas fa-calculator"></i> Calculate Weight
             </button>
@@ -1032,7 +1058,6 @@
             </div>
 
             {% include 'extrusion/_machine_customer_order.html' %}
-
 
             <button type="submit" class="btn btn-success">
                 <i class="fas fa-calculator"></i> Calculate Ratios
@@ -1437,7 +1462,6 @@
 
             {% include 'extrusion/_machine_customer_order.html' %}
 
-
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-calculator"></i> Calculate Distribution
             </button>
@@ -1499,7 +1523,6 @@
             </div>
 
             {% include 'extrusion/_machine_customer_order.html' %}
-
 
             <button type="submit" class="btn btn-success">
                 <i class="fas fa-calculator"></i> Calculate

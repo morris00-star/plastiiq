@@ -468,6 +468,82 @@
                     </div>
                 </div>
 
+                <!-- Optional Accessory / Cut-Out Feature -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong><i class="fas fa-puzzle-piece"></i> Optional Feature (choose at most one)</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Feature</label>
+                            <select class="form-select" name="feature_type" id="packetFeatureType">
+                                <option value="NONE" selected>None</option>
+                                <optgroup label="Accessories (added weight)">
+                                    <option value="ZIPPER">Zipper (LDPE bags only)</option>
+                                    <option value="TAPE">Adhesive Tape (flap bags only)</option>
+                                    <option value="SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</option>
+                                    <option value="CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</option>
+                                    <option value="LOOP_HANDLE">Loop Handle</option>
+                                    <option value="BREATHER_VENT">Breather / Vent</option>
+                                </optgroup>
+                                <optgroup label="Cut-Outs (deducted weight)">
+                                    <option value="D_PUNCH">D Punch</option>
+                                    <option value="VEST_BAG">Vest Bag</option>
+                                </optgroup>
+                            </select>
+                            <div class="form-text">Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
+                        </div>
+
+                        <div id="packetFeatureZipperFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Zipper Type</label>
+                                    <select class="form-select" name="zipper_type">
+                                        <option value="ZIPPER_18MM">18mm x 100mm Zipper (default Cz 0.72 g/100mm)</option>
+                                        <option value="ZIPPER_14MM">14mm x 100mm Zipper (default Cz 0.50 g/100mm)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cz Override (optional)</label>
+                                    <input type="number" step="0.001" class="form-control" name="zipper_cz_override" placeholder="Leave blank to use default">
+                                </div>
+                            </div>
+                            <div class="form-text">Zipper weight is calculated from bag width automatically - no length input needed.</div>
+                        </div>
+
+                        <div id="packetFeatureTapeFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tape Type</label>
+                                    <select class="form-select" name="tape_type">
+                                        <option value="TAPE_PERMANENT">Permanent (18mm, default Ct 0.05 g/100mm)</option>
+                                        <option value="TAPE_TEMPORARY_10MM">Temporary Small (10mm, default Ct 0.14 g/100mm)</option>
+                                        <option value="TAPE_TEMPORARY_18MM">Temporary Large (18mm, default Ct 0.252 g/100mm)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ct Override (optional)</label>
+                                    <input type="number" step="0.001" class="form-control" name="tape_ct_override" placeholder="Leave blank to use default">
+                                </div>
+                            </div>
+                            <div class="form-text">Tape weight is calculated from bag width automatically - no length input needed.</div>
+                        </div>
+
+                        <div id="packetFeatureFixedWeightFields" style="display: none;">
+                            <label class="form-label" id="packetFeatureFixedWeightLabel">Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+
+                        <div id="packetFeatureCutoutFields" style="display: none;">
+                            <label class="form-label">Cut-Out Geometry</label>
+                            <select class="form-select" name="cutout_geometry_id" id="packetCutoutGeometrySelect" style="max-width: 500px;">
+                                <option value="">Loading geometries...</option>
+                            </select>
+                            <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Material Section for Dimensions -->
                 <div id="dimensionsSingleLayerSection">
                     <div class="row mb-3">
@@ -748,6 +824,82 @@
                     </div>
                 </div>
 
+                <!-- Optional Accessory / Cut-Out Feature -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong><i class="fas fa-puzzle-piece"></i> Optional Feature (choose at most one)</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Feature</label>
+                            <select class="form-select" name="feature_type" id="bundleFeatureType">
+                                <option value="NONE" selected>None</option>
+                                <optgroup label="Accessories (added weight)">
+                                    <option value="ZIPPER">Zipper (LDPE bags only)</option>
+                                    <option value="TAPE">Adhesive Tape (flap bags only)</option>
+                                    <option value="SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</option>
+                                    <option value="CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</option>
+                                    <option value="LOOP_HANDLE">Loop Handle</option>
+                                    <option value="BREATHER_VENT">Breather / Vent</option>
+                                </optgroup>
+                                <optgroup label="Cut-Outs (deducted weight)">
+                                    <option value="D_PUNCH">D Punch</option>
+                                    <option value="VEST_BAG">Vest Bag</option>
+                                </optgroup>
+                            </select>
+                            <div class="form-text">Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
+                        </div>
+
+                        <div id="bundleFeatureZipperFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Zipper Type</label>
+                                    <select class="form-select" name="zipper_type">
+                                        <option value="ZIPPER_18MM">18mm x 100mm Zipper (default Cz 0.72 g/100mm)</option>
+                                        <option value="ZIPPER_14MM">14mm x 100mm Zipper (default Cz 0.50 g/100mm)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cz Override (optional)</label>
+                                    <input type="number" step="0.001" class="form-control" name="zipper_cz_override" placeholder="Leave blank to use default">
+                                </div>
+                            </div>
+                            <div class="form-text">Zipper weight is calculated from bag width automatically - no length input needed.</div>
+                        </div>
+
+                        <div id="bundleFeatureTapeFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tape Type</label>
+                                    <select class="form-select" name="tape_type">
+                                        <option value="TAPE_PERMANENT">Permanent (18mm, default Ct 0.05 g/100mm)</option>
+                                        <option value="TAPE_TEMPORARY_10MM">Temporary Small (10mm, default Ct 0.14 g/100mm)</option>
+                                        <option value="TAPE_TEMPORARY_18MM">Temporary Large (18mm, default Ct 0.252 g/100mm)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ct Override (optional)</label>
+                                    <input type="number" step="0.001" class="form-control" name="tape_ct_override" placeholder="Leave blank to use default">
+                                </div>
+                            </div>
+                            <div class="form-text">Tape weight is calculated from bag width automatically - no length input needed.</div>
+                        </div>
+
+                        <div id="bundleFeatureFixedWeightFields" style="display: none;">
+                            <label class="form-label" id="bundleFeatureFixedWeightLabel">Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+
+                        <div id="bundleFeatureCutoutFields" style="display: none;">
+                            <label class="form-label">Cut-Out Geometry</label>
+                            <select class="form-select" name="cutout_geometry_id" id="bundleCutoutGeometrySelect" style="max-width: 500px;">
+                                <option value="">Loading geometries...</option>
+                            </select>
+                            <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Material Section for Dimensions -->
                 <div id="bundleDimensionsSingleLayerSection">
                     <div class="row mb-3">
@@ -942,6 +1094,254 @@
     </div>
 </div>
 
+<!-- Bag Fill Volume/Capacity Calculator -->
+<div class="card shadow mb-4" id="bag_capacity">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-fill-drip"></i> Bag Fill Volume/Capacity Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="bagCapacityForm">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Bag Shape</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="bag_shape" value="GUSSETED" checked>
+                    <label class="form-check-label">Gusseted (box approximation)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="bag_shape" value="FLAT">
+                    <label class="form-check-label">Flat / Tubular (elliptical fill)</label>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Width</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="width" required placeholder="e.g., 30">
+                        <select class="form-select" name="width_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Height</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="height" required placeholder="e.g., 50">
+                        <select class="form-select" name="height_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4" id="capacityGussetField">
+                    <label class="form-label">Gusset Depth</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="gusset" placeholder="e.g., 15">
+                        <select class="form-select" name="gusset_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Product (optional)</label>
+                <select class="form-select" name="product_id" id="bulkProductSelect">
+                    <option value="">Loading products...</option>
+                </select>
+                <div class="form-text" id="bulkProductNotes"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Custom Density Override (kg/m&sup3;, optional)</label>
+                <input type="number" step="1" class="form-control" name="custom_density_kg_m3" placeholder="Leave blank to use selected product" style="max-width: 300px;">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Target Fill Weight (kg, optional - reverse calc)</label>
+                <input type="number" step="0.01" class="form-control" name="target_weight_kg" placeholder="e.g., 5" style="max-width: 300px;">
+            </div>
+            {% include 'bag_making/_material_or_laminate.html' %}
+
+            {% include 'bag_making/_machine_customer_order.html' %}
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate Capacity</button>
+        </form>
+        <div id="bagCapacityResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Bags per Roll / Roll Requirement Calculator -->
+<div class="card shadow mb-4" id="roll_requirement">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-scroll"></i> Bags per Roll / Roll Requirement Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="rollRequirementForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Bag Height</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="height" required placeholder="e.g., 40">
+                        <select class="form-select" name="height_unit" style="max-width: 100px;">
+                            <option value="cm">cm</option>
+                            <option value="mm">mm</option>
+                            <option value="m">m</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Seal/Trim Allowance</label>
+                    <div class="input-group">
+                        <input type="number" step="0.1" class="form-control" name="seal_allowance" value="3">
+                        <select class="form-select" name="seal_allowance_unit" style="max-width: 100px;">
+                            <option value="mm" selected>mm</option>
+                            <option value="cm">cm</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Roll Length</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="roll_length_source" value="direct" checked>
+                    <label class="form-check-label">Enter Directly</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="roll_length_source" value="derived">
+                    <label class="form-check-label">Derive from Diameter</label>
+                </div>
+            </div>
+
+            <div id="rollLengthDirectFields">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Roll Length</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="roll_length" placeholder="e.g., 3000">
+                            <select class="form-select" name="roll_length_unit" style="max-width: 100px;">
+                                <option value="m">m</option>
+                                <option value="ft">ft</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="rollLengthDerivedFields" style="display: none;">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Outer Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="outer_diameter" placeholder="e.g., 400">
+                            <select class="form-select" name="outer_diameter_unit" style="max-width: 100px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Core Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="core_diameter" placeholder="e.g., 76">
+                            <select class="form-select" name="core_diameter_unit" style="max-width: 100px;">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Film Thickness</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="roll_thickness" placeholder="e.g., 50">
+                            <select class="form-select" name="roll_thickness_unit" style="max-width: 100px;">
+                                <option value="micron">Microns</option>
+                                <option value="mm">mm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Total Bags Needed (optional)</label>
+                <input type="number" class="form-control" name="total_bags_needed" placeholder="e.g., 50000" style="max-width: 300px;">
+            </div>
+
+            {% include 'bag_making/_material_or_laminate.html' %}
+
+            {% include 'bag_making/_machine_customer_order.html' %}
+
+            <button type="submit" class="btn btn-success"><i class="fas fa-calculator"></i> Calculate</button>
+        </form>
+        <div id="rollRequirementResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Heat Seal Strength Calculator -->
+<div class="card shadow mb-4" id="seal_strength">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="fas fa-thermometer-three-quarters"></i> Heat Seal Strength Calculator</h5>
+    </div>
+    <div class="card-body">
+        <form id="sealStrengthForm">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Seal Force</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="seal_force" required placeholder="e.g., 12.5">
+                        <select class="form-select" name="seal_force_unit" style="max-width: 100px;">
+                            <option value="N">N</option>
+                            <option value="kN">kN</option>
+                            <option value="lbf">lbf</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Sample Width</label>
+                    <div class="input-group">
+                        <input type="number" step="0.1" class="form-control" name="sample_width" value="15">
+                        <select class="form-select" name="sample_width_unit" style="max-width: 100px;">
+                            <option value="mm" selected>mm</option>
+                            <option value="cm">cm</option>
+                            <option value="inch">inch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Seal Location</label>
+                    <select class="form-select" name="seal_location">
+                        <option value="TOP">Top Seal</option>
+                        <option value="BOTTOM">Bottom Seal</option>
+                        <option value="SIDE">Side Seal</option>
+                        <option value="ZIPPER">Zipper Seal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Minimum Threshold (N/15mm, optional)</label>
+                <input type="number" step="0.1" class="form-control" name="min_threshold" placeholder="e.g., 15" style="max-width: 300px;">
+            </div>
+
+            {% include 'bag_making/_material_or_laminate.html' %}
+
+            {% include 'bag_making/_machine_customer_order.html' %}
+
+            <button type="submit" class="btn btn-danger"><i class="fas fa-calculator"></i> Calculate Seal Strength</button>
+        </form>
+        <div id="sealStrengthResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
 <!-- Information Section -->
 <div class="alert alert-info mt-4">
     <h6><i class="fas fa-info-circle"></i> Bag Making Calculator Features:</h6>
@@ -1127,7 +1527,7 @@ function bindFeatureTypeToggle(prefix) {
                 options.forEach(g => {
                     const opt = document.createElement('option');
                     opt.value = g.id;
-                    opt.textContent = `${g.name} (A=${g.area_cm2} cm\u00b2, calibrated on ${g.calibration_material})`;
+                    opt.textContent = `${g.name} `;
                     geometrySelect.appendChild(opt);
                 });
             });
@@ -1138,6 +1538,170 @@ function bindFeatureTypeToggle(prefix) {
 }
 bindFeatureTypeToggle('packet');
 bindFeatureTypeToggle('bundle');
+
+// Bag Capacity: shape toggle
+document.querySelectorAll('input[name="bag_shape"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('capacityGussetField').style.display = this.value === 'GUSSETED' ? 'block' : 'none';
+    });
+});
+
+// Bag Capacity: load bulk products
+let __bulkProducts = null;
+function loadBulkProducts() {
+    if (__bulkProducts) return Promise.resolve(__bulkProducts);
+    return fetch('/bag-making/list-bulk-products/')
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                __bulkProducts = result.products;
+                const select = document.getElementById('bulkProductSelect');
+                select.innerHTML = '<option value="">Custom / No Product Selected</option>';
+                Object.keys(result.products).forEach(category => {
+                    const group = document.createElement('optgroup');
+                    group.label = category;
+                    result.products[category].forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.name} (${p.density_typical_kg_m3} kg/m\u00b3, range ${p.density_min_kg_m3}-${p.density_max_kg_m3})`;
+                        opt.dataset.notes = p.notes || '';
+                        group.appendChild(opt);
+                    });
+                    select.appendChild(group);
+                });
+            }
+            return __bulkProducts;
+        });
+}
+loadBulkProducts();
+
+document.getElementById('bulkProductSelect').addEventListener('change', function() {
+    const notesDiv = document.getElementById('bulkProductNotes');
+    const selectedOption = this.options[this.selectedIndex];
+    notesDiv.textContent = selectedOption ? (selectedOption.dataset.notes || '') : '';
+});
+
+// Roll Requirement: length source toggle
+document.querySelectorAll('input[name="roll_length_source"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('rollLengthDirectFields').style.display = this.value === 'direct' ? 'block' : 'none';
+        document.getElementById('rollLengthDerivedFields').style.display = this.value === 'derived' ? 'block' : 'none';
+    });
+});
+
+// Form submissions
+document.getElementById('bagCapacityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/bag-making/calculate-bag-capacity/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => displayBagCapacityResult(result))
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Calculation failed: ' + error);
+    });
+});
+
+document.getElementById('rollRequirementForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/bag-making/calculate-roll-requirement/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => displayRollRequirementResult(result))
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Calculation failed: ' + error);
+    });
+});
+
+document.getElementById('sealStrengthForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/bag-making/calculate-seal-strength/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => displaySealStrengthResult(result))
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Calculation failed: ' + error);
+    });
+});
+
+// Result display functions
+function displayBagCapacityResult(result) {
+    const resultDiv = document.getElementById('bagCapacityResult');
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success"><h6><i class="fas fa-check-circle"></i> Bag Capacity Results:</h6>';
+        html += `<p><strong>Volume:</strong> ${res.volume_cm3} cm\u00b3 (${res.volume_liters} L)</p>`;
+        if (res.product_name) {
+            html += `<p><strong>Product:</strong> ${res.product_name} at ${res.density_kg_m3} kg/m\u00b3</p>`;
+            html += `<p><strong>Estimated Fill Weight:</strong> ${res.estimated_fill_weight_kg} kg</p>`;
+        }
+        if (res.required_volume_liters !== undefined) {
+            html += `<hr><p><strong>For Target Weight ${res.target_weight_kg} kg:</strong></p>`;
+            html += `<p><strong>Required Volume:</strong> ${res.required_volume_liters} L (${res.required_volume_cm3} cm\u00b3)</p>`;
+        }
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayRollRequirementResult(result) {
+    const resultDiv = document.getElementById('rollRequirementResult');
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success"><h6><i class="fas fa-check-circle"></i> Roll Requirement Results:</h6>';
+        html += `<p><strong>Bag Repeat Length:</strong> ${res.bag_repeat_length_m} m</p>`;
+        html += `<p><strong>Roll Length:</strong> ${res.roll_length_m} m</p>`;
+        html += `<p><strong>Bags per Roll:</strong> ${res.bags_per_roll}</p>`;
+        if (res.rolls_required !== undefined) {
+            html += `<hr><p><strong>Total Bags Needed:</strong> ${res.total_bags_needed}</p>`;
+            html += `<p><strong>Rolls Required:</strong> ${res.rolls_required}</p>`;
+            html += `<p><strong>Total Film Length Required:</strong> ${res.total_film_length_required_m} m</p>`;
+        }
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displaySealStrengthResult(result) {
+    const resultDiv = document.getElementById('sealStrengthResult');
+    if (result.success) {
+        const res = result.result;
+        let html = '<div class="alert alert-success"><h6><i class="fas fa-check-circle"></i> Seal Strength Results:</h6>';
+        html += `<p><strong>Seal Strength:</strong> ${res.seal_strength_n_per_15mm} N/15mm</p>`;
+        html += `<p><strong>Seal Location:</strong> ${res.seal_location}</p>`;
+        html += `<p><strong>Rating:</strong> ${res.rating}</p>`;
+        if (res.pass_fail) {
+            const cls = res.pass_fail === 'PASS' ? 'text-success' : 'text-danger';
+            html += `<p><strong>Result:</strong> <span class="fw-bold ${cls}">${res.pass_fail}</span> (threshold: ${res.min_threshold} N/15mm)</p>`;
+        }
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+    }
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
 
 // Bag Type Toggle for Pieces ↔ Weight Converter
 document.getElementById('bagType').addEventListener('change', function() {
@@ -1504,6 +2068,17 @@ function preparePacketWeightData(data) {
         requestData.dimensions_packet_packaging_weight = parseFloat(data.dimensions_packet_packaging_weight) || 0;
         requestData.dimensions_packaging_unit = data.dimensions_packaging_unit || 'g';
 
+        // Optional accessory / cut-out feature
+        requestData.feature_type = data.feature_type || 'NONE';
+        if (requestData.feature_type !== 'NONE') {
+            requestData.zipper_type = data.zipper_type;
+            requestData.zipper_cz_override = data.zipper_cz_override;
+            requestData.tape_type = data.tape_type;
+            requestData.tape_ct_override = data.tape_ct_override;
+            requestData.accessory_weight_override = data.accessory_weight_override;
+            requestData.cutout_geometry_id = data.cutout_geometry_id;
+        }
+
         // Validate required dimensions fields
         if (!requestData.dimensions_width || !requestData.dimensions_height) {
             alert('Please enter valid width and height for dimensions calculation');
@@ -1597,12 +2172,23 @@ function calculateBundleWeight() {
             width: parseFloat(data.dimensions_width) || 0,
             height: parseFloat(data.dimensions_height) || 0,
             gusset_width: parseFloat(data.dimensions_gusset_width) || 0,
+            flap_length: parseFloat(data.dimensions_flap_length) || 0,
             width_unit: data.dimensions_width_unit,
             height_unit: data.dimensions_height_unit,
             gusset_unit: data.dimensions_gusset_unit,
+            flap_unit: data.dimensions_flap_unit,
             calculation_direction: 'pieces_to_weight',
-            num_pieces: 1
+            num_pieces: 1,
+            feature_type: data.feature_type || 'NONE'
         };
+        if (dimensionsData.feature_type !== 'NONE') {
+            dimensionsData.zipper_type = data.zipper_type;
+            dimensionsData.zipper_cz_override = data.zipper_cz_override;
+            dimensionsData.tape_type = data.tape_type;
+            dimensionsData.tape_ct_override = data.tape_ct_override;
+            dimensionsData.accessory_weight_override = data.accessory_weight_override;
+            dimensionsData.cutout_geometry_id = data.cutout_geometry_id;
+        }
 
         // Add material data based on bag type
         if (data.dimensions_bag_type.startsWith('LAMINATED')) {

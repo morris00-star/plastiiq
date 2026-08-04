@@ -432,7 +432,7 @@ class BagMakingCalculator:
         'TAPE_TEMPORARY_18MM': {'label': 'Temporary Adhesive Tape (18mm x 100mm)', 'Ct_g_per_100mm': 0.252},
         'SPOUT_ASSEMBLY': {'label': 'Spout Assembly (Spout + Cap)', 'weight_g': 2.99},
         'CARRY_HANDLE': {'label': 'Plastic Carry Handle (Injection-Molded)', 'weight_g': 8.03},
-        'LOOP_HANDLE': {'label': 'Plastic Loop Handle (LDPE)', 'weight_g': 1.36},
+        'LOOP_HANDLE': {'label': 'Plastic Loop Handle (LDPE)', 'weight_g': 1.26},
         'BREATHER_VENT': {'label': 'Breather / Vent', 'weight_g': 0.59},
     }
 
@@ -467,3 +467,77 @@ class BagMakingCalculator:
     def calculate_tape_weight(self, tape_length_mm, ct_g_per_100mm):
         """Tape Weight (g) = (Tape Length mm / 100) x Ct"""
         return (tape_length_mm / 100) * ct_g_per_100mm
+
+    # ---------------------------------------------------------------------
+    # BAG FILL VOLUME / CAPACITY
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_gusseted_bag_volume_cm3(width_cm, gusset_cm, height_cm):
+        """Box approximation: Volume (cm3) = Width x Gusset x Height"""
+        return width_cm * gusset_cm * height_cm
+
+    @staticmethod
+    def calculate_flat_bag_volume_cm3(width_cm, height_cm):
+        """Elliptical cross-section approximation: Volume (cm3) = (Width^2 x Height) / pi"""
+        return (width_cm ** 2 * height_cm) / math.pi
+
+    @staticmethod
+    def calculate_fill_weight_from_volume(volume_liters, bulk_density_kg_m3):
+        """Fill Weight (kg) = Volume (L) x Density (kg/L); Density kg/L = Density kg/m3 / 1000"""
+        density_kg_l = bulk_density_kg_m3 / 1000
+        return volume_liters * density_kg_l
+
+    @staticmethod
+    def calculate_volume_needed_for_weight(target_weight_kg, bulk_density_kg_m3):
+        """Reverse: Volume (L) = Target Weight (kg) / Density (kg/L)"""
+        density_kg_l = bulk_density_kg_m3 / 1000
+        if density_kg_l <= 0:
+            return 0.0
+        return target_weight_kg / density_kg_l
+
+    # ---------------------------------------------------------------------
+    # BAGS PER ROLL / ROLL REQUIREMENT
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_bag_repeat_length(height_m, seal_allowance_m=0.003):
+        """Bag Repeat Length (m) = Height + Seal/Trim Allowance"""
+        return height_m + seal_allowance_m
+
+    @staticmethod
+    def calculate_bags_per_roll(roll_length_m, bag_repeat_length_m):
+        """Bags per Roll = floor(Roll Length / Bag Repeat Length)"""
+        if bag_repeat_length_m <= 0:
+            return 0
+        return math.floor(roll_length_m / bag_repeat_length_m)
+
+    @staticmethod
+    def calculate_rolls_required(total_bags_needed, bags_per_roll):
+        """Rolls Required = ceil(Total Bags Needed / Bags per Roll)"""
+        if bags_per_roll <= 0:
+            return 0
+        return math.ceil(total_bags_needed / bags_per_roll)
+
+    @staticmethod
+    def calculate_total_film_length_required(total_bags_needed, bag_repeat_length_m):
+        """Total Film Length Required (m) = Total Bags Needed x Bag Repeat Length"""
+        return total_bags_needed * bag_repeat_length_m
+
+    @staticmethod
+    def calculate_roll_length_from_diameter(outer_radius_m, core_radius_m, thickness_m):
+        """Roll Length (m) = pi x (Outer Radius^2 - Core Radius^2) / Thickness - same convention as Extrusion/Slitting"""
+        if thickness_m <= 0:
+            return 0.0
+        return math.pi * (outer_radius_m ** 2 - core_radius_m ** 2) / thickness_m
+
+    # ---------------------------------------------------------------------
+    # HEAT SEAL STRENGTH
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_seal_strength(seal_force_n, sample_width_mm, standard_width_mm=15.0):
+        """Seal Strength (N/15mm) = Seal Force (N) / (Sample Width mm / 15) - same convention as Lamination's Peel Strength"""
+        if sample_width_mm <= 0:
+            return 0.0
+        return seal_force_n / (sample_width_mm / standard_width_mm)

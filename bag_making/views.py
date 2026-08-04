@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from calculator.models import PlasticMaterial
-from .models import BagMakingCalculation, AddonComponent, BagLayer, CutoutGeometry
+from .models import BagMakingCalculation, AddonComponent, BagLayer, CutoutGeometry, BulkProduct
 from .bag_calculator import BagMakingCalculator
 import json
 import logging
@@ -200,6 +200,9 @@ def bag_making_home(request):
         {'id': 'packet_weight', 'name': 'Packet Weight Calculator', 'icon': 'fas fa-box'},
         {'id': 'bundle_weight', 'name': 'Bundle/Bale Weight Calculator', 'icon': 'fas fa-pallet'},
         {'id': 'production_time', 'name': 'Production Time & Efficiency', 'icon': 'fas fa-clock'},
+        {'id': 'bag_capacity', 'name': 'Bag Fill Volume/Capacity', 'icon': 'fas fa-fill-drip'},
+        {'id': 'roll_requirement', 'name': 'Bags per Roll / Roll Requirement', 'icon': 'fas fa-scroll'},
+        {'id': 'seal_strength', 'name': 'Heat Seal Strength', 'icon': 'fas fa-thermometer-three-quarters'},
     ]
 
     # Updated bag types with flap option and gusset types
@@ -1110,3 +1113,285 @@ def list_cutout_geometries(request):
             'calibration_material': g.calibration_material,
         })
     return JsonResponse({'success': True, 'geometries': data})
+
+
+def list_bulk_products(request):
+    """Return active bulk products, grouped by category, for the Bag Capacity calculator."""
+    products = BulkProduct.objects.filter(is_active=True).order_by('category', 'name')
+    data = {}
+    for p in products:
+        data.setdefault(p.category, []).append({
+            'id': p.id,
+            'name': p.name,
+            'density_min_kg_m3': p.density_min_kg_m3,
+            'density_max_kg_m3': p.density_max_kg_m3,
+            'density_typical_kg_m3': p.density_typical_kg_m3,
+            'notes': p.notes,
+        })
+    return JsonResponse({'success': True, 'products': data})
+
+
+@csrf_exempt
+def calculate_bag_capacity(request):
+    """Bag fill volume/capacity calculator - bidirectional (volume<->fill weight)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
+            calculator = BagMakingCalculator()
+
+            bag_shape = data.get('bag_shape', 'GUSSETED')  # 'GUSSETED' or 'FLAT'
+            width = float(data.get('width', 0))
+            width_unit = data.get('width_unit', 'cm')
+            height = float(data.get('height', 0))
+            height_unit = data.get('height_unit', 'cm')
+            gusset = float(data.get('gusset', 0))
+            gusset_unit = data.get('gusset_unit', 'cm')
+
+            if width <= 0 or height <= 0:
+                return JsonResponse({'success': False, 'error': 'Width and height must be greater than 0'})
+            if bag_shape == 'GUSSETED' and gusset <= 0:
+                return JsonResponse({'success': False, 'error': 'Gusset depth must be greater than 0 for gusseted bags'})
+
+            width_cm = calculator.convert_length(width, width_unit, 'cm')
+            height_cm = calculator.convert_length(height, height_unit, 'cm')
+            gusset_cm = calculator.convert_length(gusset, gusset_unit, 'cm') if gusset else 0
+
+            if bag_shape == 'GUSSETED':
+                volume_cm3 = calculator.calculate_gusseted_bag_volume_cm3(width_cm, gusset_cm, height_cm)
+            else:
+                volume_cm3 = calculator.calculate_flat_bag_volume_cm3(width_cm, height_cm)
+
+            volume_liters = volume_cm3 / 1000
+
+            # Density source: BulkProduct lookup, or a custom override
+            product_id = data.get('product_id')
+            custom_density = data.get('custom_density_kg_m3')
+            density_kg_m3 = None
+            product_name = None
+
+            if custom_density:
+                density_kg_m3 = float(custom_density)
+                product_name = 'Custom'
+            elif product_id:
+                try:
+                    product = BulkProduct.objects.get(id=product_id, is_active=True)
+                    density_kg_m3 = product.density_typical_kg_m3
+                    product_name = product.name
+                except BulkProduct.DoesNotExist:
+                    pass
+
+            result = {
+                'bag_shape': bag_shape,
+                'volume_cm3': round(volume_cm3, 2),
+                'volume_liters': round(volume_liters, 3),
+                'width_cm': round(width_cm, 2),
+                'height_cm': round(height_cm, 2),
+                'gusset_cm': round(gusset_cm, 2) if gusset_cm else 0,
+            }
+
+            if density_kg_m3:
+                fill_weight_kg = calculator.calculate_fill_weight_from_volume(volume_liters, density_kg_m3)
+                result['product_name'] = product_name
+                result['density_kg_m3'] = density_kg_m3
+                result['estimated_fill_weight_kg'] = round(fill_weight_kg, 3)
+
+            # Reverse direction: given a target fill weight, what volume/dimensions are needed
+            target_weight_kg = data.get('target_weight_kg')
+            if target_weight_kg and density_kg_m3:
+                target_weight_kg = float(target_weight_kg)
+                required_volume_liters = calculator.calculate_volume_needed_for_weight(target_weight_kg, density_kg_m3)
+                result['target_weight_kg'] = target_weight_kg
+                result['required_volume_liters'] = round(required_volume_liters, 3)
+                result['required_volume_cm3'] = round(required_volume_liters * 1000, 2)
+
+            if request.user.is_authenticated:
+                calculation = BagMakingCalculation.objects.create(
+                    calculation_type='BAG_CAPACITY',
+                    bag_type=data.get('bag_type', 'FLAT_SHEET'),
+                    addon_type='NONE',
+                    material=None,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+                save_material_selection(calculation, data)
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            logger.error(f"Error in bag_capacity calculation: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@csrf_exempt
+def calculate_roll_requirement(request):
+    """Bags per roll / roll requirement calculator"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
+            calculator = BagMakingCalculator()
+
+            height = float(data.get('height', 0))
+            height_unit = data.get('height_unit', 'cm')
+            seal_allowance = float(data.get('seal_allowance', 3))
+            seal_allowance_unit = data.get('seal_allowance_unit', 'mm')
+
+            if height <= 0:
+                return JsonResponse({'success': False, 'error': 'Height must be greater than 0'})
+
+            height_m = calculator.convert_length(height, height_unit, 'm')
+            seal_allowance_m = calculator.convert_length(seal_allowance, seal_allowance_unit, 'm')
+
+            bag_repeat_length_m = calculator.calculate_bag_repeat_length(height_m, seal_allowance_m)
+
+            # Roll length: either entered directly, or derived from outer/core diameter + thickness
+            roll_length_source = data.get('roll_length_source', 'direct')  # 'direct' or 'derived'
+
+            if roll_length_source == 'derived':
+                outer_diameter = float(data.get('outer_diameter', 0))
+                outer_diameter_unit = data.get('outer_diameter_unit', 'mm')
+                core_diameter = float(data.get('core_diameter', 0))
+                core_diameter_unit = data.get('core_diameter_unit', 'mm')
+                thickness = float(data.get('roll_thickness', 0))
+                thickness_unit = data.get('roll_thickness_unit', 'micron')
+
+                if outer_diameter <= 0 or core_diameter <= 0 or thickness <= 0:
+                    return JsonResponse({'success': False, 'error': 'Outer diameter, core diameter, and thickness must all be greater than 0'})
+
+                outer_radius_m = calculator.convert_length(outer_diameter, outer_diameter_unit, 'm') / 2
+                core_radius_m = calculator.convert_length(core_diameter, core_diameter_unit, 'm') / 2
+                thickness_m = calculator.convert_thickness(thickness, thickness_unit, 'm')
+
+                roll_length_m = calculator.calculate_roll_length_from_diameter(outer_radius_m, core_radius_m, thickness_m)
+            else:
+                roll_length = float(data.get('roll_length', 0))
+                roll_length_unit = data.get('roll_length_unit', 'm')
+                if roll_length <= 0:
+                    return JsonResponse({'success': False, 'error': 'Roll length must be greater than 0'})
+                roll_length_m = calculator.convert_length(roll_length, roll_length_unit, 'm')
+
+            bags_per_roll = calculator.calculate_bags_per_roll(roll_length_m, bag_repeat_length_m)
+
+            result = {
+                'bag_repeat_length_m': round(bag_repeat_length_m, 4),
+                'roll_length_m': round(roll_length_m, 2),
+                'bags_per_roll': bags_per_roll,
+                'roll_length_source': roll_length_source,
+            }
+
+            total_bags_needed = data.get('total_bags_needed')
+            if total_bags_needed:
+                total_bags_needed = int(total_bags_needed)
+                if bags_per_roll <= 0:
+                    return JsonResponse({'success': False, 'error': 'Bags per roll is 0 - check roll length and bag repeat length'})
+                rolls_required = calculator.calculate_rolls_required(total_bags_needed, bags_per_roll)
+                total_film_length_required_m = calculator.calculate_total_film_length_required(total_bags_needed, bag_repeat_length_m)
+                result['total_bags_needed'] = total_bags_needed
+                result['rolls_required'] = rolls_required
+                result['total_film_length_required_m'] = round(total_film_length_required_m, 2)
+
+            if request.user.is_authenticated:
+                calculation = BagMakingCalculation.objects.create(
+                    calculation_type='ROLL_REQUIREMENT',
+                    bag_type=data.get('bag_type', 'FLAT_SHEET'),
+                    addon_type='NONE',
+                    material=None,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+                save_material_selection(calculation, data)
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            logger.error(f"Error in roll_requirement calculation: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def get_seal_strength_rating(seal_strength_n_per_15mm, min_threshold):
+    if min_threshold and seal_strength_n_per_15mm < min_threshold:
+        return "FAIL - below minimum threshold"
+    if seal_strength_n_per_15mm < 10:
+        return "Weak Seal"
+    elif seal_strength_n_per_15mm < 25:
+        return "Moderate Seal"
+    elif seal_strength_n_per_15mm < 40:
+        return "Good Seal"
+    else:
+        return "Excellent Seal"
+
+
+@csrf_exempt
+def calculate_seal_strength(request):
+    """Heat seal strength calculator (ASTM F88-style, same convention as Lamination's Peel Strength)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
+            calculator = BagMakingCalculator()
+
+            seal_force = float(data.get('seal_force', 0))
+            seal_force_unit = data.get('seal_force_unit', 'N')
+            sample_width = float(data.get('sample_width', 15))
+            sample_width_unit = data.get('sample_width_unit', 'mm')
+            seal_location = data.get('seal_location', 'TOP')  # TOP / BOTTOM / SIDE / ZIPPER
+            min_threshold = data.get('min_threshold')
+
+            if seal_force <= 0 or sample_width <= 0:
+                return JsonResponse({'success': False, 'error': 'Seal force and sample width must be greater than 0'})
+
+            force_conversions = {'N': 1.0, 'kN': 1000.0, 'lbf': 4.44822}
+            seal_force_n = seal_force * force_conversions.get(seal_force_unit, 1.0)
+            sample_width_mm = calculator.convert_length(sample_width, sample_width_unit, 'mm')
+
+            seal_strength = calculator.calculate_seal_strength(seal_force_n, sample_width_mm)
+
+            result = {
+                'seal_strength_n_per_15mm': round(seal_strength, 3),
+                'seal_force_n': round(seal_force_n, 3),
+                'sample_width_mm': round(sample_width_mm, 2),
+                'seal_location': seal_location,
+            }
+
+            if min_threshold:
+                min_threshold = float(min_threshold)
+                result['min_threshold'] = min_threshold
+                result['pass_fail'] = 'PASS' if seal_strength >= min_threshold else 'FAIL'
+
+            result['rating'] = get_seal_strength_rating(seal_strength, float(min_threshold) if min_threshold else None)
+
+            if request.user.is_authenticated:
+                calculation = BagMakingCalculation.objects.create(
+                    calculation_type='SEAL_STRENGTH',
+                    bag_type=data.get('bag_type', 'FLAT_SHEET'),
+                    addon_type='NONE',
+                    material=None,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
+                    input_data=data,
+                    result_data=result,
+                    user=request.user
+                )
+                save_material_selection(calculation, data)
+
+            return JsonResponse({'success': True, 'result': result})
+
+        except Exception as e:
+            logger.error(f"Error in seal_strength calculation: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

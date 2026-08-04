@@ -5,6 +5,10 @@ app_name = 'bag_making'
 
 urlpatterns = [
     path('list-cutout-geometries/', views.list_cutout_geometries, name='list_cutout_geometries'),
+    path('list-bulk-products/', views.list_bulk_products, name='list_bulk_products'),
+    path('calculate-bag-capacity/', views.calculate_bag_capacity, name='calculate_bag_capacity'),
+    path('calculate-roll-requirement/', views.calculate_roll_requirement, name='calculate_roll_requirement'),
+    path('calculate-seal-strength/', views.calculate_seal_strength, name='calculate_seal_strength'),
     path('', views.bag_making_home, name='bag_making_home'),
     path('calculate-pieces-weight/', views.calculate_pieces_weight, name='calculate_pieces_weight'),
     path('calculate-packet-weight/', views.calculate_packet_weight, name='calculate_packet_weight'),

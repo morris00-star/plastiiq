@@ -1,160 +1,352 @@
 {% extends 'calculator/base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Hero Section -->
-        <div class="card calculator-card text-white mb-5">
-            <div class="card-body text-center py-5">
-                <h1 class="display-4 mb-3">
-                    <i class="fas fa-industry"></i> Plastic QC Calculator
-                </h1>
-                <p class="lead mb-4">Comprehensive Quality Control Solutions for Plastic Manufacturing</p>
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <p class="mb-4">Advanced calculation tools for extrusion, printing, lamination, slitting, and bag making processes.</p>
-                    </div>
-                </div>
+<style>
+    .hero-panel {
+        background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-void) 100%);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 3.5rem 1.5rem 3rem;
+        margin-bottom: 3rem;
+        text-align: center;
+    }
 
-                {% if not user.is_authenticated %}
-                <div class="mt-4">
-                    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg me-3">
-                        <i class="fas fa-user-plus"></i> Get Started
-                    </a>
-                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                </div>
-                {% endif %}
+    .hero-eyebrow {
+        font-family: var(--font-mono);
+        font-size: .75rem;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--teal);
+        margin-bottom: .75rem;
+    }
+
+    .hero-panel h1 {
+        font-weight: 700;
+        font-size: 2.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero-panel .lead {
+        color: var(--text-dim);
+        max-width: 640px;
+        margin: 0 auto 2rem;
+        font-size: 1.05rem;
+    }
+
+    .btn-molten {
+        background: var(--molten);
+        border: none;
+        color: #10141a;
+        font-weight: 600;
+        padding: .65rem 1.4rem;
+        border-radius: 10px;
+        transition: all .2s ease;
+    }
+    .btn-molten:hover { background: #ff8f61; color: #10141a; transform: translateY(-2px); }
+
+    .btn-outline-line {
+        border: 1px solid var(--line);
+        color: var(--text-main);
+        background: transparent;
+        padding: .65rem 1.4rem;
+        border-radius: 10px;
+        transition: all .2s ease;
+    }
+    .btn-outline-line:hover { border-color: var(--molten); color: var(--molten); transform: translateY(-2px); }
+
+    /* Process rail */
+    .process-rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: .25rem;
+        max-width: 880px;
+        margin: 0 auto;
+        position: relative;
+        padding-top: .5rem;
+    }
+
+    .rail-track {
+        position: absolute;
+        top: 34px;
+        left: 8%;
+        right: 8%;
+        height: 2px;
+        background-image: repeating-linear-gradient(90deg, var(--molten) 0 10px, transparent 10px 22px);
+        background-size: 44px 2px;
+        animation: flow 1.4s linear infinite;
+        z-index: 0;
+    }
+
+    @keyframes flow { from { background-position: 0 0; } to { background-position: 44px 0; } }
+
+    .rail-node {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rail-node .stage-num {
+        font-family: var(--font-mono);
+        font-size: .68rem;
+        color: var(--text-dim);
+        margin-bottom: .4rem;
+    }
+
+    .rail-dot {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--bg-panel-raised);
+        border: 2px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .25s ease;
+    }
+
+    .rail-node span.rail-label {
+        font-size: .78rem;
+        color: var(--text-dim);
+        margin-top: .5rem;
+        text-align: center;
+        transition: color .2s ease;
+    }
+
+    .rail-node:hover .rail-label { color: var(--text-main); }
+    .rail-node:hover .rail-dot { transform: translateY(-4px); }
+
+    .stage-extrusion .rail-dot i { color: var(--molten); }
+    .stage-extrusion:hover .rail-dot { border-color: var(--molten); box-shadow: 0 8px 22px rgba(255,122,69,.25); }
+
+    .stage-printing .rail-dot i { color: var(--violet); }
+    .stage-printing:hover .rail-dot { border-color: var(--violet); box-shadow: 0 8px 22px rgba(143,124,247,.25); }
+
+    .stage-lamination .rail-dot i { color: var(--teal); }
+    .stage-lamination:hover .rail-dot { border-color: var(--teal); box-shadow: 0 8px 22px rgba(47,214,198,.25); }
+
+    .stage-slitting .rail-dot i { color: var(--amber); }
+    .stage-slitting:hover .rail-dot { border-color: var(--amber); box-shadow: 0 8px 22px rgba(245,186,62,.25); }
+
+    .stage-bagmaking .rail-dot i { color: var(--rose); }
+    .stage-bagmaking:hover .rail-dot { border-color: var(--rose); box-shadow: 0 8px 22px rgba(242,87,143,.25); }
+
+    .stage-sales .rail-dot i { color: var(--green); }
+    .stage-sales:hover .rail-dot { border-color: var(--green); box-shadow: 0 8px 22px rgba(74,222,128,.25); }
+
+    @media (max-width: 768px) {
+        .process-rail { flex-direction: column; align-items: stretch; gap: 1.4rem; }
+        .rail-track {
+            top: 0; bottom: 0; left: 27px; right: auto;
+            width: 2px; height: auto;
+            background-image: repeating-linear-gradient(180deg, var(--molten) 0 10px, transparent 10px 22px);
+            background-size: 2px 44px;
+            animation: flow-v 1.4s linear infinite;
+        }
+        @keyframes flow-v { from { background-position: 0 0; } to { background-position: 0 44px; } }
+        .rail-node { flex-direction: row; text-align: left; gap: .9rem; }
+        .rail-node .stage-num { margin-bottom: 0; width: 24px; }
+        .rail-dot { width: 48px; height: 48px; flex-shrink: 0; }
+        .rail-node span.rail-label { margin-top: 0; text-align: left; }
+    }
+
+    /* Stage cards */
+    .stage-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        height: 100%;
+        transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .stage-card:hover { transform: translateY(-6px); box-shadow: 0 16px 34px rgba(0,0,0,.4); }
+
+    .stage-card .accent-bar { height: 4px; }
+    .stage-card .card-body { padding: 2rem 1.5rem; text-align: center; }
+
+    .icon-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.1rem;
+        background: var(--bg-panel-raised);
+        border: 2px solid var(--line);
+    }
+
+    .stage-card h4 { font-size: 1.15rem; margin-bottom: .6rem; }
+    .stage-card p { color: var(--text-dim); font-size: .9rem; }
+
+    .card-extrusion .accent-bar { background: var(--molten); }
+    .card-extrusion .icon-circle { border-color: var(--molten); }
+    .card-extrusion .icon-circle i { color: var(--molten); }
+    .card-extrusion .btn { background: var(--molten); }
+
+    .card-printing .accent-bar { background: var(--violet); }
+    .card-printing .icon-circle { border-color: var(--violet); }
+    .card-printing .icon-circle i { color: var(--violet); }
+    .card-printing .btn { background: var(--violet); }
+
+    .card-lamination .accent-bar { background: var(--teal); }
+    .card-lamination .icon-circle { border-color: var(--teal); }
+    .card-lamination .icon-circle i { color: var(--teal); }
+    .card-lamination .btn { background: var(--teal); }
+
+    .card-slitting .accent-bar { background: var(--amber); }
+    .card-slitting .icon-circle { border-color: var(--amber); }
+    .card-slitting .icon-circle i { color: var(--amber); }
+    .card-slitting .btn { background: var(--amber); }
+
+    .card-bagmaking .accent-bar { background: var(--rose); }
+    .card-bagmaking .icon-circle { border-color: var(--rose); }
+    .card-bagmaking .icon-circle i { color: var(--rose); }
+    .card-bagmaking .btn { background: var(--rose); }
+
+    .card-sales .accent-bar { background: var(--green); }
+    .card-sales .icon-circle { border-color: var(--green); }
+    .card-sales .icon-circle i { color: var(--green); }
+    .card-sales .btn { background: var(--green); }
+
+    .stage-card .btn {
+        border: none;
+        color: #10141a;
+        font-weight: 600;
+        border-radius: 9px;
+        padding: .55rem 1.2rem;
+        margin-top: .5rem;
+    }
+</style>
+
+<div class="hero-panel">
+    <div class="hero-eyebrow">Extrusion &rarr; Printing &rarr; Lamination &rarr; Slitting &rarr; Bag Making &rarr; Sales</div>
+    <h1>Every stage of the line, one control panel.</h1>
+    <p class="lead">
+        PlastIQ tracks quality and cost from molten resin to finished roll, so you catch problems
+        before they leave the plant &mdash; not after the customer calls.
+    </p>
+
+    {% if not user.is_authenticated %}
+    <div class="mb-4">
+        <a href="{% url 'accounts:register' %}" class="btn btn-molten me-2"><i class="fas fa-user-plus"></i> Create your account</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline-line"><i class="fas fa-sign-in-alt"></i> Sign in</a>
+    </div>
+    {% endif %}
+
+    <div class="process-rail">
+        <div class="rail-track"></div>
+
+        <a href="{% url 'extrusion:extrusion_home' %}" class="rail-node stage-extrusion">
+            <span class="stage-num">01</span>
+            <span class="rail-dot"><i class="fas fa-industry"></i></span>
+            <span class="rail-label">Extrusion</span>
+        </a>
+        <a href="{% url 'printing:printing_home' %}" class="rail-node stage-printing">
+            <span class="stage-num">02</span>
+            <span class="rail-dot"><i class="fas fa-print"></i></span>
+            <span class="rail-label">Printing</span>
+        </a>
+        <a href="{% url 'lamination:lamination_home' %}" class="rail-node stage-lamination">
+            <span class="stage-num">03</span>
+            <span class="rail-dot"><i class="fas fa-layer-group"></i></span>
+            <span class="rail-label">Lamination</span>
+        </a>
+        <a href="{% url 'slitting:slitting_home' %}" class="rail-node stage-slitting">
+            <span class="stage-num">04</span>
+            <span class="rail-dot"><i class="fas fa-cut"></i></span>
+            <span class="rail-label">Slitting</span>
+        </a>
+        <a href="{% url 'bag_making:bag_making_home' %}" class="rail-node stage-bagmaking">
+            <span class="stage-num">05</span>
+            <span class="rail-dot"><i class="fas fa-shopping-bag"></i></span>
+            <span class="rail-label">Bag Making</span>
+        </a>
+        <a href="{% url 'sales:sales_home' %}" class="rail-node stage-sales">
+            <span class="stage-num">06</span>
+            <span class="rail-dot"><i class="fas fa-chart-line"></i></span>
+            <span class="rail-label">Sales</span>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="stage-card card-extrusion">
+            <div class="accent-bar"></div>
+            <div class="card-body">
+                <div class="icon-circle"><i class="fas fa-industry fa-lg"></i></div>
+                <h4>Extrusion</h4>
+                <p>Thickness checks, roll properties, BUR/DDR ratios, and quality tests as film comes off the line.</p>
+                <a href="{% url 'extrusion:extrusion_home' %}" class="btn">Open Extrusion</a>
             </div>
         </div>
+    </div>
 
-        <!-- Features Grid -->
-        <div class="row g-4">
-            <!-- Extrusion -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow border-0">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-primary rounded-circle mx-auto mb-3">
-                            <i class="fas fa-industry fa-2x text-white"></i>
-                        </div>
-                        <h4 class="card-title">Extrusion</h4>
-                        <p class="card-text text-muted">
-                            Thickness calculations, roll properties, BUR/DDR ratios, and quality control tests.
-                        </p>
-                        <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-primary mt-3">
-                            Access Extrusion Tools
-                        </a>
-                    </div>
-                </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="stage-card card-printing">
+            <div class="accent-bar"></div>
+            <div class="card-body">
+                <div class="icon-circle"><i class="fas fa-print fa-lg"></i></div>
+                <h4>Printing</h4>
+                <p>Ink usage, production timing, and print quality metrics for every job that runs through the press.</p>
+                <a href="{% url 'printing:printing_home' %}" class="btn">Open Printing</a>
             </div>
+        </div>
+    </div>
 
-            <!-- Printing -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow border-0">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-success rounded-circle mx-auto mb-3">
-                            <i class="fas fa-print fa-2x text-white"></i>
-                        </div>
-                        <h4 class="card-title">Printing</h4>
-                        <p class="card-text text-muted">
-                            Ink usage calculations, production timing, and print quality metrics.
-                        </p>
-                        <a href="{% url 'printing:printing_home' %}" class="btn btn-primary mt-3">
-                            Access Printing Tools
-                        </a>
-                    </div>
-                </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="stage-card card-lamination">
+            <div class="accent-bar"></div>
+            <div class="card-body">
+                <div class="icon-circle"><i class="fas fa-layer-group fa-lg"></i></div>
+                <h4>Lamination</h4>
+                <p>Adhesive and solvent calculations, plus properties for multi-layer film structures.</p>
+                <a href="{% url 'lamination:lamination_home' %}" class="btn">Open Lamination</a>
             </div>
+        </div>
+    </div>
 
-            <!-- Lamination -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow border-0">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-info rounded-circle mx-auto mb-3">
-                            <i class="fas fa-layer-group fa-2x text-white"></i>
-                        </div>
-                        <h4 class="card-title">Lamination</h4>
-                        <p class="card-text text-muted">
-                            Adhesive calculations, solvent usage, and multi-layer film properties.
-                        </p>
-                        <a href="{% url 'lamination:lamination_home' %}" class="btn btn-primary mt-3">
-                            Access Lamination Tools
-                        </a>
-                    </div>
-                </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="stage-card card-slitting">
+            <div class="accent-bar"></div>
+            <div class="card-body">
+                <div class="icon-circle"><i class="fas fa-cut fa-lg"></i></div>
+                <h4>Slitting</h4>
+                <p>Roll length calculations, production efficiency, and material optimization at the slitter.</p>
+                <a href="{% url 'slitting:slitting_home' %}" class="btn">Open Slitting</a>
             </div>
+        </div>
+    </div>
 
-            <!-- Slitting -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow border-0">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-warning rounded-circle mx-auto mb-3">
-                            <i class="fas fa-cut fa-2x text-white"></i>
-                        </div>
-                        <h4 class="card-title">Slitting</h4>
-                        <p class="card-text text-muted">
-                            Roll length calculations, production efficiency, and material optimization.
-                        </p>
-                        <a href="{% url 'slitting:slitting_home' %}" class="btn btn-primary mt-3">
-                            Access Slitting Tools
-                        </a>
-                    </div>
-                </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="stage-card card-bagmaking">
+            <div class="accent-bar"></div>
+            <div class="card-body">
+                <div class="icon-circle"><i class="fas fa-shopping-bag fa-lg"></i></div>
+                <h4>Bag Making</h4>
+                <p>Piece-to-weight conversions, packaging calculations, and production planning.</p>
+                <a href="{% url 'bag_making:bag_making_home' %}" class="btn">Open Bag Making</a>
             </div>
+        </div>
+    </div>
 
-            <!-- Bag Making -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow border-0">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-secondary rounded-circle mx-auto mb-3">
-                            <i class="fas fa-shopping-bag fa-2x text-white"></i>
-                        </div>
-                        <h4 class="card-title">Bag Making</h4>
-                        <p class="card-text text-muted">
-                            Piece-to-weight conversions, packaging calculations, and production planning.
-                        </p>
-                        <a href="{% url 'bag_making:bag_making_home' %}" class="btn btn-primary mt-3">
-                            Access Bag Making Tools
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sales and Pricing -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow border-0">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-secondary rounded-circle mx-auto mb-3">
-                            <i class="fas fa-chart-line fa-2x text-red"></i>
-                        </div>
-                        <h4 class="card-title">Sales</h4>
-                        <p class="card-text text-muted">
-                            Material Costs(per kg, per Meter, per Roll) and  Order Quantity calculations.
-                        </p>
-                        <a href="{% url 'sales:sales_home' %}" class="btn btn-primary mt-3">
-                            Access Sales and Pricing Tools
-                        </a>
-                    </div>
-                </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="stage-card card-sales">
+            <div class="accent-bar"></div>
+            <div class="card-body">
+                <div class="icon-circle"><i class="fas fa-chart-line fa-lg"></i></div>
+                <h4>Sales</h4>
+                <p>Material costs per kg, per meter, and per roll, plus order quantity calculations.</p>
+                <a href="{% url 'sales:sales_home' %}" class="btn">Open Sales</a>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.feature-icon {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.card {
-    transition: transform 0.2s ease-in-out;
-}
-.card:hover {
-    transform: translateY(-5px);
-}
-</style>
 {% endblock %}
