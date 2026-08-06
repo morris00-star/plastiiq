@@ -1,216 +1,191 @@
 {% extends 'calculator/base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card material-card text-white mb-4">
-            <div class="card-body">
-                <h2 class="card-title text-center">
-                    <i class="fas fa-database"></i> Material Density Reference
-                </h2>
-                <p class="text-center">Complete list of plastic materials and their densities</p>
-            </div>
+<style>
+    .ref-header {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 1.75rem 1.5rem;
+        margin-bottom: 1.25rem;
+        text-align: center;
+    }
+    .ref-header h2 { font-size: 1.4rem; margin: 0; display: flex; align-items: center; justify-content: center; gap: .5rem; }
+    .ref-header p { margin: .4rem 0 0; color: var(--text-dim); font-size: .9rem; }
+
+    .quick-tiles { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.25rem; }
+    .quick-tile {
+        flex: 1 1 130px;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem .5rem;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-main);
+        transition: all .2s ease;
+    }
+    .quick-tile i { font-size: 1.3rem; display: block; margin-bottom: .4rem; }
+    .quick-tile h6 { font-size: .82rem; margin: 0; font-weight: 600; }
+    .quick-tile:hover { transform: translateY(-3px); color: var(--text-main); }
+    .qt-extrusion:hover { border-color: var(--molten); box-shadow: 0 8px 20px rgba(255,122,69,.2); }
+    .qt-extrusion i { color: var(--molten); }
+    .qt-printing:hover { border-color: var(--violet); box-shadow: 0 8px 20px rgba(143,124,247,.2); }
+    .qt-printing i { color: var(--violet); }
+    .qt-lamination:hover { border-color: var(--teal); box-shadow: 0 8px 20px rgba(47,214,198,.2); }
+    .qt-lamination i { color: var(--teal); }
+    .qt-slitting:hover { border-color: var(--amber); box-shadow: 0 8px 20px rgba(245,186,62,.2); }
+    .qt-slitting i { color: var(--amber); }
+    .qt-bagmaking:hover { border-color: var(--rose); box-shadow: 0 8px 20px rgba(242,87,143,.2); }
+    .qt-bagmaking i { color: var(--rose); }
+    .qt-sales:hover { border-color: var(--green); box-shadow: 0 8px 20px rgba(74,222,128,.2); }
+    .qt-sales i { color: var(--green); }
+
+    .nav-strip {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: .85rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+    .nav-strip .btn {
+        border-radius: 8px;
+        font-size: .85rem;
+        font-weight: 600;
+        flex: 1 1 160px;
+    }
+    .nav-strip .btn-current { background: var(--molten); border: none; color: #10141a; }
+    .nav-strip .btn-outline-line { flex: 1 1 160px; }
+
+    .panel-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden; }
+    .panel-head { padding: .9rem 1.25rem; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: .55rem; font-weight: 600; }
+    .panel-head i { color: var(--molten); }
+    .panel-body { padding: 1.25rem; }
+
+    .mat-table th, .mat-table td { font-size: .88rem; vertical-align: middle; }
+    .mat-code {
+        background: var(--bg-panel-raised);
+        border: 1px solid var(--line);
+        color: var(--teal);
+        padding: .2rem .5rem;
+        border-radius: 6px;
+        font-family: var(--font-mono);
+        font-size: .82rem;
+    }
+    .mat-density {
+        background: var(--molten);
+        color: #10141a;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        padding: .3rem .6rem;
+        border-radius: 6px;
+        font-size: .85rem;
+    }
+
+    .info-sub h6 { font-size: .92rem; margin-bottom: .6rem; display: flex; align-items: center; gap: .4rem; }
+    .info-sub ul { font-size: .85rem; color: var(--text-dim); padding-left: 1.1rem; }
+    .info-links { display: flex; flex-direction: column; gap: .5rem; }
+    .info-links .btn { border-radius: 8px; text-align: left; font-size: .85rem; }
+</style>
+
+<div class="ref-header">
+    <h2><i class="fas fa-database"></i> Material Density Reference</h2>
+    <p>Complete list of plastic materials and their densities</p>
+</div>
+
+<div class="quick-tiles">
+    <a href="{% url 'extrusion:extrusion_home' %}" class="quick-tile qt-extrusion">
+        <i class="fas fa-industry"></i><h6>Extrusion</h6>
+    </a>
+    <a href="{% url 'printing:printing_home' %}" class="quick-tile qt-printing">
+        <i class="fas fa-print"></i><h6>Printing</h6>
+    </a>
+    <a href="{% url 'lamination:lamination_home' %}" class="quick-tile qt-lamination">
+        <i class="fas fa-layer-group"></i><h6>Lamination</h6>
+    </a>
+    <a href="{% url 'slitting:slitting_home' %}" class="quick-tile qt-slitting">
+        <i class="fas fa-cut"></i><h6>Slitting</h6>
+    </a>
+    <a href="{% url 'bag_making:bag_making_home' %}" class="quick-tile qt-bagmaking">
+        <i class="fas fa-shopping-bag"></i><h6>Bag Making</h6>
+    </a>
+    <a href="{% url 'sales:sales_home' %}" class="quick-tile qt-sales">
+        <i class="fas fa-money-bill-wave"></i><h6>Sales</h6>
+    </a>
+</div>
+
+<div class="nav-strip">
+    <a href="{% url 'home' %}" class="btn btn-outline-line"><i class="fas fa-calculator"></i> Main Calculator</a>
+    <a href="{% url 'calculation_history' %}" class="btn btn-outline-line"><i class="fas fa-history"></i> Calculation History</a>
+    <a href="{% url 'material_reference' %}" class="btn btn-current"><i class="fas fa-database"></i> Material Reference</a>
+    <a href="{% url 'calculation_reasons' %}" class="btn btn-outline-line"><i class="fas fa-lightbulb"></i> Calculation Purposes</a>
+    <a href="{% url 'material_properties' %}" class="btn btn-outline-line"><i class="fas fa-box-open"></i> Material Applications</a>
+</div>
+
+{% for material_type in material_types %}
+<div class="panel-card">
+    <div class="panel-head"><i class="fas fa-layer-group"></i> {{ material_type.1 }}</div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mat-table">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Material Name</th>
+                        <th>Code</th>
+                        <th>Density (g/cm&sup3;)</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                        {% if material.material_type == material_type.0 %}
+                        <tr>
+                            <td>
+                                <strong>{{ material.name }}</strong>
+                                {% if material.is_common %}<span class="badge bg-success ms-1">Common</span>{% endif %}
+                            </td>
+                            <td><span class="mat-code">{{ material.code }}</span></td>
+                            <td><span class="mat-density">{{ material.density }}</span></td>
+                            <td>
+                                {% if material.description %}{{ material.description }}{% else %}<span class="text-muted">No description available</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+    </div>
+</div>
+{% endfor %}
 
-        <!-- Quick Navigation Cards -->
-        <div class="row mb-4">
-            <div class="col-md-2">
-                <a href="{% url 'extrusion:extrusion_home' %}" class="card bg-success text-white text-decoration-none h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-industry fa-2x mb-2"></i>
-                        <h6>Extrusion</h6>
-                    </div>
-                </a>
+<div class="panel-card">
+    <div class="panel-head"><i class="fas fa-info-circle"></i> About Material Densities</div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-6 info-sub">
+                <h6><i class="fas fa-lightbulb" style="color: var(--amber);"></i> Importance of Density</h6>
+                <p class="small" style="color: var(--text-dim);">Material density is crucial for calculating:</p>
+                <ul>
+                    <li>Mass and weight calculations</li>
+                    <li>Material consumption</li>
+                    <li>Cost estimations</li>
+                    <li>Production planning</li>
+                    <li>Quality control</li>
+                </ul>
             </div>
-            <div class="col-md-2">
-                <a href="{% url 'printing:printing_home' %}" class="card bg-info text-white text-decoration-none h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-print fa-2x mb-2"></i>
-                        <h6>Printing</h6>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{% url 'lamination:lamination_home' %}" class="card bg-warning text-dark text-decoration-none h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-layer-group fa-2x mb-2"></i>
-                        <h6>Lamination</h6>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{% url 'slitting:slitting_home' %}" class="card bg-secondary text-white text-decoration-none h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-cut fa-2x mb-2"></i>
-                        <h6>Slitting</h6>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{% url 'bag_making:bag_making_home' %}" class="card bg-dark text-white text-decoration-none h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-shopping-bag fa-2x mb-2"></i>
-                        <h6>Bag Making</h6>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-2">
-                <a href="{% url 'sales:sales_home' %}" class="card bg-success text-white text-decoration-none h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-                        <h6>Sales</h6>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Main Content Navigation -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <a href="{% url 'home' %}" class="btn btn-outline-primary w-100">
-                            <i class="fas fa-calculator"></i> Main Calculator
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{% url 'calculation_history' %}" class="btn btn-outline-success w-100">
-                            <i class="fas fa-history"></i> Calculation History
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{% url 'material_reference' %}" class="btn btn-primary w-100">
-                            <i class="fas fa-database"></i> Material Reference
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{% url 'calculation_reasons' %}" class="btn btn-outline-warning w-100">
-                            <i class="fas fa-lightbulb"></i> Calculation Purposes
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{% url 'material_properties' %}" class="btn btn-warning w-100">
-                            <i class="fas fa-box-open"></i> Material Applications
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Material Density Tables -->
-        {% for material_type in material_types %}
-        <div class="card shadow mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-layer-group"></i>
-                    {{ material_type.1 }}
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Material Name</th>
-                                <th>Code</th>
-                                <th>Density (g/cm³)</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for material in materials %}
-                                {% if material.material_type == material_type.0 %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ material.name }}</strong>
-                                        {% if material.is_common %}
-                                        <span class="badge bg-success ms-1">Common</span>
-                                        {% endif %}
-                                    </td>
-                                    <td><code class="bg-light px-2 py-1 rounded">{{ material.code }}</code></td>
-                                    <td>
-                                        <span class="badge bg-info fs-6">{{ material.density }}</span>
-                                    </td>
-                                    <td>
-                                        {% if material.description %}
-                                            {{ material.description }}
-                                        {% else %}
-                                            <span class="text-muted">No description available</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-
-        <!-- Additional Information Card -->
-        <div class="card shadow">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="fas fa-info-circle text-primary"></i> About Material Densities
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-lightbulb text-warning"></i> Importance of Density</h6>
-                        <p class="small">Material density is crucial for calculating:</p>
-                        <ul class="small">
-                            <li>Mass and weight calculations</li>
-                            <li>Material consumption</li>
-                            <li>Cost estimations</li>
-                            <li>Production planning</li>
-                            <li>Quality control</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-tachometer-alt text-success"></i> Quick Actions</h6>
-                        <div class="d-grid gap-2">
-                                <a href="{% url 'additives_resins' %}" class="btn btn-outline-success w-100">
-                            <i class="fas fa-flask me-2"></i>Additives Guide
-                        </a>
-
-                            <a href="{% url 'calculation_history' %}" class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-history"></i> View History
-                            </a>
-                            <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-sm btn-outline-info">
-                                <i class="fas fa-industry"></i> Start Extrusion
-                            </a>
-                        </div>
-                    </div>
+            <div class="col-md-6 info-sub">
+                <h6><i class="fas fa-tachometer-alt" style="color: var(--green);"></i> Quick Actions</h6>
+                <div class="info-links">
+                    <a href="{% url 'additives_resins' %}" class="btn btn-outline-line"><i class="fas fa-flask me-2"></i>Additives Guide</a>
+                    <a href="{% url 'calculation_history' %}" class="btn btn-outline-line"><i class="fas fa-history me-2"></i>View History</a>
+                    <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-outline-line"><i class="fas fa-industry me-2"></i>Start Extrusion</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block styles %}
-<style>
-.bg-purple {
-    background-color: #6f42c1 !important;
-}
-
-.material-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease-in-out;
-}
-
-.table-hover tbody tr:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-}
-
-.badge {
-    font-size: 0.85em;
-}
-</style>
 {% endblock %}

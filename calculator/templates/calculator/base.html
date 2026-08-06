@@ -358,7 +358,18 @@
         .pagination .page-item.active .page-link { background: var(--molten) !important; border-color: var(--molten) !important; color: #10141a !important; }
 
         select, input, textarea { color-scheme: dark; }
-    </style>
+    
+        .btn-outline-line {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--text-main) !important;
+        }
+        .btn-outline-line:hover {
+            border-color: var(--molten);
+            color: var(--molten) !important;
+            background: rgba(255, 122, 69, .08);
+        }
+</style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">

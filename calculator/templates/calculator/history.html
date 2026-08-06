@@ -4,520 +4,390 @@
 {% load tz %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card calculator-card text-white mb-4">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h2 class="card-title mb-0">
-                            <i class="fas fa-history"></i> Calculation History
-                        </h2>
-                        <p class="mb-0 mt-2">All calculations across all sections</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
-                                <i class="fas fa-download"></i> Download History
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'download_history' 'word' %}">
-                                    <i class="fas fa-file-word"></i> Word Format
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'download_history' 'excel' %}">
-                                    <i class="fas fa-file-excel"></i> Excel Format
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'download_history' 'pdf' %}">
-                                    <i class="fas fa-file-pdf"></i> PDF Format
-                                </a></li>
-                            </ul>
-                        </div>
-                        <button class="btn btn-outline-light ms-2" id="clearFilters">
-                            <i class="fas fa-filter"></i> Clear Filters
-                        </button>
-                    </div>
-                </div>
+<style>
+    .history-header {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 1.1rem 1.4rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .75rem;
+        justify-content: space-between;
+    }
+    .history-header h2 { font-size: 1.25rem; margin: 0; display: flex; align-items: center; gap: .5rem; }
+    .history-header p { margin: .15rem 0 0; color: var(--text-dim); font-size: .82rem; }
+
+    .stat-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.25rem; }
+    .stat-chip {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--line);
+        border-radius: 10px;
+        padding: .55rem 1rem;
+        min-width: 92px;
+        flex: 1 1 92px;
+        text-align: center;
+    }
+    .stat-chip .num { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; line-height: 1; color: var(--text-main); }
+    .stat-chip .lbl { font-size: .68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; margin-top: .25rem; }
+    .stat-total { border-left-color: var(--text-dim); }
+    .stat-extrusion { border-left-color: var(--molten); }
+    .stat-printing { border-left-color: var(--violet); }
+    .stat-lamination { border-left-color: var(--teal); }
+    .stat-slitting { border-left-color: var(--amber); }
+    .stat-bagmaking { border-left-color: var(--rose); }
+    .stat-sales { border-left-color: var(--green); }
+
+    .quick-nav-bar {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: .75rem 1rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        align-items: center;
+    }
+    .quick-nav-bar .btn { font-size: .8rem; padding: .4rem .8rem; border-radius: 8px; border: none; color: #10141a; font-weight: 600; }
+    .qn-extrusion { background: var(--molten); }
+    .qn-printing { background: var(--violet); }
+    .qn-lamination { background: var(--teal); }
+    .qn-slitting { background: var(--amber); }
+    .qn-bagmaking { background: var(--rose); }
+    .qn-sales { background: var(--green); }
+    .qn-home { background: transparent !important; border: 1px solid var(--line) !important; color: var(--text-main) !important; margin-left: auto; }
+
+    .filters-card { padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    .filters-card .form-label { font-size: .75rem; color: var(--text-dim); margin-bottom: .25rem; }
+    .filters-card .form-select, .filters-card .form-control { font-size: .85rem; padding: .4rem .6rem; }
+
+    .table-compact { font-size: .82rem; }
+    .table-compact th, .table-compact td { padding: .5rem .6rem; vertical-align: middle; }
+    .table-compact .badge { font-size: .68rem; padding: .3em .55em; }
+    .table-compact .btn-sm { padding: .25rem .5rem; font-size: .75rem; }
+    .table-compact small { font-size: .72rem; }
+
+    .bg-purple { background-color: var(--violet) !important; color: #10141a !important; }
+    .btn-purple { background-color: var(--violet); border-color: var(--violet); color: #10141a; font-weight: 600; }
+    .btn-purple:hover { background-color: #7a68e0; border-color: #7a68e0; color: #10141a; }
+    .badge-sm { font-size: .68em; padding: .2em .4em; }
+
+    .selected-bar { background: var(--bg-panel-raised) !important; border: 1px solid var(--line); }
+
+    .btn-outline-line {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--text-main) !important;
+    }
+    .btn-outline-line:hover {
+        border-color: var(--molten);
+        color: var(--molten) !important;
+        background: rgba(255, 122, 69, .08);
+    }
+    .btn-outline-line .fa-download,
+    .btn-outline-line .fa-filter { color: inherit; }
+</style>
+
+<div class="history-header">
+    <div>
+        <h2><i class="fas fa-history"></i> Calculation History</h2>
+        <p>All calculations across all sections</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-outline-line dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                <i class="fas fa-download"></i> Download
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item download-link" href="{% url 'download_history' 'word' %}"><i class="fas fa-file-word"></i> Word Format</a></li>
+                <li><a class="dropdown-item download-link" href="{% url 'download_history' 'excel' %}"><i class="fas fa-file-excel"></i> Excel Format</a></li>
+                <li><a class="dropdown-item download-link" href="{% url 'download_history' 'pdf' %}"><i class="fas fa-file-pdf"></i> PDF Format</a></li>
+            </ul>
+        </div>
+        <button class="btn btn-sm btn-outline-line" id="clearFilters">
+            <i class="fas fa-filter"></i> Clear Filters
+        </button>
+    </div>
+</div>
+
+<div class="stat-row">
+    <div class="stat-chip stat-total"><div class="num" id="totalCount">{{ calculations.count }}</div><div class="lbl">Total</div></div>
+    <div class="stat-chip stat-extrusion"><div class="num" id="extrusionCount">0</div><div class="lbl">Extrusion</div></div>
+    <div class="stat-chip stat-printing"><div class="num" id="printingCount">0</div><div class="lbl">Printing</div></div>
+    <div class="stat-chip stat-lamination"><div class="num" id="laminationCount">0</div><div class="lbl">Lamination</div></div>
+    <div class="stat-chip stat-slitting"><div class="num" id="slittingCount">0</div><div class="lbl">Slitting</div></div>
+    <div class="stat-chip stat-bagmaking"><div class="num" id="bagMakingCount">0</div><div class="lbl">Bag Making</div></div>
+    <div class="stat-chip stat-sales"><div class="num" id="salesCount">0</div><div class="lbl">Sales</div></div>
+</div>
+
+<div class="quick-nav-bar">
+    <a href="{% url 'extrusion:extrusion_home' %}" class="btn qn-extrusion"><i class="fas fa-industry"></i> Extrusion</a>
+    <a href="{% url 'printing:printing_home' %}" class="btn qn-printing"><i class="fas fa-print"></i> Printing</a>
+    <a href="{% url 'lamination:lamination_home' %}" class="btn qn-lamination"><i class="fas fa-layer-group"></i> Lamination</a>
+    <a href="{% url 'slitting:slitting_home' %}" class="btn qn-slitting"><i class="fas fa-cut"></i> Slitting</a>
+    <a href="{% url 'bag_making:bag_making_home' %}" class="btn qn-bagmaking"><i class="fas fa-shopping-bag"></i> Bag Making</a>
+    <a href="{% url 'sales:sales_home' %}" class="btn qn-sales"><i class="fas fa-money-bill-wave"></i> Sales</a>
+    <a href="{% url 'home' %}" class="btn qn-home"><i class="fas fa-home"></i> Main Calculator</a>
+</div>
+
+<div class="card filters-card">
+    <div class="row g-2">
+        <div class="col-6 col-md-2">
+            <label class="form-label">Section</label>
+            <select class="form-select form-select-sm" id="sectionFilter">
+                <option value="">All Sections</option>
+                <option value="extrusion">Extrusion</option>
+                <option value="printing">Printing</option>
+                <option value="lamination">Lamination</option>
+                <option value="slitting">Slitting</option>
+                <option value="bag_making">Bag Making</option>
+                <option value="sales">Sales</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">Calc Type</label>
+            <select class="form-select form-select-sm" id="typeFilter">
+                <option value="">All Types</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">Material</label>
+            <select class="form-select form-select-sm" id="materialFilter">
+                <option value="">All Materials</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">Machine</label>
+            <select class="form-select form-select-sm" id="machineFilter">
+                <option value="">All Machines</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">Customer</label>
+            <select class="form-select form-select-sm" id="customerFilter">
+                <option value="">All Customers</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control form-control-sm" id="dateFilter">
+        </div>
+    </div>
+    <div class="row mt-2 align-items-center">
+        <div class="col-md-6">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showOnlyRecent">
+                <label class="form-check-label" for="showOnlyRecent" style="font-size:.85rem;">Show only last 7 days</label>
             </div>
         </div>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-2">
-                <div class="card bg-primary text-white">
-                    <div class="card-body text-center">
-                        <h4 class="card-title" id="totalCount">{{ calculations.count }}</h4>
-                        <p class="card-text">Total</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-success text-white">
-                    <div class="card-body text-center">
-                        <h4 class="card-title" id="extrusionCount">0</h4>
-                        <p class="card-text">Extrusion</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-info text-white">
-                    <div class="card-body text-center">
-                        <h4 class="card-title" id="printingCount">0</h4>
-                        <p class="card-text">Printing</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-warning text-dark">
-                    <div class="card-body text-center">
-                        <h4 class="card-title" id="laminationCount">0</h4>
-                        <p class="card-text">Lamination</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-secondary text-white">
-                    <div class="card-body text-center">
-                        <h4 class="card-title" id="slittingCount">0</h4>
-                        <p class="card-text">Slitting</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-dark text-white">
-                    <div class="card-body text-center">
-                        <h4 class="card-title" id="bagMakingCount">0</h4>
-                        <p class="card-text">Bag Making</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sales Statistics Card -->
-        <div class="row mb-4">
-            <div class="col-md-2 offset-md-4">
-                <div class="card bg-purple text-white">
-                    <div class="card-body text-center">
-                        <h4 class="card-title" id="salesCount">0</h4>
-                        <p class="card-text">Sales</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Section Navigation -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="fas fa-rocket"></i> Quick Navigation</h6>
-            </div>
-            <div class="card-body">
-                <div class="row g-2">
-                    <div class="col-md-2">
-                        <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-success w-100">
-                            <i class="fas fa-industry"></i> Extrusion
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'printing:printing_home' %}" class="btn btn-info w-100">
-                            <i class="fas fa-print"></i> Printing
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'lamination:lamination_home' %}" class="btn btn-warning w-100">
-                            <i class="fas fa-layer-group"></i> Lamination
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'slitting:slitting_home' %}" class="btn btn-secondary w-100">
-                            <i class="fas fa-cut"></i> Slitting
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'bag_making:bag_making_home' %}" class="btn btn-dark w-100">
-                            <i class="fas fa-shopping-bag"></i> Bag Making
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'sales:sales_home' %}" class="btn btn-purple w-100">
-                            <i class="fas fa-money-bill-wave"></i> Sales
-                        </a>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-12 text-center">
-                        <a href="{% url 'home' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-home"></i> Main Calculator
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Section</label>
-                        <select class="form-select" id="sectionFilter">
-                            <option value="">All Sections</option>
-                            <option value="extrusion">Extrusion</option>
-                            <option value="printing">Printing</option>
-                            <option value="lamination">Lamination</option>
-                            <option value="slitting">Slitting</option>
-                            <option value="bag_making">Bag Making</option>
-                            <option value="sales">Sales</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Calculation Type</label>
-                        <select class="form-select" id="typeFilter">
-                            <option value="">All Types</option>
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Material</label>
-                        <select class="form-select" id="materialFilter">
-                            <option value="">All Materials</option>
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Date Range</label>
-                        <input type="date" class="form-control" id="dateFilter">
-                    </div>
-                </div>
-                <div class="row g-3 mt-1">
-                    <div class="col-md-3">
-                        <label class="form-label">Machine</label>
-                        <select class="form-select" id="machineFilter">
-                            <option value="">All Machines</option>
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Customer</label>
-                        <select class="form-select" id="customerFilter">
-                            <option value="">All Customers</option>
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="showOnlyRecent">
-                            <label class="form-check-label" for="showOnlyRecent">
-                                Show only last 7 days
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <button class="btn btn-outline-secondary btn-sm" id="exportSelected">
-                            <i class="fas fa-download"></i> Export Selected
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Calculations Table -->
-        <div class="card shadow">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="calculationsTable">
-                        <thead class="table-dark">
-                            <tr>
-                                <th width="40">
-                                    <input type="checkbox" id="selectAll">
-                                </th>
-                                <th>Date & Time (EAT)</th>
-                                <th>Section</th>
-                                <th>Calculation Type</th>
-                                <th>Material</th>
-                                <th>Machine</th>
-                                <th>Customer</th>
-                                <th>Order/Job</th>
-                                <th>Input Parameters</th>
-                                <th>Results</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for calculation in calculations %}
-                            {% timezone "Africa/Nairobi" %}
-                            <tr class="calculation-row"
-                                data-section="{{ calculation|get_section_name|lower }}"
-                                data-type="{{ calculation.calculation_type }}"
-                                data-material="{% if calculation.display_material %}{{ calculation.display_material.name }}{% endif %}"
-                                data-machine="{% if calculation.display_machine %}{{ calculation.display_machine }}{% endif %}"
-                                data-customer="{% if calculation.display_customer %}{{ calculation.display_customer }}{% endif %}"
-                                data-date="{{ calculation.timestamp|date:'Y-m-d' }}"
-                                data-recent="{% if calculation.is_recent %}true{% else %}false{% endif %}">
-                                <td>
-                                    <input type="checkbox" class="calculation-checkbox" value="{{ calculation.id }}">
-                                </td>
-                                <td>
-                                    <div class="d-flex flex-column">
-                                        <small class="text-muted">
-                                            {{ calculation.timestamp|date:"M d, Y" }}
-                                        </small>
-                                        <small class="text-muted">
-                                            {{ calculation.timestamp|date:"H:i" }} EAT
-                                        </small>
-                                        {% if calculation.is_recent %}
-                                        <span class="badge bg-success badge-sm mt-1">Recent</span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge {{ calculation|get_section_badge }}">
-                                        <i class="{{ calculation|get_section_icon }} me-1"></i>
-                                        {{ calculation|get_section_name }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <strong>{{ calculation|get_calculation_type_display }}</strong>
-                                    {% if calculation.description %}
-                                    <br><small class="text-muted">{{ calculation.description }}</small>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if calculation.display_material %}
-                                    <div class="d-flex align-items-center flex-wrap">
-                                        <span class="badge bg-light text-dark me-2">
-                                            {{ calculation.display_material.name }}
-                                        </span>
-                                        <small class="text-muted">({{ calculation.display_material.density }} g/cm³)</small>
-                                        {% if calculation.display_material.is_laminated %}
-                                        <span class="badge bg-info text-dark ms-2">Laminate</span>
-                                        {% endif %}
-                                    </div>
-                                    {% else %}
-                                    <span class="text-muted">N/A</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if calculation.display_machine %}
-                                    <span class="badge bg-secondary">{{ calculation.display_machine }}</span>
-                                    {% else %}
-                                    <span class="text-muted">&mdash;</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if calculation.display_customer %}
-                                    {{ calculation.display_customer }}
-                                    {% else %}
-                                    <span class="text-muted">&mdash;</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if calculation.display_order %}
-                                    {{ calculation.display_order }}
-                                    {% else %}
-                                    <span class="text-muted">&mdash;</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary view-input-btn"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#inputModal"
-                                            data-calculation-id="{{ calculation.id }}"
-                                            data-input-data="{{ calculation.input_data|parse_calculation_data|safe }}">
-                                        <i class="fas fa-eye"></i> View Input
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-success view-result-btn"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#resultModal"
-                                            data-calculation-id="{{ calculation.id }}"
-                                            data-result-data="{{ calculation.result_data|parse_calculation_data|safe }}"
-                                            data-type="{{ calculation|get_calculation_type_display }}">
-                                        <i class="fas fa-chart-bar"></i> View Results
-                                    </button>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-info recalculate-btn"
-                                                data-calculation='{{ calculation.id }}'
-                                                data-type="{{ calculation.calculation_type }}"
-                                                data-section="{{ calculation|get_section_name|lower }}">
-                                            <i class="fas fa-redo"></i> Redo
-                                        </button>
-                                        <button class="btn btn-outline-warning duplicate-btn"
-                                                data-calculation='{{ calculation.id }}'>
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-btn"
-                                                data-calculation='{{ calculation.id }}'
-                                                data-calculation-name="{{ calculation|get_calculation_type_display }}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endtimezone %}
-                            {% empty %}
-                            <tr>
-                                <td colspan="11" class="text-center py-5">
-                                    <div class="text-muted">
-                                        <i class="fas fa-calculator fa-4x mb-3"></i>
-                                        <h4>No calculations found</h4>
-                                        <p class="mb-4">Your calculation history will appear here once you start using the calculators.</p>
-                                        <div class="row justify-content-center">
-                                            <div class="col-auto">
-                                                <a href="{% url 'extrusion:extrusion_home' %}" class="btn btn-primary me-2">
-                                                    <i class="fas fa-industry"></i> Start with Extrusion
-                                                </a>
-                                                <a href="{% url 'sales:sales_home' %}" class="btn btn-purple me-2">
-                                                    <i class="fas fa-money-bill-wave"></i> Try Sales
-                                                </a>
-                                                <a href="{% url 'home' %}" class="btn btn-outline-primary">
-                                                    <i class="fas fa-home"></i> Go to Main Calculator
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Selected Actions -->
-                <div class="row mt-3" id="selectedActions" style="display: none;">
-                    <div class="col-12">
-                        <div class="card bg-light">
-                            <div class="card-body py-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span id="selectedCount">0 calculations selected</span>
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-danger me-2" id="deleteSelected">
-                                            <i class="fas fa-trash"></i> Delete Selected
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-success" id="exportSelectedBtn">
-                                            <i class="fas fa-download"></i> Export Selected
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pagination -->
-                {% if calculations.has_other_pages %}
-                <nav aria-label="Calculation history pagination" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if calculations.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ calculations.previous_page_number }}">
-                                <i class="fas fa-chevron-left"></i> Previous
-                            </a>
-                        </li>
-                        {% endif %}
-
-                        {% for num in calculations.paginator.page_range %}
-                            {% if calculations.number == num %}
-                            <li class="page-item active">
-                                <span class="page-link">{{ num }}</span>
-                            </li>
-                            {% elif num > calculations.number|add:'-3' and num < calculations.number|add:'3' %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                            </li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if calculations.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ calculations.next_page_number }}">
-                                Next <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-            </div>
+        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+            <button class="btn btn-outline-line btn-sm" id="exportSelected">
+                <i class="fas fa-download"></i> Export Selected
+            </button>
         </div>
     </div>
 </div>
 
-<!-- Input Data Modal -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm table-compact" id="calculationsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="32"><input type="checkbox" id="selectAll"></th>
+                        <th>Date (EAT)</th>
+                        <th>Section</th>
+                        <th>Type</th>
+                        <th>Material</th>
+                        <th>Machine</th>
+                        <th>Customer</th>
+                        <th>Order</th>
+                        <th>Input</th>
+                        <th>Result</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for calculation in calculations %}
+                    {% timezone "Africa/Nairobi" %}
+                    <tr class="calculation-row"
+                        data-section="{{ calculation|get_section_name|lower }}"
+                        data-type="{{ calculation.calculation_type }}"
+                        data-material="{% if calculation.display_material %}{{ calculation.display_material.name }}{% endif %}"
+                        data-machine="{% if calculation.display_machine %}{{ calculation.display_machine }}{% endif %}"
+                        data-customer="{% if calculation.display_customer %}{{ calculation.display_customer }}{% endif %}"
+                        data-date="{{ calculation.timestamp|date:'Y-m-d' }}"
+                        data-recent="{% if calculation.is_recent %}true{% else %}false{% endif %}">
+                        <td><input type="checkbox" class="calculation-checkbox" value="{{ calculation.id }}"></td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <small class="text-muted">{{ calculation.timestamp|date:"M d, Y" }}</small>
+                                <small class="text-muted">{{ calculation.timestamp|date:"H:i" }}</small>
+                                {% if calculation.is_recent %}<span class="badge bg-success badge-sm mt-1">Recent</span>{% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {{ calculation|get_section_badge }}">
+                                <i class="{{ calculation|get_section_icon }} me-1"></i>{{ calculation|get_section_name }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ calculation|get_calculation_type_display }}</strong>
+                            {% if calculation.description %}<br><small class="text-muted">{{ calculation.description }}</small>{% endif %}
+                        </td>
+                        <td>
+                            {% if calculation.display_material %}
+                            <div class="d-flex align-items-center flex-wrap gap-1">
+                                <span class="badge bg-light text-dark">{{ calculation.display_material.name }}</span>
+                                <small class="text-muted">{{ calculation.display_material.density }} g/cm³</small>
+                                {% if calculation.display_material.is_laminated %}<span class="badge bg-info text-dark">Laminate</span>{% endif %}
+                            </div>
+                            {% else %}<span class="text-muted">N/A</span>{% endif %}
+                        </td>
+                        <td>{% if calculation.display_machine %}<span class="badge bg-secondary">{{ calculation.display_machine }}</span>{% else %}<span class="text-muted">&mdash;</span>{% endif %}</td>
+                        <td>{% if calculation.display_customer %}{{ calculation.display_customer }}{% else %}<span class="text-muted">&mdash;</span>{% endif %}</td>
+                        <td>{% if calculation.display_order %}{{ calculation.display_order }}{% else %}<span class="text-muted">&mdash;</span>{% endif %}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-input-btn" data-bs-toggle="modal" data-bs-target="#inputModal"
+                                    data-calculation-id="{{ calculation.id }}" data-input-data="{{ calculation.input_data|parse_calculation_data|safe }}" title="View Input">
+                                <i class="fas fa-eye"></i><span class="d-none d-xl-inline"> View</span>
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-success view-result-btn" data-bs-toggle="modal" data-bs-target="#resultModal"
+                                    data-calculation-id="{{ calculation.id }}" data-result-data="{{ calculation.result_data|parse_calculation_data|safe }}"
+                                    data-type="{{ calculation|get_calculation_type_display }}" title="View Results">
+                                <i class="fas fa-chart-bar"></i><span class="d-none d-xl-inline"> View</span>
+                            </button>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-info recalculate-btn" data-calculation='{{ calculation.id }}' data-type="{{ calculation.calculation_type }}" data-section="{{ calculation|get_section_name|lower }}" title="Redo">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                <button class="btn btn-outline-warning duplicate-btn" data-calculation='{{ calculation.id }}' title="Duplicate">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="btn btn-outline-danger delete-btn" data-calculation='{{ calculation.id }}' data-calculation-name="{{ calculation|get_calculation_type_display }}" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endtimezone %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-calculator fa-3x mb-3"></i>
+                                <h5>No calculations found</h5>
+                                <p class="mb-4">Your calculation history will appear here once you start using the calculators.</p>
+                                <div class="d-flex justify-content-center flex-wrap gap-2">
+                                    <a href="{% url 'extrusion:extrusion_home' %}" class="btn qn-extrusion"><i class="fas fa-industry"></i> Start with Extrusion</a>
+                                    <a href="{% url 'sales:sales_home' %}" class="btn qn-sales"><i class="fas fa-money-bill-wave"></i> Try Sales</a>
+                                    <a href="{% url 'home' %}" class="btn qn-home"><i class="fas fa-home"></i> Main Calculator</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mt-3" id="selectedActions" style="display: none;">
+            <div class="col-12">
+                <div class="card selected-bar">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span id="selectedCount" style="font-size:.85rem;">0 calculations selected</span>
+                            <div>
+                                <button class="btn btn-sm btn-outline-danger me-2" id="deleteSelected"><i class="fas fa-trash"></i> Delete</button>
+                                <button class="btn btn-sm btn-outline-success" id="exportSelectedBtn"><i class="fas fa-download"></i> Export</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if calculations.has_other_pages %}
+        <nav aria-label="Calculation history pagination" class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if calculations.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ calculations.previous_page_number }}"><i class="fas fa-chevron-left"></i> Prev</a></li>
+                {% endif %}
+                {% for num in calculations.paginator.page_range %}
+                    {% if calculations.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > calculations.number|add:'-3' and num < calculations.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if calculations.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ calculations.next_page_number }}">Next <i class="fas fa-chevron-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
 <div class="modal fade" id="inputModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-list-ul"></i> Input Parameters
-                </h5>
+                <h5 class="modal-title"><i class="fas fa-list-ul"></i> Input Parameters</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div id="inputDataContent">
                     <div class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
+                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
                         <p class="mt-2">Loading input data...</p>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Close
-                </button>
-                <button type="button" class="btn btn-primary" id="copyInputData">
-                    <i class="fas fa-copy"></i> Copy Data
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Close</button>
+                <button type="button" class="btn btn-primary" id="copyInputData"><i class="fas fa-copy"></i> Copy Data</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Result Data Modal -->
 <div class="modal fade" id="resultModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="resultModalTitle">
-                    <i class="fas fa-chart-bar"></i> Calculation Results
-                </h5>
+                <h5 class="modal-title" id="resultModalTitle"><i class="fas fa-chart-bar"></i> Calculation Results</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div id="resultDataContent">
                     <div class="text-center py-4">
-                        <div class="spinner-border text-success" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
+                        <div class="spinner-border text-success" role="status"><span class="visually-hidden">Loading...</span></div>
                         <p class="mt-2">Loading result data...</p>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Close
-                </button>
-                <button type="button" class="btn btn-success" id="copyResultData">
-                    <i class="fas fa-copy"></i> Copy Results
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Close</button>
+                <button type="button" class="btn btn-success" id="copyResultData"><i class="fas fa-copy"></i> Copy Results</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-danger">
-                    <i class="fas fa-exclamation-triangle"></i> Confirm Deletion
-                </h5>
+                <h5 class="modal-title text-danger"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -525,25 +395,40 @@
                 <p class="text-muted small">This action cannot be undone and the calculation will be permanently removed from your history.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete"><i class="fas fa-trash"></i> Delete</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Bulk Delete Confirmation Modal -->
+<div class="modal fade" id="downloadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-download"></i> Confirm Download</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Download the calculation history as <strong id="downloadFormatName">a file</strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> No
+                </button>
+                <a href="#" id="confirmDownloadBtn" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Yes, Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="bulkDeleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-danger">
-                    <i class="fas fa-exclamation-triangle"></i> Confirm Bulk Deletion
-                </h5>
+                <h5 class="modal-title text-danger"><i class="fas fa-exclamation-triangle"></i> Confirm Bulk Deletion</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -551,12 +436,8 @@
                 <p class="text-muted small">This action cannot be undone and all selected calculations will be permanently removed.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-danger" id="confirmBulkDelete">
-                    <i class="fas fa-trash"></i> Delete Selected
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmBulkDelete"><i class="fas fa-trash"></i> Delete Selected</button>
             </div>
         </div>
     </div>
@@ -566,13 +447,9 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize statistics first
     initializeStatistics();
-
-    // Initialize filters
     initializeFilters();
 
-    // Set up event listeners
     document.getElementById('sectionFilter').addEventListener('change', filterCalculations);
     document.getElementById('typeFilter').addEventListener('change', filterCalculations);
     document.getElementById('materialFilter').addEventListener('change', filterCalculations);
@@ -582,16 +459,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('showOnlyRecent').addEventListener('change', filterCalculations);
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
 
-    // Selection handlers
     document.getElementById('selectAll').addEventListener('change', toggleSelectAll);
     document.getElementById('deleteSelected').addEventListener('click', showBulkDeleteModal);
     document.getElementById('exportSelectedBtn').addEventListener('click', exportSelectedCalculations);
     document.getElementById('confirmBulkDelete').addEventListener('click', deleteSelectedCalculations);
 
-    // Set up modal handlers
     setupModalHandlers();
 
-    // Also update when any filter changes
     document.querySelectorAll('#sectionFilter, #typeFilter, #materialFilter, #machineFilter, #customerFilter, #dateFilter, #showOnlyRecent')
         .forEach(element => {
             element.addEventListener('change', updateStatistics);
@@ -604,16 +478,14 @@ function initializeStatistics() {
         printing: 0,
         lamination: 0,
         slitting: 0,
-        bag_making: 0,  // This is what we're looking for
+        bag_making: 0,
         sales: 0
     };
 
-    // Count all rows by section on page load
     document.querySelectorAll('.calculation-row').forEach(row => {
         const section = row.dataset.section;
-        console.log('Found row with section:', section); // Debug log
+        console.log('Found row with section:', section);
 
-        // Handle different section name formats
         if (section === 'bag making') {
             sectionCounts.bag_making++;
         } else if (section === 'bag_making') {
@@ -623,10 +495,8 @@ function initializeStatistics() {
         }
     });
 
-    // Debug: log the counts
     console.log('Section counts:', sectionCounts);
 
-    // Update all section counts
     document.getElementById('extrusionCount').textContent = sectionCounts.extrusion;
     document.getElementById('printingCount').textContent = sectionCounts.printing;
     document.getElementById('laminationCount').textContent = sectionCounts.lamination;
@@ -634,13 +504,11 @@ function initializeStatistics() {
     document.getElementById('bagMakingCount').textContent = sectionCounts.bag_making;
     document.getElementById('salesCount').textContent = sectionCounts.sales;
 
-    // Update total count
     const totalCount = document.querySelectorAll('.calculation-row').length;
     document.getElementById('totalCount').textContent = totalCount;
 }
 
 function initializeFilters() {
-    // Populate type filter
     const types = new Set();
     document.querySelectorAll('.calculation-row').forEach(row => {
         types.add(row.dataset.type);
@@ -654,7 +522,6 @@ function initializeFilters() {
         typeFilter.appendChild(option);
     });
 
-    // Populate material filter
     const materials = new Set();
     document.querySelectorAll('.calculation-row').forEach(row => {
         if (row.dataset.material) {
@@ -670,7 +537,6 @@ function initializeFilters() {
         materialFilter.appendChild(option);
     });
 
-    // Populate machine filter
     const machines = new Set();
     document.querySelectorAll('.calculation-row').forEach(row => {
         if (row.dataset.machine) {
@@ -686,7 +552,6 @@ function initializeFilters() {
         machineFilter.appendChild(option);
     });
 
-    // Populate customer filter
     const customers = new Set();
     document.querySelectorAll('.calculation-row').forEach(row => {
         if (row.dataset.customer) {
@@ -717,33 +582,13 @@ function filterCalculations() {
     document.querySelectorAll('.calculation-row').forEach(row => {
         let show = true;
 
-        if (sectionFilter && row.dataset.section !== sectionFilter) {
-            show = false;
-        }
-
-        if (typeFilter && row.dataset.type !== typeFilter) {
-            show = false;
-        }
-
-        if (materialFilter && row.dataset.material !== materialFilter) {
-            show = false;
-        }
-
-        if (machineFilter && row.dataset.machine !== machineFilter) {
-            show = false;
-        }
-
-        if (customerFilter && row.dataset.customer !== customerFilter) {
-            show = false;
-        }
-
-        if (dateFilter && row.dataset.date !== dateFilter) {
-            show = false;
-        }
-
-        if (showOnlyRecent && row.dataset.recent !== 'true') {
-            show = false;
-        }
+        if (sectionFilter && row.dataset.section !== sectionFilter) show = false;
+        if (typeFilter && row.dataset.type !== typeFilter) show = false;
+        if (materialFilter && row.dataset.material !== materialFilter) show = false;
+        if (machineFilter && row.dataset.machine !== machineFilter) show = false;
+        if (customerFilter && row.dataset.customer !== customerFilter) show = false;
+        if (dateFilter && row.dataset.date !== dateFilter) show = false;
+        if (showOnlyRecent && row.dataset.recent !== 'true') show = false;
 
         if (show) {
             row.style.display = '';
@@ -779,11 +624,9 @@ function updateStatistics() {
         sales: 0
     };
 
-    // Count visible rows by section
     visibleRows.forEach(row => {
         const section = row.dataset.section;
 
-        // Handle different section name formats
         if (section === 'bag making') {
             sectionCounts.bag_making++;
         } else if (section === 'bag_making') {
@@ -793,7 +636,6 @@ function updateStatistics() {
         }
     });
 
-    // Update all section counts
     document.getElementById('extrusionCount').textContent = sectionCounts.extrusion;
     document.getElementById('printingCount').textContent = sectionCounts.printing;
     document.getElementById('laminationCount').textContent = sectionCounts.lamination;
@@ -801,12 +643,10 @@ function updateStatistics() {
     document.getElementById('bagMakingCount').textContent = sectionCounts.bag_making;
     document.getElementById('salesCount').textContent = sectionCounts.sales;
 
-    // Update total count
     const totalCount = visibleRows.length;
     document.getElementById('totalCount').textContent = totalCount;
 }
 
-// Selection Management
 function toggleSelectAll() {
     const isChecked = document.getElementById('selectAll').checked;
     document.querySelectorAll('.calculation-checkbox').forEach(checkbox => {
@@ -829,7 +669,6 @@ function updateSelectionUI() {
         selectedActions.style.display = 'none';
     }
 
-    // Update select all checkbox state
     const visibleCheckboxes = document.querySelectorAll('.calculation-checkbox');
     const checkedVisibleCheckboxes = Array.from(visibleCheckboxes).filter(cb =>
         cb.checked && cb.closest('tr').style.display !== 'none'
@@ -863,19 +702,16 @@ function deleteCalculation(calculationId) {
     .then(data => {
         console.log('Delete response:', data);
         if (data.success) {
-            // Find and remove the row
             const row = document.querySelector(`.calculation-checkbox[value="${calculationId}"]`);
             if (row && row.closest('tr')) {
                 row.closest('tr').remove();
             }
 
-            // Hide the modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
             if (modal) {
                 modal.hide();
             }
 
-            // Update statistics and UI
             updateStatistics();
             updateSelectionUI();
             showToast(data.message || 'Calculation deleted successfully!', 'success');
@@ -920,7 +756,6 @@ function deleteSelectedCalculations() {
     })
     .then(data => {
         if (data.success) {
-            // Remove selected rows from the table
             selectedIds.forEach(id => {
                 const checkbox = document.querySelector(`.calculation-checkbox[value="${id}"]`);
                 if (checkbox && checkbox.closest('tr')) {
@@ -960,7 +795,6 @@ function exportSelectedCalculations() {
 }
 
 function setupModalHandlers() {
-    // Input data modal
     document.querySelectorAll('.view-input-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const inputData = this.dataset.inputData;
@@ -982,7 +816,6 @@ function setupModalHandlers() {
         });
     });
 
-    // Result data modal
     document.querySelectorAll('.view-result-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const resultData = this.dataset.resultData;
@@ -1008,7 +841,6 @@ function setupModalHandlers() {
         });
     });
 
-    // Copy buttons
     document.getElementById('copyInputData').addEventListener('click', function() {
         copyToClipboard(document.getElementById('inputDataContent').innerText);
         showToast('Input data copied to clipboard!', 'success');
@@ -1019,7 +851,6 @@ function setupModalHandlers() {
         showToast('Results copied to clipboard!', 'success');
     });
 
-    // Delete buttons
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const calculationId = this.dataset.calculation;
@@ -1030,13 +861,11 @@ function setupModalHandlers() {
         });
     });
 
-    // Confirm delete
     document.getElementById('confirmDelete').addEventListener('click', function() {
         const calculationId = this.dataset.calculationId;
         deleteCalculation(calculationId);
     });
 
-    // Checkbox change events
     document.querySelectorAll('.calculation-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', updateSelectionUI);
     });
@@ -1081,16 +910,13 @@ function formatInputData(inputData) {
     let parsedData;
 
     try {
-        // If it's already an object, use it directly
         if (typeof inputData === 'object') {
             parsedData = inputData;
         } else {
-            // Try to parse as JSON
             parsedData = JSON.parse(inputData);
         }
     } catch (error) {
         console.log('JSON parse failed, using raw data:', error);
-        // If parsing fails, use the data as is (it might already be parsed by the template filter)
         parsedData = inputData;
     }
 
@@ -1103,16 +929,13 @@ function formatResultData(resultData) {
     let parsedData;
 
     try {
-        // If it's already an object, use it directly
         if (typeof resultData === 'object') {
             parsedData = resultData;
         } else {
-            // Try to parse as JSON
             parsedData = JSON.parse(resultData);
         }
     } catch (error) {
         console.log('JSON parse failed, using raw data:', error);
-        // If parsing fails, use the data as is
         parsedData = resultData;
     }
 
@@ -1123,41 +946,26 @@ function generateParameterTable(data, columnName) {
     let html = '<div class="table-responsive"><table class="table table-sm table-striped">';
     html += `<thead><tr><th>${columnName}</th><th>Value</th><th>Unit</th></tr></thead><tbody>`;
 
-    // Define unit mappings for common parameters
     const unitMappings = {
-        // Mass/Weight
         'mass': 'kg', 'weight': 'kg', 'roll_mass': 'kg',
-
-        // Dimensions
         'diameter': 'mm', 'core_diameter': 'mm', 'width': 'mm', 'length': 'm',
         'outer_diameter': 'm', 'thickness': 'microns',
-
-        // Density
         'density': 'g/cm³', 'effective_density': 'g/cm³',
-
-        // GSM
         'gsm': 'gsm',
-
-        // Count
         'layer_count': '', 'count': '',
-
-        // Imperial
         'inch': 'in'
     };
 
     for (const [key, value] of Object.entries(data)) {
-        // Skip internal fields
         if (['material_id', 'csrfmiddlewaretoken', 'calculation_type', 'material_details'].includes(key)) {
             continue;
         }
 
-        // Format the parameter name
         let paramName = key.replace(/_/g, ' ')
                           .replace(/\b\w/g, l => l.toUpperCase())
                           .replace(/\b(Gsm|Id)\b/gi, match => match.toUpperCase())
                           .replace(/\b(Mm|Cm)\b/gi, match => match.toUpperCase());
 
-        // Determine unit
         let unit = '';
         const lowerKey = key.toLowerCase();
 
@@ -1168,9 +976,8 @@ function generateParameterTable(data, columnName) {
             }
         }
 
-        // Special cases for units in parameter names
         if (lowerKey.includes('unit')) {
-            unit = ''; // Don't show unit for unit fields themselves
+            unit = '';
         }
 
         html += `<tr>
@@ -1201,7 +1008,6 @@ function formatValue(value) {
         }
     }
 
-    // Remove quotes from string values if they're wrapped
     if (typeof value === 'string') {
         let cleaned = value.trim();
         if ((cleaned.startsWith("'") && cleaned.endsWith("'")) ||
@@ -1221,7 +1027,7 @@ function parseParameter(key) {
         'load': 'N', 'force': 'N', 'strength': 'MPa', 'elongation': '%',
         'cof': '', 'dart_impact': 'g', 'cv': '%', 'yield': 'm²/kg',
         'pieces': 'pcs', 'production_time': 'hr', 'roll_length': 'm',
-        'film_length': 'm', 'tensile': 'MPa', 'elongation': '%',
+        'film_length': 'm', 'tensile': 'MPa',
         'cost': 'currency', 'budget': 'currency', 'price': 'currency'
     };
 
@@ -1236,21 +1042,6 @@ function parseParameter(key) {
     }
 
     return { paramName, unit };
-}
-
-function formatValue(value) {
-    if (typeof value === 'number') {
-        if (Math.abs(value) < 0.001) {
-            return value.toExponential(4);
-        } else if (Math.abs(value) < 1) {
-            return value.toFixed(4);
-        } else if (Math.abs(value) < 1000) {
-            return value.toFixed(2);
-        } else {
-            return value.toLocaleString();
-        }
-    }
-    return value;
 }
 
 function deleteCalculation(calculationId) {
@@ -1286,7 +1077,6 @@ function deleteCalculation(calculationId) {
     });
 }
 
-// Utility functions
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).catch(err => {
         console.error('Failed to copy: ', err);
@@ -1332,32 +1122,27 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Initialize checkboxes
 document.querySelectorAll('.calculation-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', updateSelectionUI);
 });
+
+
+document.querySelectorAll('.download-link').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        const label = link.textContent.trim();
+        document.getElementById('downloadFormatName').textContent = label;
+        document.getElementById('confirmDownloadBtn').setAttribute('href', href);
+        new bootstrap.Modal(document.getElementById('downloadModal')).show();
+    });
+});
+
+document.getElementById('confirmDownloadBtn').addEventListener('click', function (e) {
+    const modalEl = document.getElementById('downloadModal');
+    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modal.hide();
+    // let the href navigation/download proceed as normal
+});
 </script>
-
-<style>
-.bg-purple {
-    background-color: #6f42c1 !important;
-}
-
-.btn-purple {
-    background-color: #6f42c1;
-    border-color: #6f42c1;
-    color: white;
-}
-
-.btn-purple:hover {
-    background-color: #5a359c;
-    border-color: #5a359c;
-    color: white;
-}
-
-.badge-sm {
-    font-size: 0.7em;
-    padding: 0.2em 0.4em;
-}
-</style>
 {% endblock %}

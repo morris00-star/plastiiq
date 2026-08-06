@@ -113,33 +113,51 @@
                 </div>
             </div>
 
-            <!-- Optional Accessory / Cut-Out Feature -->
             <div class="card mb-3">
                 <div class="card-header bg-light">
-                    <strong><i class="fas fa-puzzle-piece"></i> Optional Feature (choose at most one)</strong>
+                    <strong><i class="fas fa-puzzle-piece"></i> Optional Features (pick up to 3)</strong>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Feature</label>
-                        <select class="form-select" name="feature_type" id="featureType">
-                            <option value="NONE" selected>None</option>
-                            <optgroup label="Accessories (added weight)">
-                                <option value="ZIPPER">Zipper (LDPE bags only)</option>
-                                <option value="TAPE">Adhesive Tape (flap bags only)</option>
-                                <option value="SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</option>
-                                <option value="CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</option>
-                                <option value="LOOP_HANDLE">Loop Handle</option>
-                                <option value="BREATHER_VENT">Breather / Vent</option>
-                            </optgroup>
-                            <optgroup label="Cut-Outs (deducted weight)">
-                                <option value="D_PUNCH">D Punch</option>
-                                <option value="VEST_BAG">Vest Bag</option>
-                            </optgroup>
-                        </select>
-                        <div class="form-text">Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
+                        <label class="form-label">Features</label>
+                        <div id="FeatureCheckboxGroup">
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="ZIPPER" id="Feature_ZIPPER">
+                                <label class="form-check-label" for="Feature_ZIPPER">Zipper (LDPE bags only)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="TAPE" id="Feature_TAPE">
+                                <label class="form-check-label" for="Feature_TAPE">Adhesive Tape (flap bags only)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="SPOUT_ASSEMBLY" id="Feature_SPOUT_ASSEMBLY">
+                                <label class="form-check-label" for="Feature_SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="CARRY_HANDLE" id="Feature_CARRY_HANDLE">
+                                <label class="form-check-label" for="Feature_CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="LOOP_HANDLE" id="Feature_LOOP_HANDLE">
+                                <label class="form-check-label" for="Feature_LOOP_HANDLE">Loop Handle</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="BREATHER_VENT" id="Feature_BREATHER_VENT">
+                                <label class="form-check-label" for="Feature_BREATHER_VENT">Breather / Vent</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="D_PUNCH" id="Feature_D_PUNCH">
+                                <label class="form-check-label" for="Feature_D_PUNCH">D Punch (cut-out)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input feature-checkbox" type="checkbox" value="VEST_BAG" id="Feature_VEST_BAG">
+                                <label class="form-check-label" for="Feature_VEST_BAG">Vest Bag (cut-out)</label>
+                            </div>
+                        </div>
+                        <div class="form-text">Select up to 3, depending on the bag's specification. Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
                     </div>
 
-                    <div id="featureZipperFields" style="display: none;">
+                    <div id="FeatureZipperFields" style="display: none;">
                         <div class="row">
                             <div class="col-md-6">
                                 <label class="form-label">Zipper Type</label>
@@ -156,14 +174,14 @@
                         <div class="form-text">Zipper weight is calculated from bag width automatically - no length input needed.</div>
                     </div>
 
-                    <div id="featureTapeFields" style="display: none;">
+                    <div id="FeatureTapeFields" style="display: none;">
                         <div class="row">
                             <div class="col-md-6">
                                 <label class="form-label">Tape Type</label>
                                 <select class="form-select" name="tape_type">
-                                    <option value="TAPE_PERMANENT">Permanent (18mm, default Ct 0.05 g/100mm)</option>
-                                    <option value="TAPE_TEMPORARY_10MM">Temporary Small (10mm, default Ct 0.14 g/100mm)</option>
-                                    <option value="TAPE_TEMPORARY_18MM">Temporary Large (18mm, default Ct 0.252 g/100mm)</option>
+                                    <option value="TAPE_PERMANENT">Temporary (18mm, default Ct 0.05 g/100mm)</option>
+                                    <option value="TAPE_TEMPORARY_10MM">Permanent Small (10mm, default Ct 0.14 g/100mm)</option>
+                                    <option value="TAPE_TEMPORARY_18MM">Permanent Large (18mm, default Ct 0.252 g/100mm)</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -174,14 +192,33 @@
                         <div class="form-text">Tape weight is calculated from bag width automatically - no length input needed.</div>
                     </div>
 
-                    <div id="featureFixedWeightFields" style="display: none;">
-                        <label class="form-label" id="featureFixedWeightLabel">Weight Override (optional)</label>
-                        <input type="number" step="0.01" class="form-control" name="accessory_weight_override" placeholder="Leave blank to use default" style="max-width: 300px;">
+                    <div id="FeatureSpoutFields" style="display: none;">
+                        <label class="form-label">Spout Assembly Weight Override (optional)</label>
+                        <input type="number" step="0.01" class="form-control" name="accessory_weight_override_SPOUT_ASSEMBLY" placeholder="Leave blank to use default" style="max-width: 300px;">
+                    </div>
+                    <div id="FeatureCarryHandleFields" style="display: none;">
+                        <label class="form-label">Carry Handle Weight Override (optional)</label>
+                        <input type="number" step="0.01" class="form-control" name="accessory_weight_override_CARRY_HANDLE" placeholder="Leave blank to use default" style="max-width: 300px;">
+                    </div>
+                    <div id="FeatureLoopHandleFields" style="display: none;">
+                        <label class="form-label">Loop Handle Weight Override (optional)</label>
+                        <input type="number" step="0.01" class="form-control" name="accessory_weight_override_LOOP_HANDLE" placeholder="Leave blank to use default" style="max-width: 300px;">
+                    </div>
+                    <div id="FeatureBreatherFields" style="display: none;">
+                        <label class="form-label">Breather/Vent Weight Override (optional)</label>
+                        <input type="number" step="0.01" class="form-control" name="accessory_weight_override_BREATHER_VENT" placeholder="Leave blank to use default" style="max-width: 300px;">
                     </div>
 
-                    <div id="featureCutoutFields" style="display: none;">
-                        <label class="form-label">Cut-Out Geometry</label>
-                        <select class="form-select" name="cutout_geometry_id" id="cutoutGeometrySelect" style="max-width: 500px;">
+                    <div id="FeatureDPunchFields" style="display: none;">
+                        <label class="form-label">D Punch Geometry</label>
+                        <select class="form-select" name="cutout_geometry_id_D_PUNCH" id="DPunchGeometrySelect" style="max-width: 500px;">
+                            <option value="">Loading geometries...</option>
+                        </select>
+                        <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
+                    </div>
+                    <div id="FeatureVestBagFields" style="display: none;">
+                        <label class="form-label">Vest Bag Geometry</label>
+                        <select class="form-select" name="cutout_geometry_id_VEST_BAG" id="VestBagGeometrySelect" style="max-width: 500px;">
                             <option value="">Loading geometries...</option>
                         </select>
                         <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
@@ -468,30 +505,48 @@
                     </div>
                 </div>
 
-                <!-- Optional Accessory / Cut-Out Feature -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong><i class="fas fa-puzzle-piece"></i> Optional Feature (choose at most one)</strong>
+                        <strong><i class="fas fa-puzzle-piece"></i> Optional Features (pick up to 3)</strong>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">Feature</label>
-                            <select class="form-select" name="feature_type" id="packetFeatureType">
-                                <option value="NONE" selected>None</option>
-                                <optgroup label="Accessories (added weight)">
-                                    <option value="ZIPPER">Zipper (LDPE bags only)</option>
-                                    <option value="TAPE">Adhesive Tape (flap bags only)</option>
-                                    <option value="SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</option>
-                                    <option value="CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</option>
-                                    <option value="LOOP_HANDLE">Loop Handle</option>
-                                    <option value="BREATHER_VENT">Breather / Vent</option>
-                                </optgroup>
-                                <optgroup label="Cut-Outs (deducted weight)">
-                                    <option value="D_PUNCH">D Punch</option>
-                                    <option value="VEST_BAG">Vest Bag</option>
-                                </optgroup>
-                            </select>
-                            <div class="form-text">Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
+                            <label class="form-label">Features</label>
+                            <div id="packetFeatureCheckboxGroup">
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="ZIPPER" id="packetFeature_ZIPPER">
+                                    <label class="form-check-label" for="packetFeature_ZIPPER">Zipper (LDPE bags only)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="TAPE" id="packetFeature_TAPE">
+                                    <label class="form-check-label" for="packetFeature_TAPE">Adhesive Tape (flap bags only)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="SPOUT_ASSEMBLY" id="packetFeature_SPOUT_ASSEMBLY">
+                                    <label class="form-check-label" for="packetFeature_SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="CARRY_HANDLE" id="packetFeature_CARRY_HANDLE">
+                                    <label class="form-check-label" for="packetFeature_CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="LOOP_HANDLE" id="packetFeature_LOOP_HANDLE">
+                                    <label class="form-check-label" for="packetFeature_LOOP_HANDLE">Loop Handle</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="BREATHER_VENT" id="packetFeature_BREATHER_VENT">
+                                    <label class="form-check-label" for="packetFeature_BREATHER_VENT">Breather / Vent</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="D_PUNCH" id="packetFeature_D_PUNCH">
+                                    <label class="form-check-label" for="packetFeature_D_PUNCH">D Punch (cut-out)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="VEST_BAG" id="packetFeature_VEST_BAG">
+                                    <label class="form-check-label" for="packetFeature_VEST_BAG">Vest Bag (cut-out)</label>
+                                </div>
+                            </div>
+                            <div class="form-text">Select up to 3, depending on the bag's specification. Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
                         </div>
 
                         <div id="packetFeatureZipperFields" style="display: none;">
@@ -516,9 +571,9 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Tape Type</label>
                                     <select class="form-select" name="tape_type">
-                                        <option value="TAPE_PERMANENT">Permanent (18mm, default Ct 0.05 g/100mm)</option>
-                                        <option value="TAPE_TEMPORARY_10MM">Temporary Small (10mm, default Ct 0.14 g/100mm)</option>
-                                        <option value="TAPE_TEMPORARY_18MM">Temporary Large (18mm, default Ct 0.252 g/100mm)</option>
+                                        <option value="TAPE_PERMANENT">Temporary (18mm, default Ct 0.05 g/100mm)</option>
+                                        <option value="TAPE_TEMPORARY_10MM">Permanent Small (10mm, default Ct 0.14 g/100mm)</option>
+                                        <option value="TAPE_TEMPORARY_18MM">Permanent Large (18mm, default Ct 0.252 g/100mm)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -529,14 +584,33 @@
                             <div class="form-text">Tape weight is calculated from bag width automatically - no length input needed.</div>
                         </div>
 
-                        <div id="packetFeatureFixedWeightFields" style="display: none;">
-                            <label class="form-label" id="packetFeatureFixedWeightLabel">Weight Override (optional)</label>
-                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        <div id="packetFeatureSpoutFields" style="display: none;">
+                            <label class="form-label">Spout Assembly Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_SPOUT_ASSEMBLY" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+                        <div id="packetFeatureCarryHandleFields" style="display: none;">
+                            <label class="form-label">Carry Handle Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_CARRY_HANDLE" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+                        <div id="packetFeatureLoopHandleFields" style="display: none;">
+                            <label class="form-label">Loop Handle Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_LOOP_HANDLE" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+                        <div id="packetFeatureBreatherFields" style="display: none;">
+                            <label class="form-label">Breather/Vent Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_BREATHER_VENT" placeholder="Leave blank to use default" style="max-width: 300px;">
                         </div>
 
-                        <div id="packetFeatureCutoutFields" style="display: none;">
-                            <label class="form-label">Cut-Out Geometry</label>
-                            <select class="form-select" name="cutout_geometry_id" id="packetCutoutGeometrySelect" style="max-width: 500px;">
+                        <div id="packetFeatureDPunchFields" style="display: none;">
+                            <label class="form-label">D Punch Geometry</label>
+                            <select class="form-select" name="cutout_geometry_id_D_PUNCH" id="packetDPunchGeometrySelect" style="max-width: 500px;">
+                                <option value="">Loading geometries...</option>
+                            </select>
+                            <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
+                        </div>
+                        <div id="packetFeatureVestBagFields" style="display: none;">
+                            <label class="form-label">Vest Bag Geometry</label>
+                            <select class="form-select" name="cutout_geometry_id_VEST_BAG" id="packetVestBagGeometrySelect" style="max-width: 500px;">
                                 <option value="">Loading geometries...</option>
                             </select>
                             <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
@@ -824,30 +898,48 @@
                     </div>
                 </div>
 
-                <!-- Optional Accessory / Cut-Out Feature -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong><i class="fas fa-puzzle-piece"></i> Optional Feature (choose at most one)</strong>
+                        <strong><i class="fas fa-puzzle-piece"></i> Optional Features (pick up to 3)</strong>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">Feature</label>
-                            <select class="form-select" name="feature_type" id="bundleFeatureType">
-                                <option value="NONE" selected>None</option>
-                                <optgroup label="Accessories (added weight)">
-                                    <option value="ZIPPER">Zipper (LDPE bags only)</option>
-                                    <option value="TAPE">Adhesive Tape (flap bags only)</option>
-                                    <option value="SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</option>
-                                    <option value="CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</option>
-                                    <option value="LOOP_HANDLE">Loop Handle</option>
-                                    <option value="BREATHER_VENT">Breather / Vent</option>
-                                </optgroup>
-                                <optgroup label="Cut-Outs (deducted weight)">
-                                    <option value="D_PUNCH">D Punch</option>
-                                    <option value="VEST_BAG">Vest Bag</option>
-                                </optgroup>
-                            </select>
-                            <div class="form-text">Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
+                            <label class="form-label">Features</label>
+                            <div id="bundleFeatureCheckboxGroup">
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="ZIPPER" id="bundleFeature_ZIPPER">
+                                    <label class="form-check-label" for="bundleFeature_ZIPPER">Zipper (LDPE bags only)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="TAPE" id="bundleFeature_TAPE">
+                                    <label class="form-check-label" for="bundleFeature_TAPE">Adhesive Tape (flap bags only)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="SPOUT_ASSEMBLY" id="bundleFeature_SPOUT_ASSEMBLY">
+                                    <label class="form-check-label" for="bundleFeature_SPOUT_ASSEMBLY">Spout Assembly (LDPE bags only)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="CARRY_HANDLE" id="bundleFeature_CARRY_HANDLE">
+                                    <label class="form-check-label" for="bundleFeature_CARRY_HANDLE">Carry Handle (deducts D Punch 30x75, adds handle)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="LOOP_HANDLE" id="bundleFeature_LOOP_HANDLE">
+                                    <label class="form-check-label" for="bundleFeature_LOOP_HANDLE">Loop Handle</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="BREATHER_VENT" id="bundleFeature_BREATHER_VENT">
+                                    <label class="form-check-label" for="bundleFeature_BREATHER_VENT">Breather / Vent</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="D_PUNCH" id="bundleFeature_D_PUNCH">
+                                    <label class="form-check-label" for="bundleFeature_D_PUNCH">D Punch (cut-out)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input feature-checkbox" type="checkbox" value="VEST_BAG" id="bundleFeature_VEST_BAG">
+                                    <label class="form-check-label" for="bundleFeature_VEST_BAG">Vest Bag (cut-out)</label>
+                                </div>
+                            </div>
+                            <div class="form-text">Select up to 3, depending on the bag's specification. Zipper/Spout require an LDPE bag or LDPE sealing layer; Tape requires a flap bag - enforced automatically.</div>
                         </div>
 
                         <div id="bundleFeatureZipperFields" style="display: none;">
@@ -872,9 +964,9 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Tape Type</label>
                                     <select class="form-select" name="tape_type">
-                                        <option value="TAPE_PERMANENT">Permanent (18mm, default Ct 0.05 g/100mm)</option>
-                                        <option value="TAPE_TEMPORARY_10MM">Temporary Small (10mm, default Ct 0.14 g/100mm)</option>
-                                        <option value="TAPE_TEMPORARY_18MM">Temporary Large (18mm, default Ct 0.252 g/100mm)</option>
+                                        <option value="TAPE_TEMPORARY">Temporary (18mm, default Ct 0.05 g/100mm)</option>
+                                        <option value="TAPE_PERMANENT_10MM">Permanent Small (10mm, default Ct 0.14 g/100mm)</option>
+                                        <option value="TAPE_PERMANENT_18MM">Permanent Large (18mm, default Ct 0.252 g/100mm)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -885,14 +977,33 @@
                             <div class="form-text">Tape weight is calculated from bag width automatically - no length input needed.</div>
                         </div>
 
-                        <div id="bundleFeatureFixedWeightFields" style="display: none;">
-                            <label class="form-label" id="bundleFeatureFixedWeightLabel">Weight Override (optional)</label>
-                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        <div id="bundleFeatureSpoutFields" style="display: none;">
+                            <label class="form-label">Spout Assembly Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_SPOUT_ASSEMBLY" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+                        <div id="bundleFeatureCarryHandleFields" style="display: none;">
+                            <label class="form-label">Carry Handle Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_CARRY_HANDLE" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+                        <div id="bundleFeatureLoopHandleFields" style="display: none;">
+                            <label class="form-label">Loop Handle Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_LOOP_HANDLE" placeholder="Leave blank to use default" style="max-width: 300px;">
+                        </div>
+                        <div id="bundleFeatureBreatherFields" style="display: none;">
+                            <label class="form-label">Breather/Vent Weight Override (optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="accessory_weight_override_BREATHER_VENT" placeholder="Leave blank to use default" style="max-width: 300px;">
                         </div>
 
-                        <div id="bundleFeatureCutoutFields" style="display: none;">
-                            <label class="form-label">Cut-Out Geometry</label>
-                            <select class="form-select" name="cutout_geometry_id" id="bundleCutoutGeometrySelect" style="max-width: 500px;">
+                        <div id="bundleFeatureDPunchFields" style="display: none;">
+                            <label class="form-label">D Punch Geometry</label>
+                            <select class="form-select" name="cutout_geometry_id_D_PUNCH" id="bundleDPunchGeometrySelect" style="max-width: 500px;">
+                                <option value="">Loading geometries...</option>
+                            </select>
+                            <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
+                        </div>
+                        <div id="bundleFeatureVestBagFields" style="display: none;">
+                            <label class="form-label">Vest Bag Geometry</label>
+                            <select class="form-select" name="cutout_geometry_id_VEST_BAG" id="bundleVestBagGeometrySelect" style="max-width: 500px;">
                                 <option value="">Loading geometries...</option>
                             </select>
                             <div class="form-text">Area is fixed per die; K is recalculated from your bag's actual density and thickness above.</div>
@@ -1459,85 +1570,78 @@ function loadCutoutGeometries() {
         });
 }
 
-document.getElementById('featureType').addEventListener('change', function() {
-    const value = this.value;
-    document.getElementById('featureZipperFields').style.display = value === 'ZIPPER' ? 'block' : 'none';
-    document.getElementById('featureTapeFields').style.display = value === 'TAPE' ? 'block' : 'none';
+// Fields shown/hidden per feature checkbox value, and which div id owns them (prefixed per card)
+const FEATURE_FIELD_MAP = {
+    'ZIPPER': 'FeatureZipperFields',
+    'TAPE': 'FeatureTapeFields',
+    'SPOUT_ASSEMBLY': 'FeatureSpoutFields',
+    'CARRY_HANDLE': 'FeatureCarryHandleFields',
+    'LOOP_HANDLE': 'FeatureLoopHandleFields',
+    'BREATHER_VENT': 'FeatureBreatherFields',
+    'D_PUNCH': 'FeatureDPunchFields',
+    'VEST_BAG': 'FeatureVestBagFields',
+};
 
-    const fixedWeightTypes = { 'SPOUT_ASSEMBLY': 'Spout Assembly', 'CARRY_HANDLE': 'Carry Handle', 'LOOP_HANDLE': 'Loop Handle', 'BREATHER_VENT': 'Breather/Vent' };
-    if (fixedWeightTypes[value]) {
-        document.getElementById('featureFixedWeightFields').style.display = 'block';
-        document.getElementById('featureFixedWeightLabel').textContent = fixedWeightTypes[value] + ' Weight Override (optional)';
-    } else {
-        document.getElementById('featureFixedWeightFields').style.display = 'none';
-    }
-
-    const cutoutSection = document.getElementById('featureCutoutFields');
-    if (value === 'D_PUNCH' || value === 'VEST_BAG') {
-        cutoutSection.style.display = 'block';
-        const geometryType = value === 'D_PUNCH' ? 'D_PUNCH' : 'VEST_BAG';
-        loadCutoutGeometries().then(geometries => {
-            const select = document.getElementById('cutoutGeometrySelect');
-            select.innerHTML = '';
-            const options = (geometries && geometries[geometryType]) || [];
-            if (options.length === 0) {
-                select.innerHTML = '<option value="">No geometries available</option>';
-                return;
-            }
-            options.forEach(g => {
-                const opt = document.createElement('option');
-                opt.value = g.id;
-                opt.textContent = `${g.name} (A=${g.area_cm2} cm², calibrated on ${g.calibration_material})`;
-                select.appendChild(opt);
-            });
+function loadGeometryIntoSelect(selectId, geometryType) {
+    loadCutoutGeometries().then(geometries => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        select.innerHTML = '';
+        const options = (geometries && geometries[geometryType]) || [];
+        if (options.length === 0) {
+            select.innerHTML = '<option value="">No geometries available</option>';
+            return;
+        }
+        options.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = `${g.name} (A=${g.area_cm2} cm\u00b2)`;
+            select.appendChild(opt);
         });
-    } else {
-        cutoutSection.style.display = 'none';
-    }
-});
-
-function bindFeatureTypeToggle(prefix) {
-    const select = document.getElementById(prefix + 'FeatureType');
-    if (!select) return;
-    select.addEventListener('change', function() {
-        const value = this.value;
-        document.getElementById(prefix + 'FeatureZipperFields').style.display = value === 'ZIPPER' ? 'block' : 'none';
-        document.getElementById(prefix + 'FeatureTapeFields').style.display = value === 'TAPE' ? 'block' : 'none';
-
-        const fixedWeightTypes = { 'SPOUT_ASSEMBLY': 'Spout Assembly', 'CARRY_HANDLE': 'Carry Handle', 'LOOP_HANDLE': 'Loop Handle', 'BREATHER_VENT': 'Breather/Vent' };
-        const fixedFields = document.getElementById(prefix + 'FeatureFixedWeightFields');
-        if (fixedWeightTypes[value]) {
-            fixedFields.style.display = 'block';
-            document.getElementById(prefix + 'FeatureFixedWeightLabel').textContent = fixedWeightTypes[value] + ' Weight Override (optional)';
-        } else {
-            fixedFields.style.display = 'none';
-        }
-
-        const cutoutSection = document.getElementById(prefix + 'FeatureCutoutFields');
-        if (value === 'D_PUNCH' || value === 'VEST_BAG') {
-            cutoutSection.style.display = 'block';
-            loadCutoutGeometries().then(geometries => {
-                const geometrySelect = document.getElementById(prefix + 'CutoutGeometrySelect');
-                geometrySelect.innerHTML = '';
-                const options = (geometries && geometries[value]) || [];
-                if (options.length === 0) {
-                    geometrySelect.innerHTML = '<option value="">No geometries available</option>';
-                    return;
-                }
-                options.forEach(g => {
-                    const opt = document.createElement('option');
-                    opt.value = g.id;
-                    opt.textContent = `${g.name} `;
-                    geometrySelect.appendChild(opt);
-                });
-            });
-        } else {
-            cutoutSection.style.display = 'none';
-        }
     });
 }
-bindFeatureTypeToggle('packet');
-bindFeatureTypeToggle('bundle');
+
+function bindFeatureCheckboxGroup(prefix) {
+    const group = document.getElementById(prefix + 'FeatureCheckboxGroup');
+    if (!group) return;
+    const checkboxes = group.querySelectorAll('.feature-checkbox');
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            // Enforce max 3
+            const checked = Array.from(checkboxes).filter(c => c.checked);
+            if (checked.length > 3) {
+                this.checked = false;
+                alert('You can select at most 3 features.');
+                return;
+            }
+
+            const fieldSuffix = FEATURE_FIELD_MAP[this.value];
+            if (!fieldSuffix) return;
+            const fieldDiv = document.getElementById(prefix + fieldSuffix);
+            if (fieldDiv) {
+                fieldDiv.style.display = this.checked ? 'block' : 'none';
+            }
+
+            if (this.checked && this.value === 'D_PUNCH') {
+                loadGeometryIntoSelect(prefix + 'DPunchGeometrySelect', 'D_PUNCH');
+            }
+            if (this.checked && this.value === 'VEST_BAG') {
+                loadGeometryIntoSelect(prefix + 'VestBagGeometrySelect', 'VEST_BAG');
+            }
+        });
+    });
+}
+bindFeatureCheckboxGroup('');
+bindFeatureCheckboxGroup('packet');
+bindFeatureCheckboxGroup('bundle');
+
+// Collects the checked feature values from a form's checkbox group, in prefix scope
+function collectSelectedFeatures(prefix) {
+    const group = document.getElementById(prefix + 'FeatureCheckboxGroup');
+    if (!group) return [];
+    return Array.from(group.querySelectorAll('.feature-checkbox:checked')).map(cb => cb.value);
+}
 
 // Bag Capacity: shape toggle
 document.querySelectorAll('input[name="bag_shape"]').forEach(radio => {
@@ -1945,25 +2049,32 @@ document.getElementById('productionMetricsForm').addEventListener('submit', func
 });
 
 // Calculation Functions
-function renderFeatureBreakdown(feature) {
-    if (!feature) return '';
+function renderOneFeature(feature) {
     let html = '<div class="alert alert-info mt-2"><strong>' + feature.feature_label + '</strong><br>';
     if (feature.operation === 'added') {
         html += `Added: ${feature.feature_weight_g} g`;
         if (feature.coefficient_used !== undefined) html += ` (coefficient used: ${feature.coefficient_used})`;
     } else if (feature.operation === 'deducted') {
-        html += `Deducted: ${feature.feature_weight_g} g (Area: ${feature.geometry_area_cm2} cm², K: ${feature.k}, density used: ${feature.density_used_g_cm3} g/cm³)`;
+        html += `Deducted: ${feature.feature_weight_g} g (Area: ${feature.geometry_area_cm2} cm\u00b2, K: ${feature.k}, density used: ${feature.density_used_g_cm3} g/cm\u00b3)`;
     } else if (feature.operation === 'deducted_dpunch_then_added_handle') {
-        html += `Deducted D Punch (30x75): ${feature.dpunch_deduction_g} g (Area: ${feature.dpunch_area_cm2} cm², K: ${feature.dpunch_k})<br>`;
+        html += `Deducted D Punch (30x75): ${feature.dpunch_deduction_g} g (Area: ${feature.dpunch_area_cm2} cm\u00b2, K: ${feature.dpunch_k})<br>`;
         html += `Added Handle: ${feature.handle_weight_g} g`;
     }
     html += '</div>';
     return html;
 }
 
+function renderFeatureBreakdown(features) {
+    if (!features) return '';
+    const list = Array.isArray(features) ? features : [features];
+    if (list.length === 0) return '';
+    return list.map(renderOneFeature).join('');
+}
+
 function calculatePiecesWeight() {
     const formData = new FormData(document.getElementById('piecesWeightForm'));
     const data = Object.fromEntries(formData);
+    data.feature_types = collectSelectedFeatures('');
 
     // Collect layer data for laminated bags
     if (data.bag_type.startsWith('LAMINATED')) {
@@ -2068,15 +2179,19 @@ function preparePacketWeightData(data) {
         requestData.dimensions_packet_packaging_weight = parseFloat(data.dimensions_packet_packaging_weight) || 0;
         requestData.dimensions_packaging_unit = data.dimensions_packaging_unit || 'g';
 
-        // Optional accessory / cut-out feature
-        requestData.feature_type = data.feature_type || 'NONE';
-        if (requestData.feature_type !== 'NONE') {
+        // Optional accessory / cut-out features (up to 3)
+        requestData.feature_types = collectSelectedFeatures('packet');
+        if (requestData.feature_types.length > 0) {
             requestData.zipper_type = data.zipper_type;
             requestData.zipper_cz_override = data.zipper_cz_override;
             requestData.tape_type = data.tape_type;
             requestData.tape_ct_override = data.tape_ct_override;
-            requestData.accessory_weight_override = data.accessory_weight_override;
-            requestData.cutout_geometry_id = data.cutout_geometry_id;
+            requestData.accessory_weight_override_SPOUT_ASSEMBLY = data.accessory_weight_override_SPOUT_ASSEMBLY;
+            requestData.accessory_weight_override_CARRY_HANDLE = data.accessory_weight_override_CARRY_HANDLE;
+            requestData.accessory_weight_override_LOOP_HANDLE = data.accessory_weight_override_LOOP_HANDLE;
+            requestData.accessory_weight_override_BREATHER_VENT = data.accessory_weight_override_BREATHER_VENT;
+            requestData.cutout_geometry_id_D_PUNCH = data.cutout_geometry_id_D_PUNCH;
+            requestData.cutout_geometry_id_VEST_BAG = data.cutout_geometry_id_VEST_BAG;
         }
 
         // Validate required dimensions fields
@@ -2179,15 +2294,19 @@ function calculateBundleWeight() {
             flap_unit: data.dimensions_flap_unit,
             calculation_direction: 'pieces_to_weight',
             num_pieces: 1,
-            feature_type: data.feature_type || 'NONE'
+            feature_types: collectSelectedFeatures('bundle')
         };
-        if (dimensionsData.feature_type !== 'NONE') {
+        if (dimensionsData.feature_types.length > 0) {
             dimensionsData.zipper_type = data.zipper_type;
             dimensionsData.zipper_cz_override = data.zipper_cz_override;
             dimensionsData.tape_type = data.tape_type;
             dimensionsData.tape_ct_override = data.tape_ct_override;
-            dimensionsData.accessory_weight_override = data.accessory_weight_override;
-            dimensionsData.cutout_geometry_id = data.cutout_geometry_id;
+            dimensionsData.accessory_weight_override_SPOUT_ASSEMBLY = data.accessory_weight_override_SPOUT_ASSEMBLY;
+            dimensionsData.accessory_weight_override_CARRY_HANDLE = data.accessory_weight_override_CARRY_HANDLE;
+            dimensionsData.accessory_weight_override_LOOP_HANDLE = data.accessory_weight_override_LOOP_HANDLE;
+            dimensionsData.accessory_weight_override_BREATHER_VENT = data.accessory_weight_override_BREATHER_VENT;
+            dimensionsData.cutout_geometry_id_D_PUNCH = data.cutout_geometry_id_D_PUNCH;
+            dimensionsData.cutout_geometry_id_VEST_BAG = data.cutout_geometry_id_VEST_BAG;
         }
 
         // Add material data based on bag type
@@ -2564,3 +2683,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
+

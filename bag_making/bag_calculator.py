@@ -427,9 +427,9 @@ class BagMakingCalculator:
     ACCESSORY_DEFAULTS = {
         'ZIPPER_18MM': {'label': '18mm x 100mm Zipper', 'Cz_g_per_100mm': 0.72},
         'ZIPPER_14MM': {'label': '14mm x 100mm Zipper', 'Cz_g_per_100mm': 0.50},
-        'TAPE_PERMANENT': {'label': 'Permanent Adhesive Tape (18mm x 100mm)', 'Ct_g_per_100mm': 0.05},
-        'TAPE_TEMPORARY_10MM': {'label': 'Temporary Adhesive Tape (10mm x 100mm)', 'Ct_g_per_100mm': 0.14},
-        'TAPE_TEMPORARY_18MM': {'label': 'Temporary Adhesive Tape (18mm x 100mm)', 'Ct_g_per_100mm': 0.252},
+        'TAPE_TEMPORARY': {'label': 'Temporary Adhesive Tape (18mm x 100mm)', 'Ct_g_per_100mm': 0.05},
+        'TAPE_PERMANENT_10MM': {'label': 'Permanent Adhesive Tape (10mm x 100mm)', 'Ct_g_per_100mm': 0.14},
+        'TAPE_PERMANENT_18MM': {'label': 'Permanent Adhesive Tape (18mm x 100mm)', 'Ct_g_per_100mm': 0.252},
         'SPOUT_ASSEMBLY': {'label': 'Spout Assembly (Spout + Cap)', 'weight_g': 2.99},
         'CARRY_HANDLE': {'label': 'Plastic Carry Handle (Injection-Molded)', 'weight_g': 8.03},
         'LOOP_HANDLE': {'label': 'Plastic Loop Handle (LDPE)', 'weight_g': 1.26},

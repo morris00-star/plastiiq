@@ -50,9 +50,9 @@ def resolve_material_with_fallback(data):
 def apply_optional_feature(calculator, feature_type, data, single_piece_weight_g,
                              thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type):
     """
-    Apply at most one optional accessory/cut-out feature to a bag's single-piece
-    weight, per the Accessories & Cut-Outs spec. Returns a dict describing the
-    outcome, or {'error': ...} if a business rule is violated.
+    Apply ONE optional accessory/cut-out feature to a bag's single-piece weight,
+    per the Accessories & Cut-Outs spec. Returns a dict describing the outcome,
+    or {'error': ...} if a business rule is violated.
     """
     defaults = BagMakingCalculator.ACCESSORY_DEFAULTS
 
@@ -91,7 +91,8 @@ def apply_optional_feature(calculator, feature_type, data, single_piece_weight_g
 
     if feature_type in ('SPOUT_ASSEMBLY', 'LOOP_HANDLE', 'BREATHER_VENT'):
         default_weight = defaults[feature_type]['weight_g']
-        feature_weight_g = float(data.get('accessory_weight_override') or default_weight)
+        override_key = f'accessory_weight_override_{feature_type}'
+        feature_weight_g = float(data.get(override_key) or default_weight)
         final_weight_g = single_piece_weight_g + feature_weight_g
         return {
             'feature_type': feature_type, 'feature_label': defaults[feature_type]['label'],
@@ -106,7 +107,7 @@ def apply_optional_feature(calculator, feature_type, data, single_piece_weight_g
             return {'error': 'D Punch (30mm x 75mm) geometry not found - required for Carry Handle'}
         k = dpunch.calculate_k(density_g_cm3=density_g_cm3)
         dpunch_weight_g = calculator.calculate_cutout_weight(k, thickness_um)
-        handle_weight_g = float(data.get('accessory_weight_override') or defaults['CARRY_HANDLE']['weight_g'])
+        handle_weight_g = float(data.get('accessory_weight_override_CARRY_HANDLE') or defaults['CARRY_HANDLE']['weight_g'])
         final_weight_g = single_piece_weight_g - dpunch_weight_g + handle_weight_g
         return {
             'feature_type': feature_type, 'feature_label': defaults['CARRY_HANDLE']['label'],
@@ -116,7 +117,7 @@ def apply_optional_feature(calculator, feature_type, data, single_piece_weight_g
         }
 
     if feature_type in ('D_PUNCH', 'VEST_BAG'):
-        geometry_id = data.get('cutout_geometry_id')
+        geometry_id = data.get(f'cutout_geometry_id_{feature_type}')
         if not geometry_id:
             return {'error': f'Select a {feature_type.replace("_", " ").title()} geometry'}
         try:
@@ -134,6 +135,45 @@ def apply_optional_feature(calculator, feature_type, data, single_piece_weight_g
         }
 
     return {'error': f'Unknown feature_type: {feature_type}'}
+
+
+def apply_optional_features(calculator, feature_types, data, single_piece_weight_g,
+                             thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type):
+    """
+    Apply up to 3 optional accessory/cut-out features cumulatively to a bag's
+    single-piece weight - e.g. Zipper + Loop Handle + Breather Vent on one bag.
+    Each feature is validated and applied in turn against the RUNNING weight
+    (so a cut-out deduction and an accessory addition compose correctly
+    regardless of order). Returns (list_of_feature_results, final_weight_g),
+    or ({'error': ...}, original_weight_g) if any feature or the combination
+    itself is invalid.
+    """
+    feature_types = [f for f in feature_types if f and f != 'NONE']
+
+    if not feature_types:
+        return [], single_piece_weight_g
+
+    if len(feature_types) > 3:
+        return {'error': 'Select at most 3 features'}, single_piece_weight_g
+
+    if len(feature_types) != len(set(feature_types)):
+        return {'error': 'Each feature can only be selected once'}, single_piece_weight_g
+
+    results = []
+    running_weight_g = single_piece_weight_g
+    for feature_type in feature_types:
+        result = apply_optional_feature(
+            calculator, feature_type, data, running_weight_g,
+            thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type
+        )
+        if result.get('error'):
+            return result, single_piece_weight_g
+        if 'final_weight_g' not in result:
+            return {'error': f'Internal error applying feature "{feature_type}"'}, single_piece_weight_g
+        running_weight_g = result['final_weight_g']
+        results.append(result)
+
+    return results, running_weight_g
 
 
 def save_material_selection(calculation, data):
@@ -327,22 +367,23 @@ def calculate_pieces_weight(request):
                 area_m2, composite_gsm, addon_weight_g
             )
 
-            # --- Optional accessory / cut-out feature (applied after base weight) ---
-            feature_type = data.get('feature_type', 'NONE')
-            feature_result = None
-            if feature_type and feature_type != 'NONE':
+            # --- Optional accessory / cut-out features (up to 3, applied after base weight) ---
+            feature_types = data.get('feature_types', [])
+            if isinstance(feature_types, str):
+                feature_types = [feature_types] if feature_types else []
+            feature_types = [f for f in feature_types if f and f != 'NONE']
+
+            feature_results = []
+            if feature_types:
                 length_conversions = {'mm': 1.0, 'cm': 10.0, 'm': 1000.0, 'inch': 25.4}
                 width_mm = width * length_conversions.get(width_unit, 10.0)
-                feature_result = apply_optional_feature(
-                    calculator, feature_type, data, single_piece_weight_g,
+                outcome, single_piece_weight_g = apply_optional_features(
+                    calculator, feature_types, data, single_piece_weight_g,
                     thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type
                 )
-                if feature_result.get('error'):
-                    return JsonResponse({'success': False, 'error': feature_result['error']})
-                if 'final_weight_g' not in feature_result:
-                    logger.error(f"apply_optional_feature returned no final_weight_g for feature_type={feature_type}: {feature_result}")
-                    return JsonResponse({'success': False, 'error': f'Internal error applying feature "{feature_type}" - missing final_weight_g in result'})
-                single_piece_weight_g = feature_result['final_weight_g']
+                if isinstance(outcome, dict) and outcome.get('error'):
+                    return JsonResponse({'success': False, 'error': outcome['error']})
+                feature_results = outcome
 
             result = {}
 
@@ -407,8 +448,8 @@ def calculate_pieces_weight(request):
                 if addon_weight_g > 0:
                     _save_addon_components(calculation, addon_data)
 
-            if feature_result:
-                result['feature'] = feature_result
+            if feature_results:
+                result['features'] = feature_results
 
             return JsonResponse({'success': True, 'result': result})
 
@@ -609,21 +650,23 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
     # Calculate single piece weight including add-ons
     single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm, addon_weight_g)
 
-    # --- Optional accessory / cut-out feature (applied after base weight) ---
-    feature_type = data.get('feature_type', 'NONE')
-    feature_result = None
-    if feature_type and feature_type != 'NONE':
+    # --- Optional accessory / cut-out features (up to 3, applied after base weight) ---
+    feature_types = data.get('feature_types', [])
+    if isinstance(feature_types, str):
+        feature_types = [feature_types] if feature_types else []
+    feature_types = [f for f in feature_types if f and f != 'NONE']
+
+    feature_results = []
+    if feature_types:
         length_conversions = {'mm': 1.0, 'cm': 10.0, 'm': 1000.0, 'inch': 25.4}
         width_mm = width * length_conversions.get(width_unit, 10.0)
-        feature_result = apply_optional_feature(
-            calculator, feature_type, data, single_piece_weight_g,
+        outcome, single_piece_weight_g = apply_optional_features(
+            calculator, feature_types, data, single_piece_weight_g,
             thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type
         )
-        if feature_result.get('error'):
-            raise ValueError(feature_result['error'])
-        if 'final_weight_g' not in feature_result:
-            raise ValueError(f'Internal error applying feature "{feature_type}"')
-        single_piece_weight_g = feature_result['final_weight_g']
+        if isinstance(outcome, dict) and outcome.get('error'):
+            raise ValueError(outcome['error'])
+        feature_results = outcome
 
     if calculation_direction == 'forward':
         packet_result = calculator.calculate_packet_weight(
@@ -672,8 +715,8 @@ def calculate_packet_weight_from_dimensions_data(data, calculator):
             'packaging_percentage': reverse_result['packaging_percentage']
         }
 
-    if feature_result:
-        result['feature'] = feature_result
+    if feature_results:
+        result['features'] = feature_results
 
     return result
 
@@ -929,21 +972,23 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
     # Calculate single piece weight including add-ons
     single_piece_weight_g = calculator.calculate_single_piece_weight(area_m2, composite_gsm, addon_weight_g)
 
-    # --- Optional accessory / cut-out feature (applied after base weight) ---
-    feature_type = data.get('feature_type', 'NONE')
-    feature_result = None
-    if feature_type and feature_type != 'NONE':
+    # --- Optional accessory / cut-out features (up to 3, applied after base weight) ---
+    feature_types = data.get('feature_types', [])
+    if isinstance(feature_types, str):
+        feature_types = [feature_types] if feature_types else []
+    feature_types = [f for f in feature_types if f and f != 'NONE']
+
+    feature_results = []
+    if feature_types:
         length_conversions = {'mm': 1.0, 'cm': 10.0, 'm': 1000.0, 'inch': 25.4}
         width_mm = width * length_conversions.get(width_unit, 10.0)
-        feature_result = apply_optional_feature(
-            calculator, feature_type, data, single_piece_weight_g,
+        outcome, single_piece_weight_g = apply_optional_features(
+            calculator, feature_types, data, single_piece_weight_g,
             thickness_um, density_g_cm3, width_mm, is_ldpe_bag, bag_type
         )
-        if feature_result.get('error'):
-            raise ValueError(feature_result['error'])
-        if 'final_weight_g' not in feature_result:
-            raise ValueError(f'Internal error applying feature "{feature_type}"')
-        single_piece_weight_g = feature_result['final_weight_g']
+        if isinstance(outcome, dict) and outcome.get('error'):
+            raise ValueError(outcome['error'])
+        feature_results = outcome
 
     # Calculate packet weight
     packet_weight_kg = (single_piece_weight_g * pieces_per_packet) / 1000
@@ -998,6 +1043,9 @@ def calculate_bundle_weight_from_dimensions_data(data, calculator):
             'composite_gsm': round(composite_gsm, 2),
             'pieces_per_packet': pieces_per_packet
         }
+
+    if feature_results:
+        result['features'] = feature_results
 
     return result
 
