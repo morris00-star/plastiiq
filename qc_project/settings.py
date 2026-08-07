@@ -19,7 +19,7 @@ DEBUG = os.getenv('DEBUG',False,)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 ALLOWED_HOSTS = [
-    'qc-calculator.onrender.com',
+    'plastiiq.onrender.com',
     'localhost',
     '127.0.0.1',
     '192.168.43.101',
