@@ -19,5 +19,7 @@ python manage.py collectstatic --noinput --clear
 
 echo "=== Loading initial data ==="
 python manage.py load_initial_data
+python manage.py seed_cutout_geometries
+python manage.py seed_bulk_products
 
 echo "=== Build completed successfully! ==="
