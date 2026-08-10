@@ -21,5 +21,6 @@ echo "=== Loading initial data ==="
 python manage.py load_initial_data
 python manage.py seed_cutout_geometries
 python manage.py seed_bulk_products
+python manage.py create_superuser
 
 echo "=== Build completed successfully! ==="

@@ -2,159 +2,198 @@
 {% load static %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white text-center">
-                <h4 class="card-title mb-0">
-                    <i class="fas fa-user-plus"></i> Register Account
-                </h4>
-                <p class="mb-0 mt-2">Create your Plastic QC Calculator account</p>
-            </div>
-            <div class="card-body">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
+<style>
+    .auth-wrap-wide { max-width: 640px; margin: 0 auto; }
+    .auth-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .auth-head { padding: 1.75rem 1.5rem 1.25rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .auth-head .icon-circle {
+        width: 56px; height: 56px; border-radius: 50%;
+        background: var(--bg-panel-raised); border: 2px solid var(--molten);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto .9rem; font-size: 1.3rem; color: var(--molten);
+    }
+    .auth-head h4 { margin: 0 0 .3rem; }
+    .auth-head p { color: var(--text-dim); font-size: .85rem; margin: 0; }
+    .auth-body { padding: 1.75rem 1.5rem; }
 
-                <form method="post" id="registrationForm">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Username *</label>
-                                {{ form.username }}
-                                {% if form.username.errors %}
-                                    <div class="text-danger small">{{ form.username.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Email Address *</label>
-                                {{ form.email }}
-                                {% if form.email.errors %}
-                                    <div class="text-danger small">{{ form.email.errors }}</div>
-                                {% endif %}
-                            </div>
+    .password-field-wrap { position: relative; }
+    .password-field-wrap input { padding-right: 2.75rem; }
+    .password-toggle-btn {
+        position: absolute; right: .35rem; top: 50%; transform: translateY(-50%);
+        background: none; border: none; color: var(--text-dim);
+        cursor: pointer; padding: .4rem .6rem; border-radius: 6px;
+    }
+    .password-toggle-btn:hover { color: var(--molten); }
+
+    .match-hint { font-size: .8rem; margin-top: .4rem; font-weight: 600; min-height: 1.1em; }
+    .match-hint.match-ok { color: var(--green); }
+    .match-hint.match-bad { color: var(--rose); }
+
+    .help-list { font-size: .82rem; margin: 0; padding-left: 1.1rem; color: var(--text-dim); }
+    .help-list li { margin-bottom: .25rem; }
+
+    .auth-footer-link { text-align: center; margin-top: 1rem; font-size: .88rem; color: var(--text-dim); }
+    .auth-footer-link a { font-weight: 600; }
+</style>
+
+<div class="auth-wrap-wide">
+    <div class="auth-card">
+        <div class="auth-head">
+            <div class="icon-circle"><i class="fas fa-user-plus"></i></div>
+            <h4>Create your account</h4>
+            <p>Join PlastIQ to access the calculators</p>
+        </div>
+        <div class="auth-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" id="registrationForm">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Username *</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">First Name *</label>
-                                {{ form.first_name }}
-                                {% if form.first_name.errors %}
-                                    <div class="text-danger small">{{ form.first_name.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Last Name *</label>
-                                {{ form.last_name }}
-                                {% if form.last_name.errors %}
-                                    <div class="text-danger small">{{ form.last_name.errors }}</div>
-                                {% endif %}
-                            </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Email Address *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Phone Number *</label>
-                        {{ form.phone_number }}
-                        <div class="form-text">Format: +256XXXXXXXXX or 07XXXXXXXX</div>
-                        {% if form.phone_number.errors %}
-                            <div class="text-danger small">{{ form.phone_number.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Company Branch</label>
-                                {{ form.company_branch }}
-                                {% if form.company_branch.errors %}
-                                    <div class="text-danger small">{{ form.company_branch.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Company Role *</label>
-                                {{ form.company_role }}
-                                {% if form.company_role.errors %}
-                                    <div class="text-danger small">{{ form.company_role.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Section *</label>
-                        {{ form.section }}
-                        {% if form.section.errors %}
-                            <div class="text-danger small">{{ form.section.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Password *</label>
-                                {{ form.password1 }}
-                                {% if form.password1.errors %}
-                                    <div class="text-danger small">{{ form.password1.errors }}</div>
-                                {% endif %}
-                                <div class="form-text">
-                                    <ul class="small">
-                                        <li>At least 8 characters</li>
-                                        <li>Not too common</li>
-                                        <li>Not entirely numeric</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Confirm Password *</label>
-                                {{ form.password2 }}
-                                {% if form.password2.errors %}
-                                    <div class="text-danger small">{{ form.password2.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle"></i> Important Notes:</h6>
-                        <ul class="mb-0 small">
-                            <li>All fields marked with * are required</li>
-                            <li>Your account requires admin approval before you can log in</li>
-                            <li>You will be notified once your account is approved</li>
-                            <li>Contact administrator if you need immediate access</li>
-                        </ul>
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-user-plus"></i> Register Account
-                        </button>
-                    </div>
-                </form>
-
-                <div class="text-center mt-3">
-                    <p class="mb-0">
-                        Already have an account?
-                        <a href="{% url 'accounts:login' %}" class="text-decoration-none">Login here</a>
-                    </p>
                 </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">First Name *</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Last Name *</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone Number *</label>
+                    {{ form.phone_number }}
+                    <div class="form-text" style="color: var(--text-dim);">Format: +256XXXXXXXXX or 07XXXXXXXX</div>
+                    {% if form.phone_number.errors %}
+                        <div class="text-danger small mt-1">{{ form.phone_number.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Company Branch</label>
+                            {{ form.company_branch }}
+                            {% if form.company_branch.errors %}
+                                <div class="text-danger small mt-1">{{ form.company_branch.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Company Role *</label>
+                            {{ form.company_role }}
+                            {% if form.company_role.errors %}
+                                <div class="text-danger small mt-1">{{ form.company_role.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Section *</label>
+                    {{ form.section }}
+                    {% if form.section.errors %}
+                        <div class="text-danger small mt-1">{{ form.section.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Password *</label>
+                            <div class="password-field-wrap">
+                                {{ form.password1 }}
+                                <button type="button" class="password-toggle-btn" data-target="id_password1" aria-label="Show password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                            {% endif %}
+                            <div class="form-text" style="color: var(--text-dim);">
+                                <ul class="help-list">
+                                    <li>At least 8 characters</li>
+                                    <li>Not too common</li>
+                                    <li>Not entirely numeric</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Confirm Password *</label>
+                            <div class="password-field-wrap">
+                                {{ form.password2 }}
+                                <button type="button" class="password-toggle-btn" data-target="id_password2" aria-label="Show password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                            {% endif %}
+                            <div id="passwordMatchHint" class="match-hint"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <h6 class="mb-2"><i class="fas fa-info-circle"></i> Important notes</h6>
+                    <ul class="help-list">
+                        <li>All fields marked with * are required</li>
+                        <li>We'll email you a 6-digit code to verify your address</li>
+                        <li>Your account still needs admin approval after that</li>
+                        <li>Contact an administrator if you need immediate access</li>
+                    </ul>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn" style="background: var(--molten); color:#10141a; font-weight:600;">
+                        <i class="fas fa-user-plus"></i> Register Account
+                    </button>
+                </div>
+            </form>
+
+            <div class="auth-footer-link">
+                Already have an account? <a href="{% url 'accounts:login' %}">Login here</a>
             </div>
         </div>
     </div>
@@ -178,6 +217,52 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Password show/hide toggles
+    document.querySelectorAll('.password-toggle-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const input = document.getElementById(this.dataset.target);
+            if (!input) return;
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.setAttribute('aria-label', 'Hide password');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.setAttribute('aria-label', 'Show password');
+            }
+        });
+    });
+
+    // Live "passwords match" indicator
+    const pw1 = document.getElementById('id_password1');
+    const pw2 = document.getElementById('id_password2');
+    const hint = document.getElementById('passwordMatchHint');
+
+    function checkPasswordMatch() {
+        if (!pw1 || !pw2 || !hint) return;
+        if (!pw2.value) {
+            hint.textContent = '';
+            hint.className = 'match-hint';
+            return;
+        }
+        if (pw1.value === pw2.value) {
+            hint.textContent = '✓ Passwords match';
+            hint.className = 'match-hint match-ok';
+        } else {
+            hint.textContent = '✕ Passwords do not match';
+            hint.className = 'match-hint match-bad';
+        }
+    }
+
+    if (pw1 && pw2) {
+        pw1.addEventListener('input', checkPasswordMatch);
+        pw2.addEventListener('input', checkPasswordMatch);
+    }
 });
 
 function checkFieldAvailability(field, value) {

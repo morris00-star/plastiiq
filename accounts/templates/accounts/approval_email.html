@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your PlastIQ account has been approved</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f3f1ea; font-family: Arial, Helvetica, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f1ea; padding: 30px 0;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e2e0d8;">
+                    <tr>
+                        <td style="background-color:#10141a; padding: 22px 32px;">
+                            <span style="color:#ff7a45; font-size:20px; font-weight:bold;">PlastIQ</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 32px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+                                <tr>
+                                    <td align="center">
+                                        <span style="display:inline-block; background-color:#4ade80; color:#10141a; font-weight:bold; font-size:13px; padding:6px 14px; border-radius:20px;">
+                                            &#10003; Account Approved
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin:0 0 12px; font-size:16px; color:#10141a;">Hello {{ user.first_name|default:user.username }},</p>
+                            <p style="margin:0 0 24px; font-size:15px; color:#495057; line-height:1.5;">
+                                Good news — an administrator has approved your PlastIQ account. One last step: verify
+                                your email with the code below to activate your login.
+                            </p>
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 12px 0 24px;">
+                                        <span style="display:inline-block; font-family: 'Courier New', monospace; font-size: 34px; font-weight:bold; letter-spacing: 10px; color:#10141a; background-color:#f3f1ea; border:1px dashed #ff7a45; border-radius:10px; padding: 14px 22px;">
+                                            {{ otp_code }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin:0 0 8px; font-size:14px; color:#495057;">
+                                This code expires in <strong>{{ expiry_minutes }} minutes</strong>. Head to the login
+                                page, sign in with your username and password, and enter this code when prompted.
+                            </p>
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 22px 0 16px;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ login_url }}" style="display:inline-block; background-color:#10141a; color:#ff7a45; font-weight:bold; font-size:14px; padding:11px 26px; border-radius:8px; text-decoration:none; border: 1px solid #ff7a45;">
+                                            Log In Now
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin:16px 0 0; font-size:13px; color:#8b97a6;">
+                                If you weren't expecting this, you can safely ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 18px 32px; background-color:#f8f7f3; border-top:1px solid #e2e0d8;">
+                            <p style="margin:0; font-size:12px; color:#8b97a6;">PlastIQ &middot; Plastic manufacturing QC &amp; pricing tools</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

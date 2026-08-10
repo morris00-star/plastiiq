@@ -2,76 +2,124 @@
 {% load static %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow">
-            <div class="card-header bg-success text-white text-center">
-                <h4 class="card-title mb-0">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </h4>
-                <p class="mb-0 mt-2">Access your Plastic QC Calculator account</p>
-            </div>
-            <div class="card-body">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
+<style>
+    .auth-wrap { max-width: 440px; margin: 0 auto; }
+    .auth-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .auth-head { padding: 1.75rem 1.5rem 1.25rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .auth-head .icon-circle {
+        width: 56px; height: 56px; border-radius: 50%;
+        background: var(--bg-panel-raised); border: 2px solid var(--green);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto .9rem; font-size: 1.3rem; color: var(--green);
+    }
+    .auth-head h4 { margin: 0 0 .3rem; }
+    .auth-head p { color: var(--text-dim); font-size: .85rem; margin: 0; }
+    .auth-body { padding: 1.75rem 1.5rem; }
 
-                <form method="post">
-                    {% csrf_token %}
+    .password-field-wrap { position: relative; }
+    .password-field-wrap input { padding-right: 2.75rem; }
+    .password-toggle-btn {
+        position: absolute; right: .35rem; top: 50%; transform: translateY(-50%);
+        background: none; border: none; color: var(--text-dim);
+        cursor: pointer; padding: .4rem .6rem; border-radius: 6px;
+    }
+    .password-toggle-btn:hover { color: var(--molten); }
 
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-danger small">{{ form.username.errors }}</div>
-                        {% endif %}
+    .auth-footer-link { text-align: center; margin-top: 1rem; font-size: .88rem; color: var(--text-dim); }
+    .auth-footer-link a { font-weight: 600; }
+
+    .help-list { font-size: .82rem; margin: 0; padding-left: 1.1rem; color: var(--text-dim); }
+    .help-list li { margin-bottom: .25rem; }
+</style>
+
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-head">
+            <div class="icon-circle"><i class="fas fa-sign-in-alt"></i></div>
+            <h4>Welcome back</h4>
+            <p>Log in to your PlastIQ account</p>
+        </div>
+        <div class="auth-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
+                {% endfor %}
+            {% endif %}
 
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <div class="password-field-wrap">
                         {{ form.password }}
-                        {% if form.password.errors %}
-                            <div class="text-danger small">{{ form.password.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="fas fa-sign-in-alt"></i> Login
+                        <button type="button" class="password-toggle-btn" data-target="id_password" aria-label="Show password">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
+                    {% if form.password.errors %}
+                        <div class="text-danger small mt-1">{{ form.password.errors }}</div>
+                    {% endif %}
+                </div>
 
-                     <!-- Forgot Password Link -->
-                    <div class="text-center mb-3">
-                        <a href="{% url 'accounts:forgot_password' %}" class="text-decoration-none">
-                            <i class="fas fa-unlock-alt"></i> Forgot Password?
-                        </a>
-                    </div>
-                </form>
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn" style="background: var(--green); color:#10141a; font-weight:600;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </div>
 
                 <div class="text-center mt-3">
-                    <p class="mb-0">
-                        Don't have an account?
-                        <a href="{% url 'accounts:register' %}" class="text-decoration-none">Register here</a>
-                    </p>
+                    <a href="{% url 'accounts:forgot_password' %}" class="text-decoration-none">
+                        <i class="fas fa-unlock-alt"></i> Forgot password?
+                    </a>
                 </div>
+            </form>
 
-                <div class="alert alert-info mt-3">
-                    <h6><i class="fas fa-info-circle"></i> Login Help:</h6>
-                    <ul class="mb-0 small">
-                        <li>Use your username to login</li>
-                        <li>New accounts require admin approval</li>
-                        <li>Contact administrator if you forgot your password</li>
-                        <li>Approval status will be checked upon login</li>
-                    </ul>
-                </div>
+            <div class="auth-footer-link">
+                Don't have an account? <a href="{% url 'accounts:register' %}">Register here</a>
+            </div>
+
+            <div class="alert alert-info mt-3 mb-0">
+                <h6 class="mb-2"><i class="fas fa-info-circle"></i> Login help</h6>
+                <ul class="help-list">
+                    <li>Use your username to log in</li>
+                    <li>New accounts need email verification, then admin approval</li>
+                    <li>Contact an administrator if you forgot your password</li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.querySelectorAll('.password-toggle-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var input = document.getElementById(this.dataset.target);
+        if (!input) return;
+        var icon = this.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            this.setAttribute('aria-label', 'Hide password');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            this.setAttribute('aria-label', 'Show password');
+        }
+    });
+});
+</script>
 {% endblock %}

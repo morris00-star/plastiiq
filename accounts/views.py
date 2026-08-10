@@ -8,8 +8,12 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 import json
 from .forms import CustomUserCreationForm, CustomUserLoginForm, UserProfileForm, DeleteAccountForm, \
-    PasswordResetRequestForm, AdminPasswordResetReviewForm, AdminPasswordSetForm
-from .models import CustomUser, PasswordResetRequest, UserActionLog
+    PasswordResetRequestForm, AdminPasswordResetReviewForm, AdminPasswordSetForm, OTPVerificationForm
+from .models import CustomUser, PasswordResetRequest, UserActionLog, EmailOTP
+from .utils import send_otp_email, send_approval_email, \
+    notify_admins_new_registration, notify_user_registration_received, \
+    notify_admins_password_reset_request, notify_user_password_reset_received, \
+    notify_admins_account_deletion, notify_user_account_deleted, send_approval_email
 
 
 def log_user_action(action_type, description_field='username'):
@@ -46,20 +50,111 @@ def register_view(request):
             user = form.save(commit=False)
             user.is_active = True  # User is active but not approved
             user.is_approved = False  # Needs admin approval
+            user.email_verified = False  # Verified via OTP once an admin approves
             user.save()
 
-            messages.success(
-                request,
-                'Registration successful! Your account is pending admin approval. '
-                'You will be notified once your account is approved.'
-            )
-            return redirect('accounts:login')  # Fixed: use namespaced URL
+            try:
+                notify_admins_new_registration(user)
+                notify_user_registration_received(user)
+            except Exception:
+                pass  # Registration itself still succeeds even if notification email fails
+
+            request.session['just_registered_user_id'] = user.id
+            return redirect('accounts:registration_received')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'accounts/register.html', {'form': form})
+
+
+def registration_received_view(request):
+    """Landing page shown right after registration, before verification and approval."""
+    user_id = request.session.pop('just_registered_user_id', None)
+    context = {}
+    if user_id:
+        try:
+            context['registered_user'] = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            pass
+    return render(request, 'accounts/registration_received.html', context)
+
+
+def verify_otp_view(request):
+    user_id = request.session.get('pending_verification_user_id')
+    if not user_id:
+        messages.error(request, 'Your verification session expired. Please register again or log in.')
+        return redirect('accounts:register')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        messages.error(request, 'Account not found.')
+        return redirect('accounts:register')
+
+    if user.email_verified:
+        request.session.pop('pending_verification_user_id', None)
+        messages.info(request, 'Your email is already verified. You can log in once an admin approves your account.')
+        return redirect('accounts:login')
+
+    if request.method == 'POST':
+        form = OTPVerificationForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data['code']
+            otp = EmailOTP.objects.filter(user=user, code=code, is_used=False).order_by('-created_at').first()
+
+            if otp and otp.is_valid():
+                otp.is_used = True
+                otp.save()
+                user.email_verified = True
+                user.save()
+                user.log_action('PROFILE_UPDATE', 'Email verified via OTP')
+                request.session.pop('pending_verification_user_id', None)
+                messages.success(
+                    request,
+                    'Email verified! Your account is now pending admin approval. '
+                    'You will be notified once approved.'
+                )
+                return redirect('accounts:login')
+            elif otp and otp.is_expired():
+                messages.error(request, 'That code has expired. Tap "Resend Code" to get a new one.')
+            else:
+                messages.error(request, 'Incorrect code. Please check your email and try again.')
+    else:
+        form = OTPVerificationForm()
+
+    return render(request, 'accounts/verify_otp.html', {'form': form, 'user_email': user.email})
+
+
+def resend_otp_view(request):
+    user_id = request.session.get('pending_verification_user_id')
+    if not user_id:
+        messages.error(request, 'Your verification session expired. Please register again.')
+        return redirect('accounts:register')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        messages.error(request, 'Account not found.')
+        return redirect('accounts:register')
+
+    if user.email_verified:
+        return redirect('accounts:login')
+
+    last_otp = EmailOTP.objects.filter(user=user).order_by('-created_at').first()
+    if last_otp and (timezone.now() - last_otp.created_at).total_seconds() < 60:
+        messages.warning(request, 'Please wait a minute before requesting another code.')
+        return redirect('accounts:verify_otp')
+
+    otp = EmailOTP.generate_for_user(user)
+    try:
+        send_otp_email(user, otp)
+        messages.success(request, 'A new verification code has been sent to your email.')
+    except Exception:
+        messages.error(request, 'Could not send the email right now. Please try again shortly.')
+
+    return redirect('accounts:verify_otp')
 
 
 def login_view(request):
@@ -73,6 +168,15 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
+                if user.is_approved and not user.email_verified and not user.is_superuser:
+                    request.session['pending_verification_user_id'] = user.id
+                    messages.warning(
+                        request,
+                        'Please verify your email before logging in. Enter the code we sent you, '
+                        'or tap "Resend Code" if it expired.'
+                    )
+                    return redirect('accounts:verify_otp')
+
                 if user.is_approved:
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.get_full_name()}!')
@@ -186,6 +290,15 @@ def password_reset_request_view(request):
 
             try:
                 user_to_reset.request_password_reset(request.user, reason)
+
+                latest_reset = user_to_reset.password_reset_requests.filter(status='PENDING').order_by('-created_at').first()
+                try:
+                    if latest_reset:
+                        notify_admins_password_reset_request(latest_reset)
+                    notify_user_password_reset_received(user_to_reset)
+                except Exception:
+                    pass  # Request itself still succeeds even if notification email fails
+
                 messages.success(
                     request,
                     'Password reset request submitted successfully. '
@@ -377,9 +490,17 @@ def delete_account_view(request):
     if request.method == 'POST':
         form = DeleteAccountForm(request.POST)
         if form.is_valid():
+            deleted_user = request.user
+
             # Soft delete the user account
-            request.user.is_active = False
-            request.user.save()
+            deleted_user.is_active = False
+            deleted_user.save()
+
+            try:
+                notify_admins_account_deletion(deleted_user, initiated_by_admin=False)
+                notify_user_account_deleted(deleted_user, deleted_by_admin=False)
+            except Exception:
+                pass  # Deletion itself still succeeds even if notification email fails
 
             # Logout the user
             logout(request)
@@ -534,6 +655,16 @@ def admin_approve_user(request, user_id):
         user_to_approve.approved_date = timezone.now()
         user_to_approve.save()
 
+        otp = EmailOTP.generate_for_user(user_to_approve)
+        try:
+            send_approval_email(user_to_approve, otp)
+        except Exception:
+            messages.warning(
+                request,
+                f'{user_to_approve.username} was approved, but the notification email failed to send. '
+                'They can request a new code from the login page.'
+            )
+
         messages.success(request, f'User {user_to_approve.username} has been approved successfully.')
         return redirect('accounts:admin_user_approval_list')  # Fixed URL name
 
@@ -575,6 +706,10 @@ def admin_user_management(request):
         all_users = all_users.filter(is_approved=True, is_active=True)
     elif status_filter == 'inactive':
         all_users = all_users.filter(is_active=False)
+    else:
+        # Default "all" view = all ACTIVE users. Deleted/deactivated accounts only
+        # show up under the explicit "Inactive" filter, not mixed into the main list.
+        all_users = all_users.filter(is_active=True)
 
     if role_filter != 'all':
         all_users = all_users.filter(company_role=role_filter)
@@ -641,6 +776,12 @@ def admin_delete_user(request, user_id):
     if request.method == 'POST':
         username = user_to_delete.username
         user_to_delete.delete_account()
+
+        try:
+            notify_admins_account_deletion(user_to_delete, initiated_by_admin=True)
+            notify_user_account_deleted(user_to_delete, deleted_by_admin=True)
+        except Exception:
+            pass  # Deletion itself still succeeds even if notification email fails
 
         messages.success(request, f'User account {username} has been deleted.')
         return redirect('accounts:admin_user_management')

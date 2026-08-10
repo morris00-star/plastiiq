@@ -128,6 +128,28 @@ class DeleteAccountForm(forms.Form):
     )
 
 
+class OTPVerificationForm(forms.Form):
+    code = forms.CharField(
+        max_length=6,
+        min_length=6,
+        label="Verification Code",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control otp-input',
+            'placeholder': '123456',
+            'autocomplete': 'one-time-code',
+            'inputmode': 'numeric',
+            'pattern': '[0-9]{6}',
+            'autofocus': 'autofocus',
+        })
+    )
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code', '').strip()
+        if not code.isdigit():
+            raise forms.ValidationError('Enter the 6-digit code sent to your email.')
+        return code
+
+
 class PasswordResetRequestForm(forms.Form):
     user = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(is_active=True),

@@ -2,6 +2,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('plastiq-theme');
+                if (saved === 'light' || saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (e) {}
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>PlastIQ</title>
@@ -14,13 +24,14 @@
     <meta name="theme-color" content="#10141a">
     <meta name="msapplication-TileColor" content="#10141a">
 
-    <!-- Favicon and App Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'images/site.webmanifest' %}">
-    <link rel="mask-icon" href="{% static 'images/safari-pinned-tab.svg' %}" color="#ff7a45">
-    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+    <!-- Favicon and App Icons (v=3 query param busts stale favicon caches on redeploy) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}?v=3">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}?v=3">
+    <link rel="manifest" href="{% static 'images/site.webmanifest' %}?v=3">
+    <link rel="mask-icon" href="{% static 'images/safari-pinned-tab.svg' %}?v=3" color="#ff7a45">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}?v=3">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}?v=3">
 
     <!-- Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -47,7 +58,23 @@
             --font-display: 'Space Grotesk', sans-serif;
             --font-body: 'Inter', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
+
+            --link-color: var(--molten);
         }
+
+        /* ---------- Light theme ---------- */
+        [data-theme="light"] {
+            --bg-void: #f4f2ec;
+            --bg-panel: #ffffff;
+            --bg-panel-raised: #f0eee6;
+            --line: #ddd9cc;
+            --text-main: #171b21;
+            --text-dim: #5b6472;
+            --link-color: #d85c28;
+        }
+
+        [data-theme="light"] .app-icon i { color: #10141a; }
+        [data-theme="light"] ::selection { background: var(--molten); color: #ffffff; }
 
         * { scrollbar-color: var(--line) var(--bg-void); }
 
@@ -61,8 +88,8 @@
             font-family: var(--font-display);
         }
 
-        a { color: var(--molten); }
-        a:hover { color: #ff9468; }
+        a { color: var(--link-color); }
+        a:hover { color: var(--molten); }
 
         ::selection { background: var(--molten); color: #10141a; }
 
@@ -369,6 +396,26 @@
             color: var(--molten) !important;
             background: rgba(255, 122, 69, .08);
         }
+
+        .theme-toggle-btn {
+            background: var(--bg-panel-raised);
+            border: 1px solid var(--line);
+            color: var(--text-dim);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: .5rem;
+            transition: all .2s ease;
+            cursor: pointer;
+        }
+        .theme-toggle-btn:hover { border-color: var(--molten); color: var(--molten); }
+        .theme-toggle-btn .fa-sun { display: inline; }
+        .theme-toggle-btn .fa-moon { display: none; }
+        [data-theme="light"] .theme-toggle-btn .fa-sun { display: none; }
+        [data-theme="light"] .theme-toggle-btn .fa-moon { display: inline; }
 </style>
 </head>
 <body>
@@ -473,6 +520,12 @@
                 </ul>
 
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item d-flex align-items-center">
+                        <button type="button" class="theme-toggle-btn" id="themeToggle" title="Toggle light / dark theme" aria-label="Toggle theme">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
@@ -673,6 +726,20 @@
                 }
             });
         });
+    </script>
+
+    <script>
+        (function () {
+            var THEME_KEY = 'plastiq-theme';
+            var toggleBtn = document.getElementById('themeToggle');
+            if (!toggleBtn) return;
+            toggleBtn.addEventListener('click', function () {
+                var current = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+            });
+        })();
     </script>
 
     {% block scripts %}{% endblock %}

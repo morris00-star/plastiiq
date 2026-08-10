@@ -1,0 +1,110 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<style>
+    .rr-wrap { max-width: 560px; margin: 0 auto; }
+    .rr-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .rr-head { padding: 2rem 1.5rem 1.5rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .rr-head .icon-circle {
+        width: 64px; height: 64px; border-radius: 50%;
+        background: var(--bg-panel-raised); border: 2px solid var(--amber);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem; font-size: 1.6rem; color: var(--amber);
+    }
+    .rr-head h4 { margin: 0 0 .4rem; }
+    .rr-head p { color: var(--text-dim); font-size: .9rem; margin: 0; }
+    .rr-body { padding: 1.75rem 1.5rem; }
+
+    .rr-summary {
+        background: var(--bg-panel-raised);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        font-size: .88rem;
+    }
+    .rr-summary strong { color: var(--text-dim); font-weight: 500; }
+
+    .rr-steps { list-style: none; margin: 0 0 1.5rem; padding: 0; }
+    .rr-steps li {
+        display: flex;
+        gap: .9rem;
+        padding: .9rem 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .rr-steps li:last-child { border-bottom: none; }
+    .rr-step-num {
+        width: 30px; height: 30px; flex-shrink: 0;
+        border-radius: 50%;
+        background: var(--bg-panel-raised);
+        border: 1px solid var(--line);
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--font-mono); font-size: .82rem; font-weight: 700;
+        color: var(--text-dim);
+    }
+    .rr-step-done .rr-step-num { background: var(--green); border-color: var(--green); color: #10141a; }
+    .rr-step-title { font-weight: 600; margin-bottom: .15rem; font-size: .92rem; }
+    .rr-step-desc { color: var(--text-dim); font-size: .84rem; margin: 0; }
+
+    .rr-footer-note { text-align: center; font-size: .84rem; color: var(--text-dim); margin-top: 1rem; }
+</style>
+
+<div class="rr-wrap">
+    <div class="rr-card">
+        <div class="rr-head">
+            <div class="icon-circle"><i class="fas fa-hourglass-half"></i></div>
+            <h4>You're almost in</h4>
+            <p>Here's what happens between now and your first login</p>
+        </div>
+        <div class="rr-body">
+            {% if registered_user %}
+            <div class="rr-summary">
+                <div><strong>Username:</strong> {{ registered_user.username }}</div>
+                <div><strong>Email:</strong> {{ registered_user.email }}</div>
+            </div>
+            {% endif %}
+
+            <ul class="rr-steps">
+                <li class="rr-step-done">
+                    <div class="rr-step-num"><i class="fas fa-check"></i></div>
+                    <div>
+                        <div class="rr-step-title">Registration received</div>
+                        <p class="rr-step-desc">Your details are saved and ready for review.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="rr-step-num">2</div>
+                    <div>
+                        <div class="rr-step-title">Admin approval</div>
+                        <p class="rr-step-desc">An administrator reviews and approves your account. This is usually quick, but can take a little time.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="rr-step-num">3</div>
+                    <div>
+                        <div class="rr-step-title">Verification email</div>
+                        <p class="rr-step-desc">The moment you're approved, we'll email you a 6-digit code.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="rr-step-num">4</div>
+                    <div>
+                        <div class="rr-step-title">Log in &amp; verify</div>
+                        <p class="rr-step-desc">Sign in with your username and password, enter the code, and you're in.</p>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="d-grid">
+                <a href="{% url 'accounts:login' %}" class="btn" style="background: var(--molten); color:#10141a; font-weight:600;">
+                    <i class="fas fa-sign-in-alt"></i> Go to Login
+                </a>
+            </div>
+
+            <p class="rr-footer-note">
+                Didn't hear back after a day or two? Reach out to your administrator directly.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

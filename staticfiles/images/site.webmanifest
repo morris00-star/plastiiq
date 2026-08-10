@@ -1,11 +1,11 @@
 {
-    "name": "Plastic QC Calculator",
-    "short_name": "Plastic QC",
-    "description": "Quality Control Calculator for Plastic Manufacturing",
+    "name": "PlastIQ",
+    "short_name": "PlastIQ",
+    "description": "Quality control and pricing tools for plastic film manufacturing",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#343a40",
-    "theme_color": "#667eea",
+    "background_color": "#10141a",
+    "theme_color": "#10141a",
     "orientation": "portrait-primary",
     "scope": "/",
     "categories": ["business", "productivity", "utilities"],
@@ -21,20 +21,6 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
-        }
-    ],
-    "screenshots": [
-        {
-            "src": "/static/images/screenshot-wide.png",
-            "sizes": "1280x720",
-            "type": "image/png",
-            "form_factor": "wide"
-        },
-        {
-            "src": "/static/images/screenshot-narrow.png",
-            "sizes": "720x1280",
-            "type": "image/png",
-            "form_factor": "narrow"
         }
     ]
 }

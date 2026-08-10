@@ -1,0 +1,134 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .otp-wrap { max-width: 460px; margin: 0 auto; }
+    .otp-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .otp-head { padding: 1.75rem 1.5rem 1.25rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .otp-head .icon-circle {
+        width: 60px; height: 60px; border-radius: 50%;
+        background: var(--bg-panel-raised); border: 2px solid var(--molten);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem; font-size: 1.5rem; color: var(--molten);
+    }
+    .otp-head h4 { margin: 0 0 .4rem; }
+    .otp-head p { color: var(--text-dim); font-size: .88rem; margin: 0; }
+    .otp-head strong { color: var(--text-main); }
+    .otp-body { padding: 1.75rem 1.5rem; }
+
+    .otp-input {
+        font-family: var(--font-mono);
+        font-size: 1.8rem;
+        letter-spacing: .6rem;
+        text-align: center;
+        padding: .75rem .5rem;
+        background: var(--bg-panel-raised) !important;
+        border: 1px solid var(--line) !important;
+        color: var(--text-main) !important;
+    }
+    .otp-input:focus {
+        border-color: var(--molten) !important;
+        box-shadow: 0 0 0 .2rem rgba(255, 122, 69, .15) !important;
+    }
+
+    .otp-timer { text-align: center; font-size: .82rem; color: var(--text-dim); margin-top: .9rem; }
+    .otp-timer strong { color: var(--amber); font-family: var(--font-mono); }
+
+    .resend-form { text-align: center; margin-top: .5rem; }
+    .resend-btn {
+        background: transparent; border: none; color: var(--teal);
+        font-size: .85rem; font-weight: 600; cursor: pointer; padding: .4rem;
+    }
+    .resend-btn:disabled { color: var(--text-dim); cursor: not-allowed; }
+    .resend-btn:hover:not(:disabled) { color: var(--molten); }
+</style>
+
+<div class="otp-wrap">
+    <div class="otp-card">
+        <div class="otp-head">
+            <div class="icon-circle"><i class="fas fa-envelope-open-text"></i></div>
+            <h4>Verify your email</h4>
+            <p>We sent a 6-digit code to <strong>{{ user_email }}</strong></p>
+        </div>
+        <div class="otp-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" id="otpForm">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                        <div class="text-danger small text-center mt-2">{{ form.code.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn" style="background: var(--molten); color:#10141a; font-weight:600;">
+                        <i class="fas fa-check-circle"></i> Verify Code
+                    </button>
+                </div>
+            </form>
+
+            <div class="otp-timer" id="otpTimer">Code expires in <strong id="otpCountdown">10:00</strong></div>
+
+            <form method="post" action="{% url 'accounts:resend_otp' %}" class="resend-form">
+                {% csrf_token %}
+                <button type="submit" class="resend-btn" id="resendBtn" disabled>
+                    <i class="fas fa-redo"></i> Resend Code
+                </button>
+                <div id="resendCooldown" class="small" style="color: var(--text-dim);">You can resend in <span id="cooldownSeconds">60</span>s</div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // Countdown to OTP expiry (matches OTP_VALIDITY_MINUTES on the backend; purely visual)
+    let secondsLeft = 4 * 60;
+    const countdownEl = document.getElementById('otpCountdown');
+    const timer = setInterval(function () {
+        secondsLeft--;
+        if (secondsLeft <= 0) {
+            clearInterval(timer);
+            countdownEl.textContent = '0:00';
+            return;
+        }
+        const m = Math.floor(secondsLeft / 60);
+        const s = secondsLeft % 60;
+        countdownEl.textContent = m + ':' + String(s).padStart(2, '0');
+    }, 1000);
+
+    // Resend cooldown (60s, matches backend cooldown)
+    let cooldown = 60;
+    const resendBtn = document.getElementById('resendBtn');
+    const cooldownWrap = document.getElementById('resendCooldown');
+    const cooldownSecondsEl = document.getElementById('cooldownSeconds');
+    const cooldownTimer = setInterval(function () {
+        cooldown--;
+        cooldownSecondsEl.textContent = cooldown;
+        if (cooldown <= 0) {
+            clearInterval(cooldownTimer);
+            resendBtn.disabled = false;
+            cooldownWrap.style.display = 'none';
+        }
+    }, 1000);
+
+    // Auto-format: numeric only, auto-submit at 6 digits
+    const codeInput = document.querySelector('.otp-input');
+    if (codeInput) {
+        codeInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\\D/g, '').slice(0, 6);
+        });
+    }
+})();
+</script>
+{% endblock %}

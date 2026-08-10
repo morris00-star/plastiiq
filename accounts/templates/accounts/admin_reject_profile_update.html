@@ -1,0 +1,88 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<style>
+    .wrap-md { max-width: 760px; margin: 0 auto; }
+    .panel-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .panel-head { padding: 1.75rem 1.5rem 1.25rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .panel-head .icon-circle {
+        width: 60px; height: 60px; border-radius: 50%;
+        background: var(--bg-panel-raised); border: 2px solid var(--rose);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem; font-size: 1.5rem; color: var(--rose);
+    }
+    .panel-head h4 { margin: 0 0 .4rem; }
+    .panel-head p { color: var(--text-dim); font-size: .88rem; margin: 0; }
+    .panel-body { padding: 1.75rem 1.5rem; }
+
+    .compare-card { background: var(--bg-panel-raised); border: 1px solid var(--line); border-radius: 12px; height: 100%; }
+    .compare-head { padding: .75rem 1rem; border-bottom: 1px solid var(--line); font-weight: 600; font-size: .88rem; display: flex; align-items: center; gap: .5rem; }
+    .compare-body { padding: 1rem; font-size: .88rem; }
+    .compare-body p { margin-bottom: .5rem; }
+    .compare-body strong { color: var(--text-dim); font-weight: 500; }
+
+    .btn-reject { background: var(--rose); color: #10141a; font-weight: 600; border: none; }
+    .btn-reject:hover { background: #f6789f; color: #10141a; }
+</style>
+
+<div class="wrap-md">
+    <div class="panel-card">
+        <div class="panel-head">
+            <div class="icon-circle"><i class="fas fa-user-times"></i></div>
+            <h4>Reject Profile Update</h4>
+            <p>Review the requested changes before discarding them</p>
+        </div>
+        <div class="panel-body">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="compare-card">
+                        <div class="compare-head"><i class="fas fa-user" style="color: var(--teal);"></i> Current Profile</div>
+                        <div class="compare-body">
+                            <p><strong>Username:</strong> {{ user.username }}</p>
+                            <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+                            <p><strong>Role:</strong> {{ user.get_role_display_name }}</p>
+                            <p class="mb-0"><strong>Section:</strong> {{ user.get_section_display_name }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="compare-card">
+                        <div class="compare-head"><i class="fas fa-user-edit" style="color: var(--rose);"></i> Requested Changes</div>
+                        <div class="compare-body">
+                            {% if pending_data %}
+                                {% for field, value in pending_data.items %}
+                                <p><strong>{{ field|title }}:</strong> {{ value }}</p>
+                                {% endfor %}
+                            {% else %}
+                                <p class="mb-0" style="color: var(--text-dim);">No changes requested</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning">
+                <h6 class="mb-2"><i class="fas fa-exclamation-triangle"></i> This can't be undone</h6>
+                <p class="mb-0">
+                    Rejecting will discard these requested changes entirely. The user's current profile stays as-is,
+                    and they'll need to submit a new update request if they still want these changes applied.
+                </p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button type="submit" class="btn btn-reject btn-lg">
+                        <i class="fas fa-times-circle"></i> Yes, Reject Changes
+                    </button>
+                    <a href="{% url 'accounts:admin_profile_approval_list' %}" class="btn btn-outline-line btn-lg">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

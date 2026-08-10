@@ -18,6 +18,11 @@ DEBUG = os.getenv('DEBUG',False,)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
+# Absolute base URL used to build clickable links inside emails (OTP, approval,
+# admin notifications). Set SITE_URL in Render's env vars to your real domain,
+# e.g. https://qc-calculator.onrender.com — falls back to local dev otherwise.
+SITE_URL = os.getenv('SITE_URL', 'http://127.0.0.1:8000')
+
 ALLOWED_HOSTS = [
     'plastiiq.onrender.com',
     'localhost',
@@ -155,8 +160,22 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Email settings (for future notifications)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email settings (SMTP for OTP verification, notifications, etc.)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+
+# In development, fall back to printing emails to the console if no SMTP user is configured
+if IS_DEVELOPMENT and not EMAIL_HOST_USER:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# OTP verification settings
+OTP_VALIDITY_MINUTES = int(os.getenv('OTP_VALIDITY_MINUTES', 10))
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -179,4 +198,11 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    CSRF_TRUSTED_ORIGINS = [
+        f'https://{host}' for host in ALLOWED_HOSTS
+        if host not in ('localhost', '127.0.0.1')
+    ]
 

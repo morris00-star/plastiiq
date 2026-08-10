@@ -73,3 +73,11 @@ class CustomUserAdmin(UserAdmin):
         self.message_user(request, f'{updated} users rejected.')
 
     reject_users.short_description = "Reject selected users"
+
+
+# --- Restrict the Django admin site to real superusers only ---
+def _superuser_only_has_permission(request):
+    return request.user.is_active and request.user.is_superuser
+
+
+admin.site.has_permission = _superuser_only_has_permission
