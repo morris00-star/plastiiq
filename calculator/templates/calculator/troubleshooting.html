@@ -57,38 +57,110 @@
     .dept-table td ul, .dept-table td ol { padding-left: 1.1rem; margin-bottom: 0; }
     .dept-table td li { margin-bottom: .35rem; }
 
-    .dept-nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .4rem;
+    /* ---------- Process rail nav (same pattern as the homepage flow diagram) ---------- */
+    .rail-wrap {
         background: var(--bg-panel);
         border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: .5rem;
+        border-radius: 14px;
+        padding: 1.1rem 1rem .9rem;
         margin-bottom: 1.5rem;
         position: sticky;
         top: 10px;
         z-index: 5;
     }
-    .dept-nav a {
-        flex: 1 1 120px;
-        text-align: center;
-        padding: .55rem .5rem;
-        border-radius: 8px;
-        font-size: .85rem;
-        font-weight: 600;
-        text-decoration: none;
+    .rail-eyebrow {
+        font-family: var(--font-mono);
+        font-size: .68rem;
+        letter-spacing: .1em;
+        text-transform: uppercase;
         color: var(--text-dim);
-        border: 1px solid transparent;
-        transition: all .2s ease;
+        text-align: center;
+        margin-bottom: .8rem;
     }
-    .dept-nav a:hover { color: var(--text-main); border-color: var(--line); }
-    .dept-nav a.active-molten { background: rgba(255,122,69,.14); color: var(--molten); border-color: var(--molten); }
-    .dept-nav a.active-violet { background: rgba(143,124,247,.14); color: var(--violet); border-color: var(--violet); }
-    .dept-nav a.active-teal { background: rgba(47,214,198,.14); color: var(--teal); border-color: var(--teal); }
-    .dept-nav a.active-amber { background: rgba(245,186,62,.14); color: var(--amber); border-color: var(--amber); }
-    .dept-nav a.active-rose { background: rgba(242,87,143,.14); color: var(--rose); border-color: var(--rose); }
-    .dept-nav a.active-green { background: rgba(74,222,128,.14); color: var(--green); border-color: var(--green); }
+    .process-rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: .25rem;
+        max-width: 880px;
+        margin: 0 auto;
+        position: relative;
+    }
+    .rail-track {
+        position: absolute;
+        top: 24px;
+        left: 8%;
+        right: 8%;
+        height: 2px;
+        background-image: repeating-linear-gradient(90deg, var(--molten) 0 10px, transparent 10px 22px);
+        background-size: 44px 2px;
+        animation: rail-flow 1.4s linear infinite;
+        z-index: 0;
+    }
+    @keyframes rail-flow { from { background-position: 0 0; } to { background-position: 44px 0; } }
+
+    .rail-node {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        flex: 1;
+        min-width: 0;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+    .rail-node .stage-num {
+        font-family: var(--font-mono);
+        font-size: .64rem;
+        color: var(--text-dim);
+        margin-bottom: .3rem;
+    }
+    .rail-dot {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--bg-panel-raised);
+        border: 2px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .25s ease;
+    }
+    .rail-node span.rail-label {
+        font-size: .72rem;
+        color: var(--text-dim);
+        margin-top: .4rem;
+        text-align: center;
+        transition: color .2s ease;
+    }
+    .rail-node:hover .rail-label { color: var(--text-main); }
+    .rail-node:hover .rail-dot { transform: translateY(-3px); }
+
+    .stage-extrusion .rail-dot i { color: var(--molten); }
+    .stage-printing .rail-dot i { color: var(--violet); }
+    .stage-lamination .rail-dot i { color: var(--teal); }
+    .stage-slitting .rail-dot i { color: var(--amber); }
+    .stage-bagmaking .rail-dot i { color: var(--rose); }
+    .stage-sales .rail-dot i { color: var(--green); }
+
+    .stage-extrusion.in-view .rail-dot { border-color: var(--molten); background: rgba(255,122,69,.14); box-shadow: 0 0 0 4px rgba(255,122,69,.1); }
+    .stage-printing.in-view .rail-dot { border-color: var(--violet); background: rgba(143,124,247,.14); box-shadow: 0 0 0 4px rgba(143,124,247,.1); }
+    .stage-lamination.in-view .rail-dot { border-color: var(--teal); background: rgba(47,214,198,.14); box-shadow: 0 0 0 4px rgba(47,214,198,.1); }
+    .stage-slitting.in-view .rail-dot { border-color: var(--amber); background: rgba(245,186,62,.14); box-shadow: 0 0 0 4px rgba(245,186,62,.1); }
+    .stage-bagmaking.in-view .rail-dot { border-color: var(--rose); background: rgba(242,87,143,.14); box-shadow: 0 0 0 4px rgba(242,87,143,.1); }
+    .stage-sales.in-view .rail-dot { border-color: var(--green); background: rgba(74,222,128,.14); box-shadow: 0 0 0 4px rgba(74,222,128,.1); }
+    .rail-node.in-view .rail-label { color: var(--text-main); font-weight: 600; }
+
+    @media (max-width: 768px) {
+        .process-rail { gap: 0; }
+        .rail-track { left: 6%; right: 6%; }
+        .rail-dot { width: 38px; height: 38px; }
+        .rail-node span.rail-label { font-size: .64rem; }
+    }
 </style>
 
 <div class="tg-header">
@@ -131,14 +203,42 @@
     </div>
 </div>
 
-<nav class="dept-nav">
-    <a class="active-molten" href="#extrusion">Extrusion</a>
-    <a class="active-violet" href="#printing">Printing</a>
-    <a class="active-teal" href="#lamination">Lamination</a>
-    <a class="active-amber" href="#slitting">Slitting</a>
-    <a class="active-rose" href="#bag-making">Bag Making</a>
-    <a class="active-green" href="#sales">Sales</a>
-</nav>
+<div class="rail-wrap">
+    <div class="rail-eyebrow">Jump to a department</div>
+    <div class="process-rail">
+        <div class="rail-track"></div>
+        <a href="#extrusion" class="rail-node stage-extrusion">
+            <span class="stage-num">01</span>
+            <span class="rail-dot"><i class="fas fa-industry"></i></span>
+            <span class="rail-label">Extrusion</span>
+        </a>
+        <a href="#printing" class="rail-node stage-printing">
+            <span class="stage-num">02</span>
+            <span class="rail-dot"><i class="fas fa-print"></i></span>
+            <span class="rail-label">Printing</span>
+        </a>
+        <a href="#lamination" class="rail-node stage-lamination">
+            <span class="stage-num">03</span>
+            <span class="rail-dot"><i class="fas fa-layer-group"></i></span>
+            <span class="rail-label">Lamination</span>
+        </a>
+        <a href="#slitting" class="rail-node stage-slitting">
+            <span class="stage-num">04</span>
+            <span class="rail-dot"><i class="fas fa-cut"></i></span>
+            <span class="rail-label">Slitting</span>
+        </a>
+        <a href="#bag-making" class="rail-node stage-bagmaking">
+            <span class="stage-num">05</span>
+            <span class="rail-dot"><i class="fas fa-shopping-bag"></i></span>
+            <span class="rail-label">Bag Making</span>
+        </a>
+        <a href="#sales" class="rail-node stage-sales">
+            <span class="stage-num">06</span>
+            <span class="rail-dot"><i class="fas fa-chart-line"></i></span>
+            <span class="rail-label">Sales</span>
+        </a>
+    </div>
+</div>
 
 <!-- Extrusion Section -->
 <section id="extrusion" class="department-section">
@@ -991,25 +1091,23 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-window.addEventListener('scroll', function() {
+function updateActiveRailNode() {
     const sections = document.querySelectorAll('.department-section');
-    const navLinks = document.querySelectorAll('.dept-nav a');
+    const navLinks = document.querySelectorAll('.rail-node');
 
-    let current = '';
+    let current = sections.length ? sections[0].getAttribute('id') : '';
     sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        if (pageYOffset >= sectionTop - 150) {
+        if (window.pageYOffset >= section.offsetTop - 160) {
             current = section.getAttribute('id');
         }
     });
 
     navLinks.forEach(link => {
-        if (link.getAttribute('href') === `#${current}`) {
-            link.classList.add('active-current');
-        } else {
-            link.classList.remove('active-current');
-        }
+        link.classList.toggle('in-view', link.getAttribute('href') === `#${current}`);
     });
-});
+}
+
+window.addEventListener('scroll', updateActiveRailNode);
+document.addEventListener('DOMContentLoaded', updateActiveRailNode);
 </script>
 {% endblock %}

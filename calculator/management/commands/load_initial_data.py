@@ -92,29 +92,25 @@ class Command(BaseCommand):
              'description': 'LDPE two-layer film - Orange outside, White inside - measured extrusion density', 'is_ldpe': True},
             {'name': 'LDPE D2W/G', 'code': 'ldpe_d2w_g', 'material_type': 'FILM', 'density': 0.9257,
              'description': 'LDPE with d2w oxo-biodegradable additive - Green (D2W is an additive technology, not a color code; G = Green) - measured extrusion density', 'is_ldpe': True},
-            {'name': 'LDPE TInt blue', 'code': 'ldpe_tint_blue', 'material_type': 'FILM', 'density': 0.9169,
-             'description': 'LDPE - light/translucent Blue tint (single layer/color) - measured extrusion density', 'is_ldpe': True},
             {'name': 'LDPE blue', 'code': 'ldpe_blue', 'material_type': 'FILM', 'density': 0.9304,
              'description': 'LDPE - Blue (single layer/color) - measured extrusion density', 'is_ldpe': True},
             {'name': 'LDPE Tint Pink', 'code': 'ldpe_tint_pink', 'material_type': 'FILM', 'density': 0.9216,
              'description': 'LDPE - light/translucent Pink tint (single layer/color) - measured extrusion density', 'is_ldpe': True},
-            {'name': 'LDPE TInt yellow', 'code': 'ldpe_tint_yellow_2', 'material_type': 'FILM', 'density': 0.9183,
+            {'name': 'LDPE Tint yellow', 'code': 'ldpe_tint_yellow_2', 'material_type': 'FILM', 'density': 0.9183,
              'description': 'LDPE - light/translucent Yellow tint (single layer/color) - measured extrusion density', 'is_ldpe': True},
             {'name': 'LDPE black', 'code': 'ldpe_black', 'material_type': 'FILM', 'density': 0.9179,
              'description': 'LDPE - Black (single layer/color) - measured extrusion density', 'is_ldpe': True},
             {'name': 'LDPE yellow', 'code': 'ldpe_yellow_3', 'material_type': 'FILM', 'density': 0.9277,
              'description': 'LDPE - Yellow (single layer/color) - measured extrusion density', 'is_ldpe': True},
-            {'name': 'LDPE TInt blue', 'code': 'ldpe_tint_blue_2', 'material_type': 'FILM', 'density': 0.9214,
+            {'name': 'LDPE Tint blue', 'code': 'ldpe_tint_blue_2', 'material_type': 'FILM', 'density': 0.9214,
              'description': 'LDPE - light/translucent Blue tint (single layer/color) - measured extrusion density', 'is_ldpe': True},
-            {'name': 'LDPE TInt red', 'code': 'ldpe_tint_red', 'material_type': 'FILM', 'density': 0.9201,
+            {'name': 'LDPE Tint red', 'code': 'ldpe_tint_red', 'material_type': 'FILM', 'density': 0.9201,
              'description': 'LDPE - light/translucent Red tint (single layer/color) - measured extrusion density', 'is_ldpe': True},
             {'name': 'LDPE Golden yellow', 'code': 'ldpe_golden_yellow', 'material_type': 'FILM', 'density': 0.9315,
              'description': 'LDPE - Golden Yellow (single layer/color) - measured extrusion density', 'is_ldpe': True},
 
             # --- HDPE (measured samples) ---
             # Note: densities clustering ~1.00-1.09 g/cm3 (vs ~0.92-0.95 for unfilled HDPE)
-            # strongly suggest mineral filler (e.g. calcium carbonate) content - called out
-            # explicitly below wherever the measured density supports that.
             {'name': 'HDPE brown', 'code': 'hdpe_brown', 'material_type': 'FILM', 'density': 0.942,
              'description': 'HDPE - Brown (single layer/color) - measured extrusion density'},
             {'name': 'HDPE coffee brown', 'code': 'hdpe_coffee_brown', 'material_type': 'FILM', 'density': 0.938,
