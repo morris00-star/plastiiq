@@ -819,44 +819,47 @@ def admin_activate_user(request, user_id):
 
 
 def debug_email_test_view(request):
-    """
-    TEMPORARY debug endpoint — visit /accounts/debug-email-test/?token=...&to=you@example.com
-    in a browser to test SMTP without shell access. Protected by DEBUG_EMAIL_TOKEN env var.
-    Every import is local and the whole body is wrapped in try/except so this can never
-    surface as a blank Internal Server Error — it always returns readable plain text.
-
-    REMOVE THIS VIEW (and its URL) once email is confirmed working.
-    """
     import os
+    import secrets
     import traceback
     from django.http import HttpResponse
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
 
     try:
         expected_token = os.getenv('DEBUG_EMAIL_TOKEN')
         if not expected_token:
-            return HttpResponse('DEBUG_EMAIL_TOKEN is not set in Render env vars.', status=200)
-        if request.GET.get('token') != expected_token:
-            return HttpResponse('Token mismatch.', status=200)
+            return HttpResponse('DEBUG_EMAIL_TOKEN not configured', status=503)
+
+        provided_token = request.GET.get('token', '')
+        if not secrets.compare_digest(provided_token, expected_token):
+            return HttpResponse('Unauthorized', status=403)
 
         to_email = request.GET.get('to')
         if not to_email:
-            return HttpResponse('Add ?to=youraddress@example.com to the URL', status=200)
-
-        from django.conf import settings
-
-        lines = []
-        lines.append(f"EMAIL_BACKEND: {getattr(settings, 'EMAIL_BACKEND', 'NOT SET')}")
-        lines.append(f"EMAIL_HOST: {getattr(settings, 'EMAIL_HOST', 'NOT SET')}")
-        lines.append(f"EMAIL_PORT: {getattr(settings, 'EMAIL_PORT', 'NOT SET')}")
-        lines.append(f"EMAIL_USE_TLS: {getattr(settings, 'EMAIL_USE_TLS', 'NOT SET')}")
-        lines.append(f"EMAIL_HOST_USER: {getattr(settings, 'EMAIL_HOST_USER', 'NOT SET')}")
-        lines.append(f"EMAIL_HOST_PASSWORD set: {bool(getattr(settings, 'EMAIL_HOST_PASSWORD', None))}")
-        lines.append(f"DEFAULT_FROM_EMAIL: {getattr(settings, 'DEFAULT_FROM_EMAIL', 'NOT SET')}")
-        lines.append(f"IS_PRODUCTION: {getattr(settings, 'IS_PRODUCTION', 'NOT SET')}")
-        lines.append("")
+            return HttpResponse('Missing ?to=email@example.com parameter', status=400)
 
         try:
-            from django.core.mail import send_mail
+            validate_email(to_email)
+        except ValidationError:
+            return HttpResponse('Invalid email address format', status=400)
+
+        from django.conf import settings
+        from django.core.mail import send_mail
+
+        # Build response (more concise)
+        config_lines = [
+            f"EMAIL_BACKEND: {getattr(settings, 'EMAIL_BACKEND', 'NOT SET')}",
+            f"EMAIL_HOST: {getattr(settings, 'EMAIL_HOST', 'NOT SET')}",
+            f"EMAIL_PORT: {getattr(settings, 'EMAIL_PORT', 'NOT SET')}",
+            f"EMAIL_USE_TLS: {getattr(settings, 'EMAIL_USE_TLS', 'NOT SET')}",
+            f"EMAIL_HOST_USER: {getattr(settings, 'EMAIL_HOST_USER', 'NOT SET')}",
+            f"EMAIL_HOST_PASSWORD set: {bool(getattr(settings, 'EMAIL_HOST_PASSWORD', None))}",
+            f"DEFAULT_FROM_EMAIL: {getattr(settings, 'DEFAULT_FROM_EMAIL', 'NOT SET')}",
+            f"IS_PRODUCTION: {getattr(settings, 'IS_PRODUCTION', 'NOT SET')}",
+        ]
+
+        try:
             result = send_mail(
                 subject='PlastIQ Render SMTP test',
                 message='If you got this, SMTP works from Render.',
@@ -864,21 +867,25 @@ def debug_email_test_view(request):
                 recipient_list=[to_email],
                 fail_silently=False,
             )
-            lines.append(f"SUCCESS - send_mail returned: {result}")
+            response_lines = config_lines + [f"SUCCESS - send_mail returned: {result}"]
         except Exception as e:
-            lines.append(f"SEND FAILED - {type(e).__name__}: {e}")
-            lines.append("")
-            lines.append(traceback.format_exc())
+            # Log exception for debugging (use your logger)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"SMTP test failed for {to_email}", exc_info=True)
 
-        return HttpResponse("
-".join(lines), content_type="text/plain")
+            response_lines = config_lines + [
+                f"SEND FAILED - {type(e).__name__}: {e}"
+            ]
+
+        return HttpResponse("\n".join(response_lines), content_type="text/plain")
 
     except Exception as outer_e:
-        # Catches literally anything, including bugs in this debug view itself
+        # Log the crash
+        import logging
+        logging.getLogger(__name__).error("Debug view crashed", exc_info=True)
         return HttpResponse(
-            f"DEBUG VIEW CRASHED - {type(outer_e).__name__}: {outer_e}
-
-{traceback.format_exc()}",
+            f"Internal error: {type(outer_e).__name__}",
             content_type="text/plain",
-            status=200
+            status=500  # Use proper status code
         )
