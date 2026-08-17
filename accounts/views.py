@@ -821,46 +821,64 @@ def admin_activate_user(request, user_id):
 def debug_email_test_view(request):
     """
     TEMPORARY debug endpoint — visit /accounts/debug-email-test/?token=...&to=you@example.com
-    in a browser to test SMTP without shell access. Protected by DEBUG_EMAIL_TOKEN env var;
-    if that env var isn't set, this endpoint refuses to run at all.
+    in a browser to test SMTP without shell access. Protected by DEBUG_EMAIL_TOKEN env var.
+    Every import is local and the whole body is wrapped in try/except so this can never
+    surface as a blank Internal Server Error — it always returns readable plain text.
 
     REMOVE THIS VIEW (and its URL) once email is confirmed working.
     """
+    import os
     import traceback
     from django.http import HttpResponse
-    from django.conf import settings
-
-    expected_token = os.getenv('DEBUG_EMAIL_TOKEN')
-    if not expected_token or request.GET.get('token') != expected_token:
-        return HttpResponse('Not found', status=404)
-
-    to_email = request.GET.get('to')
-    if not to_email:
-        return HttpResponse('Add ?to=youraddress@example.com to the URL', status=400)
-
-    lines = []
-    lines.append(f"EMAIL_BACKEND: {settings.EMAIL_BACKEND}")
-    lines.append(f"EMAIL_HOST: {settings.EMAIL_HOST}")
-    lines.append(f"EMAIL_PORT: {settings.EMAIL_PORT}")
-    lines.append(f"EMAIL_USE_TLS: {settings.EMAIL_USE_TLS}")
-    lines.append(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
-    lines.append(f"EMAIL_HOST_PASSWORD set: {bool(settings.EMAIL_HOST_PASSWORD)}")
-    lines.append(f"DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
-    lines.append("")
 
     try:
-        from django.core.mail import send_mail
-        result = send_mail(
-            subject='PlastIQ Render SMTP test',
-            message='If you got this, SMTP works from Render.',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[to_email],
-            fail_silently=False,
-        )
-        lines.append(f"SUCCESS — send_mail returned: {result}")
-    except Exception as e:
-        lines.append(f"FAILED — {type(e).__name__}: {e}")
-        lines.append("")
-        lines.append(traceback.format_exc())
+        expected_token = os.getenv('DEBUG_EMAIL_TOKEN')
+        if not expected_token:
+            return HttpResponse('DEBUG_EMAIL_TOKEN is not set in Render env vars.', status=200)
+        if request.GET.get('token') != expected_token:
+            return HttpResponse('Token mismatch.', status=200)
 
-    return HttpResponse("\n".join(lines), content_type="text/plain")
+        to_email = request.GET.get('to')
+        if not to_email:
+            return HttpResponse('Add ?to=youraddress@example.com to the URL', status=200)
+
+        from django.conf import settings
+
+        lines = []
+        lines.append(f"EMAIL_BACKEND: {getattr(settings, 'EMAIL_BACKEND', 'NOT SET')}")
+        lines.append(f"EMAIL_HOST: {getattr(settings, 'EMAIL_HOST', 'NOT SET')}")
+        lines.append(f"EMAIL_PORT: {getattr(settings, 'EMAIL_PORT', 'NOT SET')}")
+        lines.append(f"EMAIL_USE_TLS: {getattr(settings, 'EMAIL_USE_TLS', 'NOT SET')}")
+        lines.append(f"EMAIL_HOST_USER: {getattr(settings, 'EMAIL_HOST_USER', 'NOT SET')}")
+        lines.append(f"EMAIL_HOST_PASSWORD set: {bool(getattr(settings, 'EMAIL_HOST_PASSWORD', None))}")
+        lines.append(f"DEFAULT_FROM_EMAIL: {getattr(settings, 'DEFAULT_FROM_EMAIL', 'NOT SET')}")
+        lines.append(f"IS_PRODUCTION: {getattr(settings, 'IS_PRODUCTION', 'NOT SET')}")
+        lines.append("")
+
+        try:
+            from django.core.mail import send_mail
+            result = send_mail(
+                subject='PlastIQ Render SMTP test',
+                message='If you got this, SMTP works from Render.',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[to_email],
+                fail_silently=False,
+            )
+            lines.append(f"SUCCESS - send_mail returned: {result}")
+        except Exception as e:
+            lines.append(f"SEND FAILED - {type(e).__name__}: {e}")
+            lines.append("")
+            lines.append(traceback.format_exc())
+
+        return HttpResponse("
+".join(lines), content_type="text/plain")
+
+    except Exception as outer_e:
+        # Catches literally anything, including bugs in this debug view itself
+        return HttpResponse(
+            f"DEBUG VIEW CRASHED - {type(outer_e).__name__}: {outer_e}
+
+{traceback.format_exc()}",
+            content_type="text/plain",
+            status=200
+        )
