@@ -10,11 +10,16 @@ import json
 from .forms import CustomUserCreationForm, CustomUserLoginForm, UserProfileForm, DeleteAccountForm, \
     PasswordResetRequestForm, AdminPasswordResetReviewForm, AdminPasswordSetForm, OTPVerificationForm
 from .models import CustomUser, PasswordResetRequest, UserActionLog, EmailOTP
+import logging
+
 from .utils import send_otp_email, send_approval_email, \
     notify_admins_new_registration, notify_user_registration_received, \
     notify_admins_password_reset_request, notify_user_password_reset_received, \
     notify_admins_account_deletion, notify_user_account_deleted, send_approval_email
 
+
+
+logger = logging.getLogger(__name__)
 
 def log_user_action(action_type, description_field='username'):
     def decorator(view_func):
@@ -57,7 +62,8 @@ def register_view(request):
                 notify_admins_new_registration(user)
                 notify_user_registration_received(user)
             except Exception:
-                pass  # Registration itself still succeeds even if notification email fails
+                logger.exception(f"Failed to send registration notification emails for user {user.username}")
+                # Registration itself still succeeds even if notification email fails
 
             request.session['just_registered_user_id'] = user.id
             return redirect('accounts:registration_received')
@@ -297,7 +303,8 @@ def password_reset_request_view(request):
                         notify_admins_password_reset_request(latest_reset)
                     notify_user_password_reset_received(user_to_reset)
                 except Exception:
-                    pass  # Request itself still succeeds even if notification email fails
+                    logger.exception(f"Failed to send password reset notification emails for user {user_to_reset.username}")
+                    # Request itself still succeeds even if notification email fails
 
                 messages.success(
                     request,
@@ -500,7 +507,8 @@ def delete_account_view(request):
                 notify_admins_account_deletion(deleted_user, initiated_by_admin=False)
                 notify_user_account_deleted(deleted_user, deleted_by_admin=False)
             except Exception:
-                pass  # Deletion itself still succeeds even if notification email fails
+                logger.exception(f"Failed to send deletion notification emails for user {deleted_user.username}")
+                # Deletion itself still succeeds even if notification email fails
 
             # Logout the user
             logout(request)
@@ -659,6 +667,7 @@ def admin_approve_user(request, user_id):
         try:
             send_approval_email(user_to_approve, otp)
         except Exception:
+            logger.exception(f"Failed to send approval email for user {user_to_approve.username}")
             messages.warning(
                 request,
                 f'{user_to_approve.username} was approved, but the notification email failed to send. '
@@ -781,7 +790,8 @@ def admin_delete_user(request, user_id):
             notify_admins_account_deletion(user_to_delete, initiated_by_admin=True)
             notify_user_account_deleted(user_to_delete, deleted_by_admin=True)
         except Exception:
-            pass  # Deletion itself still succeeds even if notification email fails
+            logger.exception(f"Failed to send deletion notification emails for user {user_to_delete.username}")
+            # Deletion itself still succeeds even if notification email fails
 
         messages.success(request, f'User account {username} has been deleted.')
         return redirect('accounts:admin_user_management')

@@ -65,7 +65,7 @@
     .panel-head i { color: var(--molten); }
     .panel-body { padding: 1.25rem; }
 
-    .mat-table th, .mat-table td { font-size: .88rem; vertical-align: middle; }
+    .mat-table th, .mat-table td { font-size: .85rem; vertical-align: middle; }
     .mat-code {
         background: var(--bg-panel-raised);
         border: 1px solid var(--line);
@@ -73,27 +73,103 @@
         padding: .2rem .5rem;
         border-radius: 6px;
         font-family: var(--font-mono);
-        font-size: .82rem;
+        font-size: .78rem;
+        white-space: nowrap;
     }
-    .mat-density {
+    .mat-badge {
+        background: var(--amber);
+        color: #10141a;
+        font-weight: 600;
+        padding: .15rem .6rem;
+        border-radius: 20px;
+        font-size: .65rem;
+        display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+    .mat-badge-uht {
         background: var(--molten);
         color: #10141a;
-        font-family: var(--font-mono);
         font-weight: 700;
-        padding: .3rem .6rem;
-        border-radius: 6px;
-        font-size: .85rem;
+        padding: .15rem .6rem;
+        border-radius: 20px;
+        font-size: .65rem;
+        display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+    .mat-laminate {
+        font-weight: 500;
+        letter-spacing: .02em;
+    }
+    .mat-property {
+        font-size: .8rem;
+        color: var(--text-dim);
+    }
+    .mat-property span { display: block; }
+    .mat-property span + span { margin-top: .2rem; }
+    .mat-role {
+        font-size: .8rem;
+    }
+    .mat-products {
+        font-size: .78rem;
+        color: var(--text-dim);
     }
 
     .info-sub h6 { font-size: .92rem; margin-bottom: .6rem; display: flex; align-items: center; gap: .4rem; }
     .info-sub ul { font-size: .85rem; color: var(--text-dim); padding-left: 1.1rem; }
     .info-links { display: flex; flex-direction: column; gap: .5rem; }
     .info-links .btn { border-radius: 8px; text-align: left; font-size: .85rem; }
+
+    /* ---------- Why Laminates section ---------- */
+    .curtain-intro {
+        background: var(--bg-panel-raised);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--molten);
+        border-radius: 10px;
+        padding: 1.1rem 1.3rem;
+        font-size: .9rem;
+        color: var(--text-dim);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    .curtain-intro strong { color: var(--text-main); }
+
+    .property-strip { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.5rem; }
+    .property-pill {
+        flex: 1 1 150px;
+        background: var(--bg-panel-raised);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: .85rem .75rem;
+        text-align: center;
+    }
+    .property-pill i { font-size: 1.2rem; display: block; margin-bottom: .4rem; }
+    .property-pill span { font-size: .78rem; font-weight: 600; color: var(--text-main); }
+    .pp-strength i { color: var(--molten); }
+    .pp-print i { color: var(--violet); }
+    .pp-barrier i { color: var(--teal); }
+    .pp-seal i { color: var(--amber); }
+
+    .takeaway-card {
+        background: var(--bg-panel-raised);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.1rem 1.3rem;
+        height: 100%;
+    }
+    .takeaway-card h6 { font-size: .92rem; margin-bottom: .75rem; display: flex; align-items: center; gap: .5rem; }
+    .takeaway-card ul { font-size: .84rem; color: var(--text-dim); padding-left: 1.1rem; margin: 0; }
+    .takeaway-card li { margin-bottom: .4rem; }
+    .takeaway-card p { font-size: .84rem; color: var(--text-dim); margin: 0; line-height: 1.6; }
+    .tk-principles i { color: var(--teal); }
+    .tk-benefits i { color: var(--molten); }
+    .tk-insight i { color: var(--amber); }
 </style>
 
 <div class="ref-header">
-    <h2><i class="fas fa-database"></i> Material Density Reference</h2>
-    <p>Complete list of plastic materials and their densities</p>
+    <h2><i class="fas fa-database"></i> Material &amp; Laminate Reference</h2>
+    <p>Complete list of plastic materials, UHT grades, laminates with properties and applications</p>
 </div>
 
 <div class="quick-tiles">
@@ -125,56 +201,401 @@
     <a href="{% url 'material_properties' %}" class="btn btn-outline-line"><i class="fas fa-box-open"></i> Material Applications</a>
 </div>
 
-{% for material_type in material_types %}
+<!-- ========== SINGLE MATERIALS ========== -->
 <div class="panel-card">
-    <div class="panel-head"><i class="fas fa-layer-group"></i> {{ material_type.1 }}</div>
+    <div class="panel-head"><i class="fas fa-cube"></i> Single Materials &amp; Specialty Grades</div>
     <div class="panel-body">
         <div class="table-responsive">
             <table class="table table-striped table-hover mat-table">
                 <thead class="table-dark">
                     <tr>
-                        <th>Material Name</th>
-                        <th>Code</th>
-                        <th>Density (g/cm&sup3;)</th>
-                        <th>Description</th>
+                        <th style="min-width:160px;">Material Name</th>
+                        <th style="min-width:100px;">Code</th>
+                        <th style="min-width:220px;">Key Properties</th>
+                        <th style="min-width:160px;">Role</th>
+                        <th style="min-width:240px;">Typical Products Packaged</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for material in materials %}
-                        {% if material.material_type == material_type.0 %}
-                        <tr>
-                            <td>
-                                <strong>{{ material.name }}</strong>
-                                {% if material.is_common %}<span class="badge bg-success ms-1">Common</span>{% endif %}
-                            </td>
-                            <td><span class="mat-code">{{ material.code }}</span></td>
-                            <td><span class="mat-density">{{ material.density }}</span></td>
-                            <td>
-                                {% if material.description %}{{ material.description }}{% else %}<span class="text-muted">No description available</span>{% endif %}
-                            </td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
+                    <tr>
+                        <td><strong>LDPE</strong></td>
+                        <td><span class="mat-code">LDPE</span></td>
+                        <td class="mat-property"><span>Flexible, good sealability</span><span>Low cost, moderate moisture barrier</span></td>
+                        <td class="mat-role">Sealant layer, inner liner</td>
+                        <td class="mat-products">Bread bags, produce bags, shrink film, trash liners, stretch hoods</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LDPE-W/B</strong> <span class="mat-badge">black</span></td>
+                        <td><span class="mat-code">LDPE-B</span></td>
+                        <td class="mat-property"><span>UV-blocking, light protection</span><span>Opaque, good tear resistance</span></td>
+                        <td class="mat-role">Light barrier, agricultural film</td>
+                        <td class="mat-products">Silage wrap, mulch film, black garbage bags, landscape film, contractor bags</td>
+                    </tr>
+                    <tr>
+                        <td><strong>UHT (EVOH-W/B)</strong> <span class="mat-badge-uht">UHT</span></td>
+                        <td><span class="mat-code">EVOH-W/B</span></td>
+                        <td class="mat-property"><span>Ultra-high oxygen barrier, retort-capable</span><span>Retort/autoclave stable, chemical resistant</span></td>
+                        <td class="mat-role">Barrier layer for shelf-stable foods</td>
+                        <td class="mat-products">Retort pouches, UHT milk, shelf-stable meals, soup pouches, pet food pouches</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LDPE-WHITE</strong></td>
+                        <td><span class="mat-code">LDPE-W</span></td>
+                        <td class="mat-property"><span>Opaque, pigmented white</span><span>Good printability, moisture resistant</span></td>
+                        <td class="mat-role">Light-blocking inner sealant</td>
+                        <td class="mat-products">White bags, opaque packaging, milk pouches, ice cream overwrap, frozen food bags</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LDPE-YELLOW</strong></td>
+                        <td><span class="mat-code">LDPE-Y</span></td>
+                        <td class="mat-property"><span>Pigmented yellow, aesthetic</span><span>UV-stabilized grades available</span></td>
+                        <td class="mat-role">Color-coded packaging</td>
+                        <td class="mat-products">Yellow packaging, hazard/warning bags, construction film, safety packaging</td>
+                    </tr>
+                    <tr>
+                        <td><strong>HDPE</strong></td>
+                        <td><span class="mat-code">HDPE</span></td>
+                        <td class="mat-property"><span>Stiff, strong, moisture barrier</span><span>Chemical resistance, low vapor transmission</span></td>
+                        <td class="mat-role">Structural layer, toughness</td>
+                        <td class="mat-products">T-shirt bags, grocery sacks, trash bags, cereal liners, chemical bags</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LLDPE</strong></td>
+                        <td><span class="mat-code">LLDPE</span></td>
+                        <td class="mat-property"><span>High puncture &amp; tear resistance</span><span>Excellent cling and elongation</span></td>
+                        <td class="mat-role">Tough outer or sealant layer</td>
+                        <td class="mat-products">Stretch wrap, heavy-duty bags, industrial liners, pallet wrap, produce bags</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PP (Polypropylene)</strong></td>
+                        <td><span class="mat-code">PP</span></td>
+                        <td class="mat-property"><span>Heat-resistant, good clarity</span><span>Low moisture absorption, grease barrier</span></td>
+                        <td class="mat-role">Outer layer, heat-sealable</td>
+                        <td class="mat-products">Snack food packaging, pharmaceutical blister packs, textile packaging, twist wrap</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CPP</strong></td>
+                        <td><span class="mat-code">CPP</span></td>
+                        <td class="mat-property"><span>Excellent sealability, clarity</span><span>Low haze, good hot-tack</span></td>
+                        <td class="mat-role">Sealant layer in laminates</td>
+                        <td class="mat-products">Biscuit wraps, confectionery, vertical form-fill-seal, pasta packaging, coffee bag inner layer</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BOPP</strong></td>
+                        <td><span class="mat-code">BOPP</span></td>
+                        <td class="mat-property"><span>High strength, clarity, moisture barrier</span><span>Good dimensional stability, low shrinkage</span></td>
+                        <td class="mat-role">Printing web, outer layer</td>
+                        <td class="mat-products">Cigarette packs, food wrappers, labels, tape backing, tobacco overwrap</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pearlised BOPP</strong></td>
+                        <td><span class="mat-code">P-BOPP</span></td>
+                        <td class="mat-property"><span>Pearlescent aesthetic, opacity</span><span>Void-based lightweight structure</span></td>
+                        <td class="mat-role">Decorative outer layer</td>
+                        <td class="mat-products">Premium confectionery, cosmetic packaging, gift wraps, soap wrap, tea bag overwrap</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Matt Finish BOPP</strong></td>
+                        <td><span class="mat-code">MATT BOPP</span></td>
+                        <td class="mat-property"><span>Soft-touch matte surface, anti-glare</span><span>Fingerprint resistant</span></td>
+                        <td class="mat-role">Aesthetic outer layer, lamination</td>
+                        <td class="mat-products">Premium labels, luxury packaging, book covers, wine labels, premium tea packaging</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PET</strong></td>
+                        <td><span class="mat-code">PET</span></td>
+                        <td class="mat-property"><span>High clarity, mechanical strength</span><span>Excellent gas barrier, dimensional stability</span></td>
+                        <td class="mat-role">Printing web, outer structural layer</td>
+                        <td class="mat-products">Beverage labels, food trays, shrink sleeves, twist wrap, medical pouches</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MET PET</strong></td>
+                        <td><span class="mat-code">MET PET</span></td>
+                        <td class="mat-property"><span>Oxygen &amp; light barrier, metallic look</span><span>Excellent grease &amp; aroma barrier</span></td>
+                        <td class="mat-role">Barrier layer in laminates</td>
+                        <td class="mat-products">Coffee packaging, snacks, confectionery, chips, chocolate wrap</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MET BOPP</strong></td>
+                        <td><span class="mat-code">MET BOPP</span></td>
+                        <td class="mat-property"><span>Aroma &amp; moisture barrier</span><span>Good stiffness, cost-effective barrier</span></td>
+                        <td class="mat-role">Barrier layer, overwrap</td>
+                        <td class="mat-products">Cookies, crackers, dried fruits, biscuit overwrap, candy wrap</td>
+                    </tr>
+                    <tr>
+                        <td><strong>NYLON (PA)</strong></td>
+                        <td><span class="mat-code">PA</span></td>
+                        <td class="mat-property"><span>High puncture resistance, toughness</span><span>Good oxygen barrier at high humidity</span></td>
+                        <td class="mat-role">Structural layer for puncture-prone products</td>
+                        <td class="mat-products">Bone-in meat, frozen food, medical packaging, cheese packaging, boil-in-bag</td>
+                    </tr>
+                    <tr>
+                        <td><strong>EVOH</strong></td>
+                        <td><span class="mat-code">EVOH</span></td>
+                        <td class="mat-property"><span>Oxygen barrier, clarity</span><span>Moisture-sensitive — needs protective layers</span></td>
+                        <td class="mat-role">Barrier layer in co-extrusion</td>
+                        <td class="mat-products">Processed meats, cheese, sauces, dairy, ketchup pouches, medical packaging</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PE-EVOH-PE-AF</strong> <span class="mat-badge">co-extruded</span></td>
+                        <td><span class="mat-code">PE-EVOH-PE-AF</span></td>
+                        <td class="mat-property"><span>Barrier + anti-fog, all-in-one structure</span><span>Excellent clarity retention, condensation control</span></td>
+                        <td class="mat-role">Complete barrier film with anti-fog coating</td>
+                        <td class="mat-products">Fresh produce, salads, ready-to-eat meals, cut vegetables, deli produce</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-{% endfor %}
 
+<!-- ========== WHY USE LAMINATES ========== -->
 <div class="panel-card">
-    <div class="panel-head"><i class="fas fa-info-circle"></i> About Material Densities</div>
+    <div class="panel-head"><i class="fas fa-layer-group"></i> Why Use Laminates? (The "Curtain" Concept)</div>
+    <div class="panel-body">
+        <div class="curtain-intro">
+            The act of lamination — combining materials — is necessary because <strong>no single plastic film offers
+            all four required properties</strong> at once: strength, printability, high barrier, and heat
+            sealability. Each layer in a laminate acts like a curtain contributing one property, and together they
+            cover what no single film could deliver alone.
+        </div>
+
+        <div class="property-strip">
+            <div class="property-pill pp-strength"><i class="fas fa-dumbbell"></i><span>Strength</span></div>
+            <div class="property-pill pp-print"><i class="fas fa-print"></i><span>Printability</span></div>
+            <div class="property-pill pp-barrier"><i class="fas fa-shield-alt"></i><span>High Barrier</span></div>
+            <div class="property-pill pp-seal"><i class="fas fa-fire"></i><span>Heat Sealability</span></div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="takeaway-card tk-principles">
+                    <h6><i class="fas fa-balance-scale"></i> Material Selection Principles</h6>
+                    <ul>
+                        <li>Match material properties to product protection requirements</li>
+                        <li>Balance quality needs with cost efficiency</li>
+                        <li>Consider processing requirements (sealing, printing)</li>
+                        <li>Evaluate end-use conditions (storage, transportation)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="takeaway-card tk-benefits">
+                    <h6><i class="fas fa-layer-group"></i> Lamination Benefits</h6>
+                    <ul>
+                        <li>Combines multiple properties in one structure</li>
+                        <li>Enables high-barrier protection</li>
+                        <li>Provides mechanical strength and durability</li>
+                        <li>Allows optimal material usage and cost control</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="takeaway-card tk-insight">
+                    <h6><i class="fas fa-graduation-cap"></i> Professional Insight</h6>
+                    <p>
+                        Successful flexible packaging design requires understanding both material science and
+                        practical manufacturing constraints. The right material combination ensures product
+                        protection, consumer appeal, and production efficiency.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== LAMINATES ========== -->
+<div class="panel-card">
+    <div class="panel-head"><i class="fas fa-object-group"></i> Laminate Structures</div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mat-table">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="min-width:200px;">Laminate Structure</th>
+                        <th style="min-width:100px;">Code</th>
+                        <th style="min-width:220px;">Key Properties</th>
+                        <th style="min-width:160px;">Role</th>
+                        <th style="min-width:240px;">Typical Products Packaged</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mat-laminate">PET / LDPE</td>
+                        <td><span class="mat-code">PET/LDPE</span></td>
+                        <td class="mat-property"><span>Clarity + sealability</span><span>Good print clarity</span></td>
+                        <td class="mat-role">General flexible packaging</td>
+                        <td class="mat-products">Biscuits, snacks, cookies, pet food, spice pouches</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / LDPE-WHITE</td>
+                        <td><span class="mat-code">PET/LDPE-W</span></td>
+                        <td class="mat-property"><span>Opaque white inner sealant</span><span>Blocks UV/light degradation</span></td>
+                        <td class="mat-role">Light-blocking packaging</td>
+                        <td class="mat-products">Dairy, cheese, opaque food wraps, cheese wraps, butter packaging</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / LDPE-YELLOW</td>
+                        <td><span class="mat-code">PET/LDPE-Y</span></td>
+                        <td class="mat-property"><span>Yellow-colored packaging</span><span>High visual impact branding</span></td>
+                        <td class="mat-role">Color-coded or decorative</td>
+                        <td class="mat-products">Specialty foods, promotional packaging, seasonal packs</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / MET PET / LDPE</td>
+                        <td><span class="mat-code">PET/MET PET/LDPE</span></td>
+                        <td class="mat-property"><span>High barrier with metallised core</span><span>Excellent shelf-life extension</span></td>
+                        <td class="mat-role">Oxygen &amp; light barrier</td>
+                        <td class="mat-products">Coffee, tea, nuts, dried fruits, instant noodles, spice mixes</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / BOPP</td>
+                        <td><span class="mat-code">PET/BOPP</span></td>
+                        <td class="mat-property"><span>Clarity &amp; stiffness blend</span><span>Good machine runnability</span></td>
+                        <td class="mat-role">Clear packaging with good strength</td>
+                        <td class="mat-products">Stationery, display packaging, pouches, greeting card wraps, small parts packaging</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / MET PET</td>
+                        <td><span class="mat-code">PET/MET PET</span></td>
+                        <td class="mat-property"><span>Dual-polyester metallised barrier</span><span>Cost-effective vs. foil laminate</span></td>
+                        <td class="mat-role">High oxygen &amp; moisture barrier</td>
+                        <td class="mat-products">Condiments, sauces, dry mixes, chocolate bars, biscuit wrap</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">BOPP / MET BOPP</td>
+                        <td><span class="mat-code">BOPP/MET BOPP</span></td>
+                        <td class="mat-property"><span>All-PP metallised laminate</span><span>Good stiffness, lightweight</span></td>
+                        <td class="mat-role">Moisture &amp; aroma barrier</td>
+                        <td class="mat-products">Crackers, cookies, bakery items</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">BOPP / BOPP</td>
+                        <td><span class="mat-code">BOPP/BOPP</span></td>
+                        <td class="mat-property"><span>Double oriented PP for strength</span><span>Economical, recyclable-friendly (mono-material)</span></td>
+                        <td class="mat-role">High strength, printable outer</td>
+                        <td class="mat-products">Labels, wraps, heavy-duty packaging</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / CPP</td>
+                        <td><span class="mat-code">PET/CPP</span></td>
+                        <td class="mat-property"><span>High clarity with cast sealant</span><span>Retortable option available</span></td>
+                        <td class="mat-role">Pouches with high clarity</td>
+                        <td class="mat-products">Snacks, confectionery, frozen food, sauces, ready meals</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / MET CPP</td>
+                        <td><span class="mat-code">PET/MET CPP</span></td>
+                        <td class="mat-property"><span>Metallised CPP barrier</span><span>Good seal integrity + barrier</span></td>
+                        <td class="mat-role">Barrier with cast PP sealant</td>
+                        <td class="mat-products">Bakery, dairy, ready meals, curry pouches, sauces</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / NYLON</td>
+                        <td><span class="mat-code">PET/NYLON</span></td>
+                        <td class="mat-property"><span>High puncture resistance</span><span>Excellent abrasion resistance</span></td>
+                        <td class="mat-role">Durable packaging for sharp products</td>
+                        <td class="mat-products">Bone-in meat, frozen fish, hardware, vacuum pouches, cheese blocks</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">BOPP / MET PET / LDPE</td>
+                        <td><span class="mat-code">BOPP/M PET/LDPE</span></td>
+                        <td class="mat-property"><span>Barrier with BOPP outer</span><span>Balanced cost &amp; barrier performance</span></td>
+                        <td class="mat-role">Moisture barrier with printability</td>
+                        <td class="mat-products">Snacks, confectionery, dry food, wafers, namkeen (savory snacks)</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">Matt BOPP / MPET / LDPE</td>
+                        <td><span class="mat-code">MATT BOPP/MPET/LDPE</span></td>
+                        <td class="mat-property"><span>Matte outer, metallised barrier</span><span>High-end shelf appeal</span></td>
+                        <td class="mat-role">Premium aesthetic with barrier</td>
+                        <td class="mat-products">Premium chocolates, cosmetics, luxury foods, premium biscuits, gift confectionery</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">Matt BOPP / Pearlised BOPP</td>
+                        <td><span class="mat-code">MATT BOPP/P-BOPP</span></td>
+                        <td class="mat-property"><span>Matte + pearlescent aesthetic</span><span>No-adhesive dry lamination option</span></td>
+                        <td class="mat-role">Decorative packaging without adhesive</td>
+                        <td class="mat-products">Gift wrap, cosmetic boxes, premium labels, soap bar wrap, candle wrap</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / PE-EVOH-PE-AF</td>
+                        <td><span class="mat-code">PET/PE-EVOH-PE-AF</span></td>
+                        <td class="mat-property"><span>PET outer with co-extruded EVOH barrier + anti-fog</span><span>Extended shelf life for fresh produce</span></td>
+                        <td class="mat-role">Barrier with anti-fog sealant</td>
+                        <td class="mat-products">Fresh produce, salads, cut fruit, pre-cut herbs</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">NYLON / LDPE</td>
+                        <td><span class="mat-code">PA/LDPE</span></td>
+                        <td class="mat-property"><span>Toughness with LDPE sealant</span><span>Vacuum packaging compatible</span></td>
+                        <td class="mat-role">Puncture-resistant packaging</td>
+                        <td class="mat-products">Frozen meat, seafood, industrial parts, cured meats, cheese</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">NYLON / EVOH / LDPE</td>
+                        <td><span class="mat-code">PA/EVOH/LDPE</span></td>
+                        <td class="mat-property"><span>High oxygen barrier with nylon</span><span>Retort &amp; freeze-thaw stable</span></td>
+                        <td class="mat-role">Ultra-barrier for oxygen-sensitive products</td>
+                        <td class="mat-products">Processed meats, cheese, sauces, ready meals, marinated meats</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / ALU / LDPE</td>
+                        <td><span class="mat-code">PET/ALU/LDPE</span></td>
+                        <td class="mat-property"><span>Aluminium foil total barrier</span><span>Complete opacity, longest shelf life</span></td>
+                        <td class="mat-role">Complete light, oxygen, moisture barrier</td>
+                        <td class="mat-products">Pharmaceuticals, coffee, high-end foods, instant coffee sticks</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">BOPP / LDPE</td>
+                        <td><span class="mat-code">BOPP/LDPE</span></td>
+                        <td class="mat-property"><span>Oriented PP with PE sealant</span><span>Economical general-purpose laminate</span></td>
+                        <td class="mat-role">Cost-effective packaging</td>
+                        <td class="mat-products">Bread, snacks, general purpose, rice bags, flour packaging</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">CPP / MET CPP</td>
+                        <td><span class="mat-code">CPP/MET CPP</span></td>
+                        <td class="mat-property"><span>All-CPP metallised</span><span>Good moisture &amp; grease barrier</span></td>
+                        <td class="mat-role">Barrier with sealability</td>
+                        <td class="mat-products">Confectionery, dried food, hygiene products, biscuits, wafers</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / MET BOPP / LDPE</td>
+                        <td><span class="mat-code">PET/MET BOPP/LDPE</span></td>
+                        <td class="mat-property"><span>Hybrid metallised barrier</span><span>Versatile mid-tier barrier laminate</span></td>
+                        <td class="mat-role">High barrier with good processability</td>
+                        <td class="mat-products">Snacks, nuts, coffee, tea, extruded snacks</td>
+                    </tr>
+                    <tr>
+                        <td class="mat-laminate">PET / NYLON / LDPE</td>
+                        <td><span class="mat-code">PET/PA/LDPE</span></td>
+                        <td class="mat-property"><span>Strength + barrier with sealant</span><span>Puncture + barrier combination</span></td>
+                        <td class="mat-role">Heavy-duty packaging</td>
+                        <td class="mat-products">Medical devices, chemical bags, industrial, frozen seafood, sharp-edge products</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted small mt-2"><i class="fas fa-info-circle"></i> Laminate codes follow the order: outer layer / middle layer(s) / inner sealant layer. MET = Metallised, MPET = Metallised PET.</p>
+    </div>
+</div>
+
+<!-- ========== ABOUT SECTION ========== -->
+<div class="panel-card">
+    <div class="panel-head"><i class="fas fa-info-circle"></i> About Materials &amp; Laminates</div>
     <div class="panel-body">
         <div class="row">
             <div class="col-md-6 info-sub">
-                <h6><i class="fas fa-lightbulb" style="color: var(--amber);"></i> Importance of Density</h6>
-                <p class="small" style="color: var(--text-dim);">Material density is crucial for calculating:</p>
+                <h6><i class="fas fa-lightbulb" style="color: var(--amber);"></i> Understanding Material Selection</h6>
+                <p class="small" style="color: var(--text-dim);">Each material and laminate is selected based on:</p>
                 <ul>
-                    <li>Mass and weight calculations</li>
-                    <li>Material consumption</li>
-                    <li>Cost estimations</li>
-                    <li>Production planning</li>
-                    <li>Quality control</li>
+                    <li><strong>Barrier properties</strong> - O&#8322;, moisture, light, aroma</li>
+                    <li><strong>Mechanical performance</strong> - Puncture, tensile, tear</li>
+                    <li><strong>Heat resistance</strong> - Retort, hot-fill, freeze</li>
+                    <li><strong>Sealability</strong> - Heat seal, cold seal, peelable</li>
+                    <li><strong>Aesthetics</strong> - Clarity, matte, gloss, pearlised</li>
+                    <li><strong>Cost-effectiveness</strong> - Material efficiency</li>
                 </ul>
             </div>
             <div class="col-md-6 info-sub">

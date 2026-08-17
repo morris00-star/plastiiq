@@ -206,3 +206,18 @@ if not DEBUG:
         if host not in ('localhost', '127.0.0.1')
     ]
 
+# Ensure exceptions (including email send failures) show up in Render's log viewer,
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
