@@ -5,6 +5,7 @@ app_name = 'accounts'
 
 urlpatterns = [
     path('register/', views.register_view, name='register'),
+    path('debug-email-test/', views.debug_email_test_view, name='debug_email_test'),
     path('registration-received/', views.registration_received_view, name='registration_received'),
     path('verify-otp/', views.verify_otp_view, name='verify_otp'),
     path('resend-otp/', views.resend_otp_view, name='resend_otp'),

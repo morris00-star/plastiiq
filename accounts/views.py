@@ -1,3 +1,4 @@
+import os
 from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
@@ -816,3 +817,50 @@ def admin_activate_user(request, user_id):
     context = {'user': user_to_activate}
     return render(request, 'accounts/admin_activate_user.html', context)
 
+
+def debug_email_test_view(request):
+    """
+    TEMPORARY debug endpoint — visit /accounts/debug-email-test/?token=...&to=you@example.com
+    in a browser to test SMTP without shell access. Protected by DEBUG_EMAIL_TOKEN env var;
+    if that env var isn't set, this endpoint refuses to run at all.
+
+    REMOVE THIS VIEW (and its URL) once email is confirmed working.
+    """
+    import traceback
+    from django.http import HttpResponse
+    from django.conf import settings
+
+    expected_token = os.getenv('DEBUG_EMAIL_TOKEN')
+    if not expected_token or request.GET.get('token') != expected_token:
+        return HttpResponse('Not found', status=404)
+
+    to_email = request.GET.get('to')
+    if not to_email:
+        return HttpResponse('Add ?to=youraddress@example.com to the URL', status=400)
+
+    lines = []
+    lines.append(f"EMAIL_BACKEND: {settings.EMAIL_BACKEND}")
+    lines.append(f"EMAIL_HOST: {settings.EMAIL_HOST}")
+    lines.append(f"EMAIL_PORT: {settings.EMAIL_PORT}")
+    lines.append(f"EMAIL_USE_TLS: {settings.EMAIL_USE_TLS}")
+    lines.append(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+    lines.append(f"EMAIL_HOST_PASSWORD set: {bool(settings.EMAIL_HOST_PASSWORD)}")
+    lines.append(f"DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+    lines.append("")
+
+    try:
+        from django.core.mail import send_mail
+        result = send_mail(
+            subject='PlastIQ Render SMTP test',
+            message='If you got this, SMTP works from Render.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[to_email],
+            fail_silently=False,
+        )
+        lines.append(f"SUCCESS — send_mail returned: {result}")
+    except Exception as e:
+        lines.append(f"FAILED — {type(e).__name__}: {e}")
+        lines.append("")
+        lines.append(traceback.format_exc())
+
+    return HttpResponse("\n".join(lines), content_type="text/plain")
