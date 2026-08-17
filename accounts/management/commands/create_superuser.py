@@ -28,15 +28,17 @@ class Command(BaseCommand):
             ))
             return
 
-        if User.objects.filter(username=username).exists():
-            self.stdout.write(self.style.SUCCESS(
-                f'Superuser "{username}" already exists — nothing to do.'
-            ))
-            return
-
-        User.objects.create_superuser(
-            username=username,
-            email=email or '',
-            password=password,
-        )
-        self.stdout.write(self.style.SUCCESS(f'Superuser "{username}" created successfully.'))
+        if not User.objects.filter(username=username).exists():
+            User.objects.create_superuser(
+                username=username,
+                email=email or '',
+                password=password,
+            )
+            self.stdout.write(self.style.SUCCESS(f'Superuser "{username}" created successfully.'))
+        else:
+            self.stdout.write(self.style.SUCCESS(f'Superuser "{username}" already exists.'))
+        fixed = User.objects.filter(is_superuser=True).exclude(
+            is_approved=True, is_staff=True, email_verified=True
+        ).update(is_approved=True, is_staff=True, email_verified=True)
+        if fixed:
+            self.stdout.write(self.style.SUCCESS(f'Repaired flags on {fixed} superuser(s).'))
