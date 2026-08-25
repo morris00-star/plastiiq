@@ -6,7 +6,48 @@
   <component name="ChangeListManager">
     <list default="true" id="59e339a0-e2c6-4049-b9eb-8449e35cb863" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/management/commands/create_superuser.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/management/commands/create_superuser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/migrations/0002_customuser_email_verified_emailotp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/approval_email.html" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/templates/accounts/approval_email.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/notice_email.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/otp_email.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/registration_received.html" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/templates/accounts/registration_received.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/verify_otp.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/utils.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/accounts/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0002_bagmakingcalculation_handle_type_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0003_remove_bagmakingcalculation_handle_type_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0004_addoncomponent_bagmakingcalculation_addon_type_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0005_bagmakingcalculation_customer_name_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0006_alter_bagmakingcalculation_machine_name.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0007_cutoutgeometry.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0008_bulkproduct_alter_bagmakingcalculation_bag_type_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculator/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculator/migrations/0002_plasticmaterial_is_ldpe.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculator/templates/calculator/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/calculator/templates/calculator/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0002_alter_extrusioncalculation_calculation_type.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0003_alter_extrusioncalculation_calculation_type.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0004_rename_thickness_microns_thicknessmeasurement_thickness_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lamination/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lamination/migrations/0002_laminationcalculation_customer_name_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/printing/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/printing/migrations/0002_alter_printingcalculation_calculation_type.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/printing/migrations/0003_alter_printingcalculation_calculation_type.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/printing/migrations/0004_printingcalculation_customer_name_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/printing/static/printing/images/ink-mixing-process.jpeg" beforeDir="false" afterPath="$PROJECT_DIR$/printing/static/printing/images/ink-mixing-process.jpeg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sales/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sales/migrations/0002_salescalculation_customer_name_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/migrations/0002_alter_slittingcalculation_calculation_type.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/migrations/0003_slittingcalculation_customer_name_and_more.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

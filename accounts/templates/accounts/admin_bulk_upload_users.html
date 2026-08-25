@@ -1,0 +1,114 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<style>
+    .wrap-md { max-width: 780px; margin: 0 auto; }
+    .panel-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 1.25rem; }
+    .panel-head { padding: 1.75rem 1.5rem 1.25rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .panel-head .icon-circle {
+        width: 60px; height: 60px; border-radius: 50%;
+        background: var(--bg-panel-raised); border: 2px solid var(--teal);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem; font-size: 1.5rem; color: var(--teal);
+    }
+    .panel-head h4 { margin: 0 0 .4rem; }
+    .panel-head p { color: var(--text-dim); font-size: .88rem; margin: 0; }
+    .panel-body { padding: 1.75rem 1.5rem; }
+
+    .results-list { list-style: none; padding: 0; margin: 0; font-size: .85rem; }
+    .results-list li { padding: .4rem 0; border-bottom: 1px solid var(--line); }
+    .results-list li:last-child { border-bottom: none; }
+    .results-created { color: var(--green); }
+    .results-skipped { color: var(--amber); }
+    .results-error { color: var(--rose); }
+</style>
+
+<div class="wrap-md">
+    <div class="panel-card">
+        <div class="panel-head">
+            <div class="icon-circle"><i class="fas fa-file-excel"></i></div>
+            <h4>Bulk Upload Users</h4>
+            <p>Create many accounts at once from an Excel file — all approved immediately</p>
+        </div>
+        <div class="panel-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="alert alert-info">
+                <h6 class="mb-2"><i class="fas fa-info-circle"></i> File format</h6>
+                <p class="mb-2">Your Excel file needs these column headers in row 1 (order doesn't matter):</p>
+                <p class="mb-2"><code>username, email, password, first_name, last_name, phone_number, company_role, section, company_branch</code></p>
+                <p class="mb-2"><code>username</code>, <code>email</code>, and <code>password</code> are required for every row. Rows with a username that already exists are skipped, not overwritten.</p>
+                <p class="mb-0">Valid <code>company_role</code> values: admin, manager, supervisor, operator, qc_technician, sales_representative, engineer, other &mdash;
+                valid <code>section</code> values: extrusion, printing, lamination, slitting, bag_making, quality_control, maintenance, sales, other &mdash;
+                valid <code>company_branch</code> values: kawempe. The downloaded template includes a "Valid Values" reference sheet too.</p>
+            </div>
+
+            <a href="{% url 'accounts:admin_bulk_upload_template' %}" class="btn btn-outline-line mb-4">
+                <i class="fas fa-download"></i> Download Template
+            </a>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Excel file (.xlsx)</label>
+                    {{ form.excel_file }}
+                    {% if form.excel_file.errors %}<div class="text-danger small mt-1">{{ form.excel_file.errors }}</div>{% endif %}
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn" style="background: var(--teal); color:#10141a; font-weight:600;">
+                        <i class="fas fa-upload"></i> Upload &amp; Create Accounts
+                    </button>
+                    <a href="{% url 'accounts:admin_create_user' %}" class="btn btn-outline-line">
+                        <i class="fas fa-user-plus"></i> Add Single User Instead
+                    </a>
+                    <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-outline-line ms-auto">
+                        <i class="fas fa-arrow-left"></i> Back to User Management
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if results %}
+    <div class="panel-card">
+        <div class="panel-head" style="text-align:left; display:flex; align-items:center; gap:.5rem;">
+            <i class="fas fa-clipboard-check" style="color: var(--molten);"></i>
+            <h4 style="margin:0; font-size:1.1rem;">Upload Results</h4>
+        </div>
+        <div class="panel-body">
+            <p><strong style="color: var(--green);">{{ results.created|length }} created</strong> &bull;
+               <strong style="color: var(--amber);">{{ results.skipped|length }} skipped</strong> &bull;
+               <strong style="color: var(--rose);">{{ results.errors|length }} errors</strong></p>
+
+            {% if results.created %}
+            <h6 class="mt-3">Created</h6>
+            <ul class="results-list">
+                {% for name in results.created %}<li class="results-created"><i class="fas fa-check"></i> {{ name }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if results.skipped %}
+            <h6 class="mt-3">Skipped</h6>
+            <ul class="results-list">
+                {% for msg in results.skipped %}<li class="results-skipped"><i class="fas fa-forward"></i> {{ msg }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if results.errors %}
+            <h6 class="mt-3">Errors</h6>
+            <ul class="results-list">
+                {% for msg in results.errors %}<li class="results-error"><i class="fas fa-times"></i> {{ msg }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

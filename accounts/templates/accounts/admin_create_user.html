@@ -1,0 +1,102 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<style>
+    .wrap-md { max-width: 720px; margin: 0 auto; }
+    .panel-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .panel-head { padding: 1.75rem 1.5rem 1.25rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .panel-head .icon-circle {
+        width: 60px; height: 60px; border-radius: 50%;
+        background: var(--bg-panel-raised); border: 2px solid var(--green);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem; font-size: 1.5rem; color: var(--green);
+    }
+    .panel-head h4 { margin: 0 0 .4rem; }
+    .panel-head p { color: var(--text-dim); font-size: .88rem; margin: 0; }
+    .panel-body { padding: 1.75rem 1.5rem; }
+</style>
+
+<div class="wrap-md">
+    <div class="panel-card">
+        <div class="panel-head">
+            <div class="icon-circle"><i class="fas fa-user-plus"></i></div>
+            <h4>Add a User</h4>
+            <p>Creates an approved account immediately — no registration or approval step needed</p>
+        </div>
+        <div class="panel-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Username *</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name *</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name *</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone Number *</label>
+                    {{ form.phone_number }}
+                    {% if form.phone_number.errors %}<div class="text-danger small mt-1">{{ form.phone_number.errors }}</div>{% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Company Branch</label>
+                        {{ form.company_branch }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Company Role *</label>
+                        {{ form.company_role }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Section *</label>
+                        {{ form.section }}
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password *</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors }}</div>{% endif %}
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn" style="background: var(--green); color:#10141a; font-weight:600;">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                    <a href="{% url 'accounts:admin_user_management' %}" class="btn btn-outline-line">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    <a href="{% url 'accounts:admin_bulk_upload_users' %}" class="btn btn-outline-line ms-auto">
+                        <i class="fas fa-file-excel"></i> Bulk Upload Instead
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -38,7 +38,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.SUCCESS(f'Superuser "{username}" already exists.'))
         fixed = User.objects.filter(is_superuser=True).exclude(
-            is_approved=True, is_staff=True, email_verified=True
-        ).update(is_approved=True, is_staff=True, email_verified=True)
+            is_approved=True, is_staff=True
+        ).update(is_approved=True, is_staff=True)
         if fixed:
             self.stdout.write(self.style.SUCCESS(f'Repaired flags on {fixed} superuser(s).'))

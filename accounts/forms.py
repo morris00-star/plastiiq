@@ -128,28 +128,6 @@ class DeleteAccountForm(forms.Form):
     )
 
 
-class OTPVerificationForm(forms.Form):
-    code = forms.CharField(
-        max_length=6,
-        min_length=6,
-        label="Verification Code",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control otp-input',
-            'placeholder': '123456',
-            'autocomplete': 'one-time-code',
-            'inputmode': 'numeric',
-            'pattern': '[0-9]{6}',
-            'autofocus': 'autofocus',
-        })
-    )
-
-    def clean_code(self):
-        code = self.cleaned_data.get('code', '').strip()
-        if not code.isdigit():
-            raise forms.ValidationError('Enter the 6-digit code sent to your email.')
-        return code
-
-
 class PasswordResetRequestForm(forms.Form):
     user = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(is_active=True),
@@ -220,3 +198,52 @@ class AdminPasswordSetForm(forms.Form):
             raise forms.ValidationError("The two password fields didn't match.")
         password_validation.validate_password(password2)
         return password2
+
+
+class AdminCreateUserForm(forms.ModelForm):
+    """Admin manually creates a single user account — approved immediately, no self-registration flow."""
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label="Password",
+        min_length=8,
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            'username', 'email', 'first_name', 'last_name', 'phone_number',
+            'company_branch', 'company_role', 'section',
+        ]
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'company_branch': forms.Select(attrs={'class': 'form-select'}),
+            'company_role': forms.Select(attrs={'class': 'form-select'}),
+            'section': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        user.is_active = True
+        user.is_approved = True  # Admin-created accounts are approved immediately
+        user.password_change_required = True  # Force them to set their own password on first login
+        if commit:
+            user.save()
+        return user
+
+
+class BulkUserUploadForm(forms.Form):
+    excel_file = forms.FileField(
+        label="Excel file (.xlsx)",
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': '.xlsx'}),
+    )
+
+    def clean_excel_file(self):
+        f = self.cleaned_data['excel_file']
+        if not f.name.lower().endswith('.xlsx'):
+            raise forms.ValidationError('Please upload a .xlsx Excel file.')
+        return f

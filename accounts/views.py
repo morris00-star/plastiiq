@@ -1,28 +1,39 @@
 import os
+from django.views.decorators.cache import never_cache
+import json
+import logging
 from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-import json
-from .forms import CustomUserCreationForm, CustomUserLoginForm, UserProfileForm, DeleteAccountForm, \
-    PasswordResetRequestForm, AdminPasswordResetReviewForm, AdminPasswordSetForm, OTPVerificationForm
-from .models import CustomUser, PasswordResetRequest, UserActionLog, EmailOTP
-import logging
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.core.mail import send_mail
 
-from .utils import send_otp_email, send_approval_email, \
-    notify_admins_new_registration, notify_user_registration_received, \
-    notify_admins_password_reset_request, notify_user_password_reset_received, \
-    notify_admins_account_deletion, notify_user_account_deleted, send_approval_email
+from .forms import (
+    AdminCreateUserForm, BulkUserUploadForm,
+    CustomUserCreationForm,
+    CustomUserLoginForm,
+    UserProfileForm,
+    DeleteAccountForm,
+    PasswordResetRequestForm,
+    AdminPasswordResetReviewForm,
+    AdminPasswordSetForm
+)
 
-
+from .models import CustomUser, PasswordResetRequest, UserActionLog
 
 logger = logging.getLogger(__name__)
 
+
 def log_user_action(action_type, description_field='username'):
+    """Decorator to log user actions."""
+
     def decorator(view_func):
         def wrapped_view(request, *args, **kwargs):
             response = view_func(request, *args, **kwargs)
@@ -46,25 +57,19 @@ def log_user_action(action_type, description_field='username'):
 
 
 def is_admin(user):
+    """Check if user has admin privileges."""
     return user.is_staff or user.is_superuser
 
 
 def register_view(request):
+    """Handle user registration."""
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = True  # User is active but not approved
-            user.is_approved = False  # Needs admin approval
-            user.email_verified = False  # Verified via OTP once an admin approves
+            user.is_active = True
+            user.is_approved = False
             user.save()
-
-            try:
-                notify_admins_new_registration(user)
-                notify_user_registration_received(user)
-            except Exception:
-                logger.exception(f"Failed to send registration notification emails for user {user.username}")
-                # Registration itself still succeeds even if notification email fails
 
             request.session['just_registered_user_id'] = user.id
             return redirect('accounts:registration_received')
@@ -77,118 +82,37 @@ def register_view(request):
 
 
 def registration_received_view(request):
-    """Landing page shown right after registration, before verification and approval."""
+    """Landing page shown right after registration."""
     user_id = request.session.pop('just_registered_user_id', None)
     context = {}
+
     if user_id:
         try:
             context['registered_user'] = CustomUser.objects.get(id=user_id)
         except CustomUser.DoesNotExist:
             pass
+
     return render(request, 'accounts/registration_received.html', context)
 
 
-def verify_otp_view(request):
-    user_id = request.session.get('pending_verification_user_id')
-    if not user_id:
-        messages.error(request, 'Your verification session expired. Please register again or log in.')
-        return redirect('accounts:register')
-
-    try:
-        user = CustomUser.objects.get(id=user_id)
-    except CustomUser.DoesNotExist:
-        messages.error(request, 'Account not found.')
-        return redirect('accounts:register')
-
-    if user.email_verified:
-        request.session.pop('pending_verification_user_id', None)
-        messages.info(request, 'Your email is already verified. You can log in once an admin approves your account.')
-        return redirect('accounts:login')
-
-    if request.method == 'POST':
-        form = OTPVerificationForm(request.POST)
-        if form.is_valid():
-            code = form.cleaned_data['code']
-            otp = EmailOTP.objects.filter(user=user, code=code, is_used=False).order_by('-created_at').first()
-
-            if otp and otp.is_valid():
-                otp.is_used = True
-                otp.save()
-                user.email_verified = True
-                user.save()
-                user.log_action('PROFILE_UPDATE', 'Email verified via OTP')
-                request.session.pop('pending_verification_user_id', None)
-                messages.success(
-                    request,
-                    'Email verified! Your account is now pending admin approval. '
-                    'You will be notified once approved.'
-                )
-                return redirect('accounts:login')
-            elif otp and otp.is_expired():
-                messages.error(request, 'That code has expired. Tap "Resend Code" to get a new one.')
-            else:
-                messages.error(request, 'Incorrect code. Please check your email and try again.')
-    else:
-        form = OTPVerificationForm()
-
-    return render(request, 'accounts/verify_otp.html', {'form': form, 'user_email': user.email})
-
-
-def resend_otp_view(request):
-    user_id = request.session.get('pending_verification_user_id')
-    if not user_id:
-        messages.error(request, 'Your verification session expired. Please register again.')
-        return redirect('accounts:register')
-
-    try:
-        user = CustomUser.objects.get(id=user_id)
-    except CustomUser.DoesNotExist:
-        messages.error(request, 'Account not found.')
-        return redirect('accounts:register')
-
-    if user.email_verified:
-        return redirect('accounts:login')
-
-    last_otp = EmailOTP.objects.filter(user=user).order_by('-created_at').first()
-    if last_otp and (timezone.now() - last_otp.created_at).total_seconds() < 60:
-        messages.warning(request, 'Please wait a minute before requesting another code.')
-        return redirect('accounts:verify_otp')
-
-    otp = EmailOTP.generate_for_user(user)
-    try:
-        send_otp_email(user, otp)
-        messages.success(request, 'A new verification code has been sent to your email.')
-    except Exception:
-        messages.error(request, 'Could not send the email right now. Please try again shortly.')
-
-    return redirect('accounts:verify_otp')
-
-
+@never_cache
 def login_view(request):
+    """Handle user login."""
     if request.method == 'POST':
         form = CustomUserLoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
 
-            # Try to authenticate with username
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
-                if user.is_approved and not user.email_verified and not user.is_superuser:
-                    request.session['pending_verification_user_id'] = user.id
-                    messages.warning(
-                        request,
-                        'Please verify your email before logging in. Enter the code we sent you, '
-                        'or tap "Resend Code" if it expired.'
-                    )
-                    return redirect('accounts:verify_otp')
-
                 if user.is_approved:
                     login(request, user)
+                    if user.password_change_required:
+                        return redirect('accounts:force_password_change')
                     messages.success(request, f'Welcome back, {user.get_full_name()}!')
 
-                    # Redirect to next page if specified
                     next_page = request.GET.get('next')
                     if next_page:
                         return redirect(next_page)
@@ -211,6 +135,7 @@ def login_view(request):
 
 @login_required
 def logout_view(request):
+    """Handle user logout."""
     logout(request)
     messages.info(request, 'You have been successfully logged out.')
     return redirect('home')
@@ -218,7 +143,7 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    """User profile view with approval-required editing"""
+    """User profile view with approval-required editing."""
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -245,7 +170,7 @@ def profile_view(request):
 
 
 def forgot_password_view(request):
-    """Handle forgot password requests from non-authenticated users"""
+    """Handle forgot password requests from non-authenticated users."""
     if request.user.is_authenticated:
         return redirect('accounts:password_reset_request')
 
@@ -256,15 +181,13 @@ def forgot_password_view(request):
         try:
             user = CustomUser.objects.get(username=username, is_active=True)
 
-            # Create password reset request
             PasswordResetRequest.objects.create(
                 user=user,
-                requested_by=user,  # User requesting for themselves
+                requested_by=user,
                 reason=reason,
                 status='PENDING'
             )
 
-            # Log the action
             user.log_action(
                 'PASSWORD_RESET_REQUEST',
                 f'Password reset requested via forgot password. Reason: {reason}',
@@ -288,7 +211,7 @@ def forgot_password_view(request):
 
 @login_required
 def password_reset_request_view(request):
-    """Allow users to request password reset (requires admin approval)"""
+    """Allow users to request password reset (requires admin approval)."""
     if request.method == 'POST':
         form = PasswordResetRequestForm(request.POST, request=request)
         if form.is_valid():
@@ -297,15 +220,6 @@ def password_reset_request_view(request):
 
             try:
                 user_to_reset.request_password_reset(request.user, reason)
-
-                latest_reset = user_to_reset.password_reset_requests.filter(status='PENDING').order_by('-created_at').first()
-                try:
-                    if latest_reset:
-                        notify_admins_password_reset_request(latest_reset)
-                    notify_user_password_reset_received(user_to_reset)
-                except Exception:
-                    logger.exception(f"Failed to send password reset notification emails for user {user_to_reset.username}")
-                    # Request itself still succeeds even if notification email fails
 
                 messages.success(
                     request,
@@ -328,7 +242,7 @@ def password_reset_request_view(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_password_reset_list(request):
-    """Admin view for pending password reset requests"""
+    """Admin view for pending password reset requests."""
     pending_resets = PasswordResetRequest.objects.filter(status='PENDING').order_by('-created_at')
     approved_resets = PasswordResetRequest.objects.filter(status='APPROVED').order_by('-created_at')[:10]
     rejected_resets = PasswordResetRequest.objects.filter(status='REJECTED').order_by('-created_at')[:10]
@@ -345,7 +259,7 @@ def admin_password_reset_list(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_review_password_reset(request, request_id):
-    """Admin review and approve/reject password reset request"""
+    """Admin review and approve/reject password reset request."""
     reset_request = get_object_or_404(PasswordResetRequest, id=request_id, status='PENDING')
 
     if request.method == 'POST':
@@ -360,7 +274,6 @@ def admin_review_password_reset(request, request_id):
             reset_request.reviewed_at = timezone.now()
             reset_request.save()
 
-            # Log the action
             reset_request.user.log_action(
                 'PASSWORD_CHANGE',
                 f'Password reset request {status.lower()} by administrator',
@@ -386,7 +299,7 @@ def admin_review_password_reset(request, request_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_set_password(request, request_id):
-    """Admin set new password for approved reset request"""
+    """Admin set new password for approved reset request."""
     reset_request = get_object_or_404(
         PasswordResetRequest,
         id=request_id,
@@ -401,11 +314,9 @@ def admin_set_password(request, request_id):
             reset_request.user.last_password_change = timezone.now()
             reset_request.user.save()
 
-            # Update reset request status
             reset_request.status = 'COMPLETED'
             reset_request.save()
 
-            # Log the action
             reset_request.user.log_action(
                 'PASSWORD_CHANGE',
                 'Password reset completed by administrator',
@@ -430,11 +341,10 @@ def admin_set_password(request, request_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_user_activity(request, user_id):
-    """View detailed user activity logs"""
+    """View detailed user activity logs."""
     user = get_object_or_404(CustomUser, id=user_id)
-    action_logs = user.action_logs.all()[:50]  # Last 50 actions
+    action_logs = user.action_logs.all()[:50]
 
-    # Get statistics
     action_stats = user.action_logs.values('action_type').annotate(
         count=Count('id')
     ).order_by('-count')
@@ -451,14 +361,12 @@ def admin_user_activity(request, user_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_system_activity(request):
-    """View system-wide activity logs"""
-    # Get filter parameters
+    """View system-wide activity logs."""
     action_type = request.GET.get('action_type', '')
     user_id = request.GET.get('user_id', '')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
 
-    # Build query
     action_logs = UserActionLog.objects.all()
 
     if action_type:
@@ -475,7 +383,6 @@ def admin_system_activity(request):
 
     action_logs = action_logs.select_related('user').order_by('-timestamp')[:100]
 
-    # Get available users for filter
     active_users = CustomUser.objects.filter(is_active=True)
 
     context = {
@@ -494,30 +401,21 @@ def admin_system_activity(request):
 
 @login_required
 def delete_account_view(request):
-    """Allow users to delete their own account"""
+    """Allow users to delete their own account."""
     if request.method == 'POST':
         form = DeleteAccountForm(request.POST)
         if form.is_valid():
             deleted_user = request.user
 
-            # Soft delete the user account
             deleted_user.is_active = False
             deleted_user.save()
 
-            try:
-                notify_admins_account_deletion(deleted_user, initiated_by_admin=False)
-                notify_user_account_deleted(deleted_user, deleted_by_admin=False)
-            except Exception:
-                logger.exception(f"Failed to send deletion notification emails for user {deleted_user.username}")
-                # Deletion itself still succeeds even if notification email fails
-
-            # Logout the user
             logout(request)
 
             messages.success(
                 request,
                 'Your account has been successfully deleted. '
-                'We\'re sorry to see you go!'
+                "We're sorry to see you go!"
             )
             return redirect('home')
     else:
@@ -528,7 +426,7 @@ def delete_account_view(request):
 
 @login_required
 def dashboard_view(request):
-    """Main dashboard - different views for admins and regular users"""
+    """Main dashboard - different views for admins and regular users."""
     user = request.user
 
     if user.is_administrator():
@@ -538,34 +436,29 @@ def dashboard_view(request):
 
 
 def admin_dashboard(request):
-    """Admin dashboard with user management and analytics"""
-    # User statistics
+    """Admin dashboard with user management and analytics."""
     total_users = CustomUser.objects.count()
     pending_approvals = CustomUser.objects.filter(is_approved=False, is_active=True).count()
     approved_users = CustomUser.objects.filter(is_approved=True).count()
     pending_password_resets = PasswordResetRequest.objects.filter(status='PENDING').count()
 
-    # User role distribution
     role_distribution = CustomUser.objects.filter(is_approved=True).values(
         'company_role'
     ).annotate(
         count=Count('id')
     ).order_by('-count')
 
-    # Section distribution
     section_distribution = CustomUser.objects.filter(is_approved=True).values(
         'section'
     ).annotate(
         count=Count('id')
     ).order_by('-count')
 
-    # Recent registrations (last 7 days)
     one_week_ago = timezone.now() - timezone.timedelta(days=7)
     recent_registrations = CustomUser.objects.filter(
         date_joined__gte=one_week_ago
     ).order_by('-date_joined')[:10]
 
-    # Recent activity (you can expand this with actual activity data)
     context = {
         'dashboard_type': 'admin',
         'total_users': total_users,
@@ -581,20 +474,18 @@ def admin_dashboard(request):
 
 
 def user_dashboard(request):
-    """Regular user dashboard with personal stats and quick actions"""
+    """Regular user dashboard with personal stats and quick actions."""
     user = request.user
 
-    # Get user's calculation statistics (you'll need to implement these)
     total_calculations = 0
     recent_calculations = []
 
-    # Try to get calculation stats from different apps
     try:
         from extrusion.models import ExtrusionCalculation
         user_extrusion_calcs = ExtrusionCalculation.objects.filter(user=user)
         total_calculations += user_extrusion_calcs.count()
         recent_calculations.extend(list(user_extrusion_calcs.order_by('-timestamp')[:5]))
-    except:
+    except ImportError:
         pass
 
     try:
@@ -602,10 +493,9 @@ def user_dashboard(request):
         user_density_calcs = DensityCalculation.objects.filter(user=user)
         total_calculations += user_density_calcs.count()
         recent_calculations.extend(list(user_density_calcs.order_by('-timestamp')[:5]))
-    except:
+    except ImportError:
         pass
 
-    # Sort recent calculations by timestamp
     recent_calculations.sort(key=lambda x: x.timestamp, reverse=True)
     recent_calculations = recent_calculations[:5]
 
@@ -623,7 +513,7 @@ def user_dashboard(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_profile_approval_list(request):
-    """Admin view for pending profile updates"""
+    """Admin view for pending profile updates."""
     pending_updates = CustomUser.objects.filter(
         profile_update_pending=True,
         is_active=True
@@ -639,7 +529,7 @@ def admin_profile_approval_list(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_user_approval_list(request):
-    """Admin view to see pending user approvals"""
+    """Admin view to see pending user approvals."""
     pending_users = CustomUser.objects.filter(is_approved=False, is_active=True).order_by('date_joined')
     approved_users = CustomUser.objects.filter(is_approved=True, is_active=True).order_by('-approved_date')
 
@@ -655,7 +545,7 @@ def admin_user_approval_list(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_approve_user(request, user_id):
-    """Approve a user account"""
+    """Approve a user account."""
     user_to_approve = get_object_or_404(CustomUser, id=user_id, is_approved=False)
 
     if request.method == 'POST':
@@ -664,19 +554,8 @@ def admin_approve_user(request, user_id):
         user_to_approve.approved_date = timezone.now()
         user_to_approve.save()
 
-        otp = EmailOTP.generate_for_user(user_to_approve)
-        try:
-            send_approval_email(user_to_approve, otp)
-        except Exception:
-            logger.exception(f"Failed to send approval email for user {user_to_approve.username}")
-            messages.warning(
-                request,
-                f'{user_to_approve.username} was approved, but the notification email failed to send. '
-                'They can request a new code from the login page.'
-            )
-
         messages.success(request, f'User {user_to_approve.username} has been approved successfully.')
-        return redirect('accounts:admin_user_approval_list')  # Fixed URL name
+        return redirect('accounts:admin_user_approval_list')
 
     context = {'user': user_to_approve}
     return render(request, 'accounts/admin_approve_user_confirm.html', context)
@@ -685,7 +564,7 @@ def admin_approve_user(request, user_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_reject_user(request, user_id):
-    """Reject a user account (deactivate)"""
+    """Reject a user account (deactivate)."""
     user_to_reject = get_object_or_404(CustomUser, id=user_id, is_approved=False)
 
     if request.method == 'POST':
@@ -693,7 +572,7 @@ def admin_reject_user(request, user_id):
         user_to_reject.save()
 
         messages.warning(request, f'User {user_to_reject.username} has been rejected and deactivated.')
-        return redirect('accounts:admin_user_approval_list')  # Fixed URL name
+        return redirect('accounts:admin_user_approval_list')
 
     context = {'user': user_to_reject}
     return render(request, 'accounts/admin_reject_user_confirm.html', context)
@@ -702,10 +581,9 @@ def admin_reject_user(request, user_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_user_management(request):
-    """Complete user management for admins"""
+    """Complete user management for admins."""
     all_users = CustomUser.objects.all().order_by('-date_joined')
 
-    # Filter users
     status_filter = request.GET.get('status', 'all')
     role_filter = request.GET.get('role', 'all')
     section_filter = request.GET.get('section', 'all')
@@ -717,8 +595,6 @@ def admin_user_management(request):
     elif status_filter == 'inactive':
         all_users = all_users.filter(is_active=False)
     else:
-        # Default "all" view = all ACTIVE users. Deleted/deactivated accounts only
-        # show up under the explicit "Inactive" filter, not mixed into the main list.
         all_users = all_users.filter(is_active=True)
 
     if role_filter != 'all':
@@ -742,7 +618,7 @@ def admin_user_management(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_approve_profile_update(request, user_id):
-    """Approve a user's profile update"""
+    """Approve a user's profile update."""
     user_to_approve = get_object_or_404(CustomUser, id=user_id, profile_update_pending=True)
 
     if request.method == 'POST':
@@ -761,7 +637,7 @@ def admin_approve_profile_update(request, user_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_reject_profile_update(request, user_id):
-    """Reject a user's profile update"""
+    """Reject a user's profile update."""
     user_to_reject = get_object_or_404(CustomUser, id=user_id, profile_update_pending=True)
 
     if request.method == 'POST':
@@ -780,19 +656,12 @@ def admin_reject_profile_update(request, user_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_delete_user(request, user_id):
-    """Admin delete user account"""
+    """Admin delete user account."""
     user_to_delete = get_object_or_404(CustomUser, id=user_id)
 
     if request.method == 'POST':
         username = user_to_delete.username
         user_to_delete.delete_account()
-
-        try:
-            notify_admins_account_deletion(user_to_delete, initiated_by_admin=True)
-            notify_user_account_deleted(user_to_delete, deleted_by_admin=True)
-        except Exception:
-            logger.exception(f"Failed to send deletion notification emails for user {user_to_delete.username}")
-            # Deletion itself still succeeds even if notification email fails
 
         messages.success(request, f'User account {username} has been deleted.')
         return redirect('accounts:admin_user_management')
@@ -804,7 +673,7 @@ def admin_delete_user(request, user_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_activate_user(request, user_id):
-    """Admin activate deactivated user account"""
+    """Admin activate deactivated user account."""
     user_to_activate = get_object_or_404(CustomUser, id=user_id, is_active=False)
 
     if request.method == 'POST':
@@ -819,12 +688,9 @@ def admin_activate_user(request, user_id):
 
 
 def debug_email_test_view(request):
-    import os
+    """Debug view for testing email configuration."""
     import secrets
     import traceback
-    from django.http import HttpResponse
-    from django.core.validators import validate_email
-    from django.core.exceptions import ValidationError
 
     try:
         expected_token = os.getenv('DEBUG_EMAIL_TOKEN')
@@ -844,10 +710,6 @@ def debug_email_test_view(request):
         except ValidationError:
             return HttpResponse('Invalid email address format', status=400)
 
-        from django.conf import settings
-        from django.core.mail import send_mail
-
-        # Build response (more concise)
         config_lines = [
             f"EMAIL_BACKEND: {getattr(settings, 'EMAIL_BACKEND', 'NOT SET')}",
             f"EMAIL_HOST: {getattr(settings, 'EMAIL_HOST', 'NOT SET')}",
@@ -869,11 +731,7 @@ def debug_email_test_view(request):
             )
             response_lines = config_lines + [f"SUCCESS - send_mail returned: {result}"]
         except Exception as e:
-            # Log exception for debugging (use your logger)
-            import logging
-            logger = logging.getLogger(__name__)
             logger.error(f"SMTP test failed for {to_email}", exc_info=True)
-
             response_lines = config_lines + [
                 f"SEND FAILED - {type(e).__name__}: {e}"
             ]
@@ -881,11 +739,195 @@ def debug_email_test_view(request):
         return HttpResponse("\n".join(response_lines), content_type="text/plain")
 
     except Exception as outer_e:
-        # Log the crash
-        import logging
-        logging.getLogger(__name__).error("Debug view crashed", exc_info=True)
+        logger.error("Debug view crashed", exc_info=True)
         return HttpResponse(
             f"Internal error: {type(outer_e).__name__}",
             content_type="text/plain",
-            status=500  # Use proper status code
+            status=500
         )
+
+
+def admin_create_user_view(request):
+    """Admin manually creates a single user account — approved immediately."""
+    if not (request.user.is_authenticated and request.user.is_administrator()):
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('accounts:login')
+
+    if request.method == 'POST':
+        form = AdminCreateUserForm(request.POST)
+        if form.is_valid():
+            plain_password = form.cleaned_data['password']  # capture before it's hashed on save
+            user = form.save()
+            return render(request, 'accounts/admin_user_created.html', {
+                'created_user': user,
+                'plain_password': plain_password,
+            })
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = AdminCreateUserForm()
+
+    return render(request, 'accounts/admin_create_user.html', {'form': form})
+
+
+def admin_bulk_upload_users_view(request):
+    """Admin uploads an Excel file to create many user accounts at once."""
+    if not (request.user.is_authenticated and request.user.is_administrator()):
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('accounts:login')
+
+    results = None
+
+    if request.method == 'POST':
+        form = BulkUserUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            results = _process_bulk_user_excel(request.FILES['excel_file'])
+        else:
+            messages.error(request, 'Please choose a valid .xlsx file.')
+    else:
+        form = BulkUserUploadForm()
+
+    return render(request, 'accounts/admin_bulk_upload_users.html', {
+        'form': form,
+        'results': results,
+    })
+
+
+def _process_bulk_user_excel(excel_file):
+    """Parse an uploaded .xlsx and create CustomUser rows. Returns a results dict."""
+    import openpyxl
+
+    created, skipped, errors = [], [], []
+
+    try:
+        wb = openpyxl.load_workbook(excel_file, data_only=True)
+        ws = wb.active
+    except Exception as e:
+        return {'created': [], 'skipped': [], 'errors': [f'Could not read the file: {e}']}
+
+    headers = []
+    for cell in ws[1]:
+        headers.append(str(cell.value).strip().lower() if cell.value is not None else '')
+
+    required_cols = {'username', 'email', 'password'}
+    if not required_cols.issubset(set(headers)):
+        return {
+            'created': [], 'skipped': [],
+            'errors': [f'Missing required columns. Found: {headers}. Required at minimum: username, email, password.']
+        }
+
+    for row_num, row in enumerate(ws.iter_rows(min_row=2), start=2):
+        if all(cell.value in (None, '') for cell in row):
+            continue
+
+        data = {headers[i]: (row[i].value if i < len(row) else None) for i in range(len(headers))}
+
+        username = str(data.get('username') or '').strip()
+        email = str(data.get('email') or '').strip()
+        password = str(data.get('password') or '').strip()
+
+        if not username or not email or not password:
+            errors.append(f'Row {row_num}: missing username, email, or password.')
+            continue
+
+        if CustomUser.objects.filter(username=username).exists():
+            skipped.append(f'Row {row_num}: username "{username}" already exists.')
+            continue
+
+        try:
+            user = CustomUser(
+                username=username,
+                email=email,
+                first_name=str(data.get('first_name') or '').strip(),
+                last_name=str(data.get('last_name') or '').strip(),
+                phone_number=str(data.get('phone_number') or '').strip(),
+                company_role=str(data.get('company_role') or '').strip(),
+                section=str(data.get('section') or '').strip(),
+                company_branch=str(data.get('company_branch') or '').strip(),
+                is_active=True,
+                is_approved=True,
+            )
+            user.password_change_required = True  # Force them to set their own password on first login
+            user.set_password(password)
+            user.full_clean(exclude=['password'])
+            user.save()
+            created.append(username)
+        except Exception as e:
+            errors.append(f'Row {row_num} ("{username}"): {e}')
+
+    return {'created': created, 'skipped': skipped, 'errors': errors}
+
+
+def admin_bulk_upload_template_view(request):
+    """Download a blank Excel template with the correct headers for bulk user upload."""
+    import openpyxl
+    from django.http import HttpResponse
+
+    if not (request.user.is_authenticated and request.user.is_administrator()):
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('accounts:login')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Users"
+    headers = [
+        'username', 'email', 'password', 'first_name', 'last_name',
+        'phone_number', 'company_role', 'section', 'company_branch',
+    ]
+    ws.append(headers)
+    ws.append([
+        'jdoe', 'jdoe@example.com', 'TempPass123', 'John', 'Doe',
+        '+256700000000', 'operator', 'extrusion', 'kawempe',
+    ])
+
+    # Reference sheet listing every valid value for the choice columns, so admins
+    # filling the template don't guess wrong and get a row silently skipped.
+    ref_ws = wb.create_sheet("Valid Values")
+    ref_ws.append(['company_role', 'section', 'company_branch'])
+    role_values = ['admin', 'manager', 'supervisor', 'operator', 'qc_technician', 'sales_representative', 'engineer', 'other']
+    section_values = ['extrusion', 'printing', 'lamination', 'slitting', 'bag_making', 'quality_control', 'maintenance', 'sales', 'other']
+    branch_values = ['kawempe']
+    max_len = max(len(role_values), len(section_values), len(branch_values))
+    for i in range(max_len):
+        ref_ws.append([
+            role_values[i] if i < len(role_values) else '',
+            section_values[i] if i < len(section_values) else '',
+            branch_values[i] if i < len(branch_values) else '',
+        ])
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="plastiq_bulk_user_template.xlsx"'
+    wb.save(response)
+    return response
+
+
+@never_cache
+def force_password_change_view(request):
+    """Shown once to users whose account was created by an admin — they must set
+    their own password before doing anything else in the system."""
+    from django.contrib.auth.forms import SetPasswordForm
+    from django.contrib.auth import update_session_auth_hash
+
+    if not request.user.is_authenticated:
+        return redirect('accounts:login')
+
+    if not request.user.password_change_required:
+        return redirect('accounts:dashboard')
+
+    if request.method == 'POST':
+        form = SetPasswordForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.password_change_required = False
+            user.save()
+            update_session_auth_hash(request, user)  # keeps them logged in after changing password
+            messages.success(request, 'Password updated. Welcome to PlastIQ!')
+            return redirect('accounts:dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = SetPasswordForm(request.user)
+
+    return render(request, 'accounts/force_password_change.html', {'form': form})

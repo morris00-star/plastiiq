@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 import re
-import random
-from datetime import timedelta
 from django.utils import timezone
 
 
@@ -62,39 +60,6 @@ class PasswordResetRequest(models.Model):
         return f"Password reset for {self.user.username} - {self.status}"
 
 
-class EmailOTP(models.Model):
-    """One-time code emailed to a user for verifying their email address at registration."""
-    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='otp_codes')
-    code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    is_used = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self):
-        status = 'used' if self.is_used else ('expired' if self.is_expired() else 'active')
-        return f"OTP for {self.user.username} ({status})"
-
-    def is_expired(self):
-        return timezone.now() > self.expires_at
-
-    def is_valid(self):
-        return not self.is_used and not self.is_expired()
-
-    @classmethod
-    def generate_for_user(cls, user, validity_minutes=10):
-        from django.conf import settings
-        minutes = getattr(settings, 'OTP_VALIDITY_MINUTES', validity_minutes)
-        code = f"{random.randint(0, 999999):06d}"
-        return cls.objects.create(
-            user=user,
-            code=code,
-            expires_at=timezone.now() + timedelta(minutes=minutes)
-        )
-
-
 class CustomUser(AbstractUser):
     BRANCH_CHOICES = [('kawempe', 'Kawempe')]
     ROLE_CHOICES = [
@@ -124,7 +89,6 @@ class CustomUser(AbstractUser):
     company_role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='operator')
     section = models.CharField(max_length=20, choices=SECTION_CHOICES, default='other')
     is_approved = models.BooleanField(default=False)
-    email_verified = models.BooleanField(default=False)
 
     # Profile editing approval system
     profile_update_pending = models.BooleanField(default=False)
@@ -154,12 +118,10 @@ class CustomUser(AbstractUser):
 
     def save(self, *args, **kwargs):
         # Real Django superusers (created via createsuperuser / env-var command) are
-        # always approved, staff, and email-verified — they never go through the
-        # registration/OTP flow, so nothing should block them from logging in.
+        # always approved and staff.
         if self.is_superuser:
             self.is_approved = True
             self.is_staff = True
-            self.email_verified = True
         # The in-app "Administrator" company role grants access to PlastIQ's own admin
         # dashboard (see is_administrator()) but must NOT grant Django admin access.
         elif self.company_role == 'admin':

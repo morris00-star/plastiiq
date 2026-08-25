@@ -5,11 +5,13 @@ app_name = 'accounts'
 
 urlpatterns = [
     path('register/', views.register_view, name='register'),
+    path('admin/create-user/', views.admin_create_user_view, name='admin_create_user'),
+    path('admin/bulk-upload-users/', views.admin_bulk_upload_users_view, name='admin_bulk_upload_users'),
+    path('admin/bulk-upload-template/', views.admin_bulk_upload_template_view, name='admin_bulk_upload_template'),
     path('debug-email-test/', views.debug_email_test_view, name='debug_email_test'),
     path('registration-received/', views.registration_received_view, name='registration_received'),
-    path('verify-otp/', views.verify_otp_view, name='verify_otp'),
-    path('resend-otp/', views.resend_otp_view, name='resend_otp'),
     path('login/', views.login_view, name='login'),
+    path('force-password-change/', views.force_password_change_view, name='force_password_change'),
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
