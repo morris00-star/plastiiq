@@ -43,7 +43,7 @@
                     <div class="mb-3">
                         <label class="form-label">Core Diameter</label>
                         <div class="input-group">
-                            <input type="number" step="0.001" class="form-control" name="core_diameter" placeholder="e.g., 76" required min="0.001">
+                            <input type="number" step="0.001" class="form-control" name="core_diameter" placeholder="e.g., 75" required min="0.001">
                             <select class="form-select" name="core_diameter_unit" style="max-width: 100px;">
                                 <option value="mm">mm</option>
                                 <option value="m">m</option>
@@ -90,24 +90,24 @@
                         <div class="mb-3">
                             <label class="form-label">Core Wall Thickness</label>
                             <div class="input-group">
-                                <input type="number" step="0.1" class="form-control" name="core_wall_thickness" value="1.5" min="0.1" required>
+                                <input type="number" step="0.1" class="form-control" name="core_wall_thickness" value="8.5" min="0.1" required>
                                 <select class="form-select" name="core_wall_thickness_unit" style="max-width: 100px;">
                                     <option value="mm">mm</option>
                                     <option value="cm">cm</option>
                                     <option value="inch">inch</option>
                                 </select>
                             </div>
-                            <small class="form-text text-muted">Typical paper core: 1.5-2.0mm</small>
+                            <small class="form-text text-muted">Typical paper core: 8.5-8.6mm</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Core Material Density</label>
                             <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" name="core_material_density" value="0.75" min="0.1" required>
+                                <input type="number" step="0.01" class="form-control" name="core_material_density" value="0.77" min="0.1" required>
                                 <span class="input-group-text">g/cm³</span>
                             </div>
-                            <small class="form-text text-muted">Paper: 0.75, Plastic: 0.95, Steel: 7.85</small>
+                            <small class="form-text text-muted">Paper: 0.77, Plastic: 0.95, Steel: 7.85</small>
                         </div>
                     </div>
                 </div>
@@ -258,7 +258,7 @@
                     <div class="mb-3">
                         <label class="form-label">Gross Roll Mass</label>
                         <div class="input-group">
-                            <input type="number" step="0.001" class="form-control" name="gross_mass" placeholder="e.g., 1500" required min="0.1">
+                            <input type="number" step="0.001" class="form-control" name="gross_mass" placeholder="e.g., 30" required min="0.1">
                             <select class="form-select" name="gross_mass_unit" style="max-width: 100px;">
                                 <option value="kg">kg</option>
                                 <option value="g">g</option>
@@ -273,7 +273,7 @@
                     <div class="mb-3">
                         <label class="form-label">Core Diameter</label>
                         <div class="input-group">
-                            <input type="number" step="0.001" class="form-control" name="core_diameter" placeholder="e.g., 76" required min="0.001">
+                            <input type="number" step="0.001" class="form-control" name="core_diameter" placeholder="e.g., 75" required min="0.001">
                             <select class="form-select" name="core_diameter_unit" style="max-width: 100px;">
                                 <option value="mm">mm</option>
                                 <option value="m">m</option>
@@ -288,9 +288,10 @@
                         <div class="input-group">
                             <input type="number" step="0.001" class="form-control" name="width" placeholder="e.g., 330" required min="0.001">
                             <select class="form-select" name="width_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
                                 <option value="m">m</option>
-                                <option value="mm">mm</option>
                                 <option value="cm">cm</option>
+                                <option value="inch">inch</option>
                             </select>
                         </div>
                     </div>
@@ -317,7 +318,7 @@
                         <div class="mb-3">
                             <label class="form-label">Core Wall Thickness</label>
                             <div class="input-group">
-                                <input type="number" step="0.1" class="form-control" name="core_wall_thickness" value="1.5" min="0.1" required>
+                                <input type="number" step="0.1" class="form-control" name="core_wall_thickness" value="8.5" min="0.1" required>
                                 <select class="form-select" name="core_wall_thickness_unit" style="max-width: 100px;">
                                     <option value="mm">mm</option>
                                     <option value="cm">cm</option>
@@ -330,7 +331,7 @@
                         <div class="mb-3">
                             <label class="form-label">Core Material Density</label>
                             <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" name="core_material_density" value="0.75" min="0.1" required>
+                                <input type="number" step="0.01" class="form-control" name="core_material_density" value="0.77" min="0.1" required>
                                 <span class="input-group-text">g/cm³</span>
                             </div>
                         </div>
@@ -2374,6 +2375,34 @@ function displayRollDiameterResult(result) {
             `;
         }
 
+        // Build roll thickness HTML
+        let rollThicknessHtml = '';
+        if (res.roll_thickness) {
+            rollThicknessHtml = `
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white py-2">
+                        <strong><i class="fas fa-ruler-vertical"></i> Roll Thickness (from Core)</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>Thickness:</strong></p>
+                                <p class="mb-0"><span class="badge bg-primary">${res.roll_thickness.thickness_mm} mm</span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>Radius:</strong></p>
+                                <p class="mb-0"><span class="badge bg-success">${res.roll_thickness.radius_mm} mm</span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>Thickness (Imperial):</strong></p>
+                                <p class="mb-0"><span class="badge bg-warning text-dark">${res.roll_thickness.thickness_inch} in</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         resultDiv.innerHTML = `
             <div class="card border-success">
                 <div class="card-header bg-success text-white">
@@ -2382,11 +2411,14 @@ function displayRollDiameterResult(result) {
                 <div class="card-body">
                     ${warningAlert}
 
+                    <!-- Roll Thickness Section -->
+                    ${rollThicknessHtml}
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card mb-3">
                                 <div class="card-header bg-primary text-white py-2">
-                                    <strong>Diameter Results</strong>
+                                    <strong><i class="fas fa-circle"></i> Diameter Results</strong>
                                 </div>
                                 <div class="card-body">
                                     <p class="mb-1"><strong>Outer Diameter:</strong> ${res.outer_diameter_mm.toFixed(1)} mm</p>
@@ -2397,8 +2429,8 @@ function displayRollDiameterResult(result) {
                         </div>
                         <div class="col-md-6">
                             <div class="card mb-3">
-                                <div class="card-header bg-info text-white py-2">
-                                    <strong>Weight Breakdown</strong>
+                                <div class="card-header bg-secondary text-white py-2">
+                                    <strong><i class="fas fa-weight"></i> Weight Breakdown</strong>
                                 </div>
                                 <div class="card-body">
                                     <p class="mb-1"><strong>Core Weight:</strong> ${res.core_weight_kg.toFixed(2)} kg (${res.core_weight_lb.toFixed(2)} lb)</p>
@@ -2413,7 +2445,7 @@ function displayRollDiameterResult(result) {
                         <div class="col-md-6">
                             <div class="card mb-3">
                                 <div class="card-header bg-warning text-dark py-2">
-                                    <strong>Material Properties</strong>
+                                    <strong><i class="fas fa-flask"></i> Material Properties</strong>
                                 </div>
                                 <div class="card-body">
                                     <p class="mb-1"><strong>Effective Density:</strong> ${res.effective_density_g_cm3.toFixed(4)} g/cm³</p>
@@ -2424,19 +2456,34 @@ function displayRollDiameterResult(result) {
                         </div>
                         <div class="col-md-6">
                             <div class="card mb-3">
-                                <div class="card-header bg-secondary text-white py-2">
-                                    <strong>Core Information</strong>
+                                <div class="card-header bg-dark text-white py-2">
+                                    <strong><i class="fas fa-info-circle"></i> Core Information</strong>
                                 </div>
                                 <div class="card-body">
                                     ${coreWeightInfo}
                                     ${res.weight_summary ? `
-                                    <p><strong>Core Weight Impact:</strong> ${res.weight_summary.impact}</p>
+                                    <p><strong>Core Weight Impact:</strong> <span class="badge ${res.weight_summary.impact === 'Very High' || res.weight_summary.impact === 'High' ? 'bg-danger' : 'bg-warning text-dark'}">${res.weight_summary.impact}</span></p>
                                     <p class="mb-0">${res.weight_summary.description}</p>
+                                    ` : ''}
+                                    ${res.core_validation && res.core_validation.warnings && res.core_validation.warnings.length > 0 ? `
+                                    <div class="mt-2">
+                                        <strong><i class="fas fa-exclamation-triangle text-warning"></i> Core Warnings:</strong>
+                                        <ul class="mb-0">
+                                            ${res.core_validation.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                        </ul>
+                                    </div>
                                     ` : ''}
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Save confirmation if applicable -->
+                    ${res.calculation_id ? `
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-save"></i> Calculation saved to history (ID: ${res.calculation_id})
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;

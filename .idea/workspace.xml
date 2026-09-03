@@ -5,49 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="59e339a0-e2c6-4049-b9eb-8449e35cb863" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/micropython-tools-settings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../main.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/management/commands/create_superuser.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/management/commands/create_superuser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/migrations/0002_customuser_email_verified_emailotp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/approval_email.html" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/templates/accounts/approval_email.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/notice_email.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/otp_email.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/registration_received.html" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/templates/accounts/registration_received.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/templates/accounts/verify_otp.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0002_bagmakingcalculation_handle_type_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0003_remove_bagmakingcalculation_handle_type_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0004_addoncomponent_bagmakingcalculation_addon_type_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0005_bagmakingcalculation_customer_name_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0006_alter_bagmakingcalculation_machine_name.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0007_cutoutgeometry.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bag_making/migrations/0008_bulkproduct_alter_bagmakingcalculation_bag_type_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/calculator/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/calculator/migrations/0002_plasticmaterial_is_ldpe.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/calculator/templates/calculator/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/calculator/templates/calculator/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0002_alter_extrusioncalculation_calculation_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0003_alter_extrusioncalculation_calculation_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/extrusion/migrations/0004_rename_thickness_microns_thicknessmeasurement_thickness_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lamination/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lamination/migrations/0002_laminationcalculation_customer_name_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/printing/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/printing/migrations/0002_alter_printingcalculation_calculation_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/printing/migrations/0003_alter_printingcalculation_calculation_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/printing/migrations/0004_printingcalculation_customer_name_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/printing/static/printing/images/ink-mixing-process.jpeg" beforeDir="false" afterPath="$PROJECT_DIR$/printing/static/printing/images/ink-mixing-process.jpeg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sales/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sales/migrations/0002_salescalculation_customer_name_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/migrations/0002_alter_slittingcalculation_calculation_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slitting/migrations/0003_slittingcalculation_customer_name_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/slitting_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/slitting_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slitting/templates/slitting/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/slitting/templates/slitting/home.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,6 +33,68 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/slitting/slitting_calculator.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.000000000180911" />
+      <entry key="S2" value="1.003667467762951" />
+      <entry key="S5" value="1.106107609384225" />
+      <entry key="S10" value="1.3258005022717905" />
+      <entry key="S30" value="1.7823694614875667" />
+      <entry key="S60" value="2.6801548849752104" />
+      <entry key="M2" value="4.823293218957552" />
+      <entry key="M5" value="8.35779833461698" />
+      <entry key="M10" value="10.7260818266638" />
+      <entry key="M15" value="12.753431872830323" />
+      <entry key="M30" value="18.849721983660075" />
+      <entry key="H1" value="26.566030151948958" />
+      <entry key="H2" value="32.943078933193284" />
+      <entry key="H4" value="37.0735070363096" />
+      <entry key="D1" value="41.117302925538894" />
+      <entry key="W1" value="41.872301317324954" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="1.1890436639263434E-135" />
+      <entry key="S5" value="1.0805402531397379E-54" />
+      <entry key="S10" value="1.1297096080560336E-27" />
+      <entry key="S30" value="1.5464592285131378E-9" />
+      <entry key="S60" value="6.208486182186298E-5" />
+      <entry key="M2" value="0.013250088748384112" />
+      <entry key="M5" value="0.34020923327969" />
+      <entry key="M10" value="1.0088834094933867" />
+      <entry key="M15" value="1.4503333175069506" />
+      <entry key="M30" value="2.0855833670091886" />
+      <entry key="H1" value="2.501252830926651" />
+      <entry key="H2" value="2.7392723458504107" />
+      <entry key="H4" value="2.866666559175047" />
+      <entry key="D1" value="2.9773536912173877" />
+      <entry key="W1" value="2.996754272669189" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.04802734941525037" />
+      <entry key="MS500" value="0.5448760562403903" />
+      <entry key="S2" value="0.8625613430850603" />
+      <entry key="S5" value="1.0440358751007566" />
+      <entry key="S10" value="1.29101079353576" />
+      <entry key="S30" value="1.7681189027913924" />
+      <entry key="S60" value="2.6688874689149253" />
+      <entry key="M2" value="4.824500842699211" />
+      <entry key="M5" value="8.685424931041089" />
+      <entry key="M10" value="11.723725338113129" />
+      <entry key="M15" value="14.194273180044409" />
+      <entry key="M30" value="20.929154996935612" />
+      <entry key="H1" value="29.063749994264768" />
+      <entry key="H2" value="35.680452983192836" />
+      <entry key="H4" value="39.939188983934066" />
+      <entry key="D1" value="44.09448735657352" />
+      <entry key="W1" value="44.86903128046295" />
+    </decayedShown>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -81,19 +106,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHELLCHECK.PATH&quot;: &quot;I do mind&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/admin/django_projects/QC_calculator/plastic_qc_calculator&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "SHELLCHECK.PATH": "I do mind",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/home/admin/django_projects/QC_calculator/plastic_qc_calculator",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.jshint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.jshint": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -105,7 +143,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-14705d77f0bb-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.25659.43" />
+        <option value="bundled-python-sdk-821f704e66d9-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.9437.214" />
       </set>
     </attachedChunks>
   </component>
@@ -117,8 +155,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1760165445290</updated>
+      <workItem from="1760637352730" duration="5918000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName=".env" />

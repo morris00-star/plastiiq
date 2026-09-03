@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from calculator.models import PlasticMaterial
-from .models import SlittingCalculation, SlittingLayer
+from .models import SlittingCalculation, SlittingLayer, CoreMaterial
 
 
 def safe_float(value, default=0.0):
@@ -194,6 +194,8 @@ def calculate_roll_mass(request):
 
 @login_required
 @csrf_exempt
+@login_required
+@csrf_exempt
 def calculate_roll_diameter(request):
     if request.method == 'POST':
         try:
@@ -282,11 +284,18 @@ def calculate_roll_diameter(request):
             # Calculate GSM
             gsm = calculator.calculate_gsm(total_thickness_um, effective_density)
 
+            # Calculate roll thickness (radius from core)
+            roll_thickness = calculator.calculate_roll_thickness(
+                result['outer_diameter_m'],
+                core_diameter_m
+            )
+
             # Add additional metrics
             result['gsm'] = round(gsm, 1)
             result['effective_density_g_cm3'] = round(effective_density, 4)
             result['total_thickness_um'] = round(total_thickness_um, 1)
             result['layer_count'] = len(layers_data) if layers_data else 1
+            result['roll_thickness'] = roll_thickness  # Add roll thickness to results
 
             # Add diameter conversions
             result['outer_diameter_mm'] = round(result['outer_diameter_m'] * 1000, 1)

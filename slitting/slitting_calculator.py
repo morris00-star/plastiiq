@@ -19,40 +19,36 @@ class SlittingCalculator:
     # --- CORE WEIGHT CALCULATIONS ---
 
     @staticmethod
-    def calculate_core_weight_from_dimensions(core_diameter_m, core_width_m,
-                                              core_wall_thickness_mm=1.5,
-                                              core_material_density_g_cm3=0.75):
+    def calculate_core_weight_from_dimensions(core_inner_diameter_m, core_width_m,
+                                              core_wall_thickness_mm=8.5,
+                                              core_material_density_g_cm3=0.77):
         """
-        Calculate core weight from core dimensions.
+        Calculate core weight from inner diameter and wall thickness.
 
         Args:
-            core_diameter_m: Outer diameter of core in meters
-            core_width_m: Width of core in meters
-            core_wall_thickness_mm: Wall thickness in millimeters
-            core_material_density_g_cm3: Density of core material in g/cm³
+            core_inner_diameter_m: Inner diameter of core in meters (e.g., 0.075 for 75mm)
+            core_width_m: Width of core in meters (e.g., 0.14 for 140mm)
+            core_wall_thickness_mm: Wall thickness in millimeters (default 8.5mm)
+            core_material_density_g_cm3: Density of core material in g/cm³ (default 0.77)
 
         Returns:
             Core weight in kilograms
         """
-        if core_diameter_m <= 0 or core_width_m <= 0 or core_wall_thickness_mm <= 0:
+        if core_inner_diameter_m <= 0 or core_width_m <= 0 or core_wall_thickness_mm <= 0:
             return 0.0
 
         # Convert wall thickness to meters
         wall_thickness_m = core_wall_thickness_mm / 1000
 
-        # Calculate inner diameter
-        inner_diameter_m = core_diameter_m - (2 * wall_thickness_m)
+        # Calculate outer diameter dynamically from inner diameter + 2 walls
+        outer_diameter_m = core_inner_diameter_m + (2 * wall_thickness_m)
 
-        # If inner diameter is negative or zero, it's a solid core
-        if inner_diameter_m <= 0:
-            # Calculate as solid cylinder
-            outer_radius_m = core_diameter_m / 2
-            cross_sectional_area_m2 = SlittingCalculator.PI * outer_radius_m ** 2
-        else:
-            # Calculate as hollow cylinder
-            outer_radius_m = core_diameter_m / 2
-            inner_radius_m = inner_diameter_m / 2
-            cross_sectional_area_m2 = SlittingCalculator.PI * (outer_radius_m ** 2 - inner_radius_m ** 2)
+        # Calculate radii
+        inner_radius_m = core_inner_diameter_m / 2
+        outer_radius_m = outer_diameter_m / 2
+
+        # Cross-sectional area of hollow cylinder
+        cross_sectional_area_m2 = SlittingCalculator.PI * (outer_radius_m ** 2 - inner_radius_m ** 2)
 
         # Calculate volume
         volume_m3 = cross_sectional_area_m2 * core_width_m
@@ -135,14 +131,14 @@ class SlittingCalculator:
 
         return wall_thickness_m * 1000  # Convert to mm
 
-    # --- UPDATED ROLL MASS CALCULATION WITH CORE WEIGHT ---
+    # --- ROLL MASS CALCULATION WITH CORE WEIGHT ---
 
     def calculate_roll_mass_from_diameter_with_core(self, outer_diameter_m, core_diameter_m, width_m,
                                                     thickness_um, density_g_cm3,
                                                     core_weight_kg=None,
                                                     core_calculation_method='dimensions',
-                                                    core_wall_thickness_mm=1.5,
-                                                    core_material_density_g_cm3=0.75,
+                                                    core_wall_thickness_mm=8.5,
+                                                    core_material_density_g_cm3=0.77,
                                                     provided_core_weight=None,
                                                     provided_core_weight_unit='kg'):
         """
@@ -207,14 +203,14 @@ class SlittingCalculator:
             'material_mass_kg': material_mass_kg
         }
 
-    # --- UPDATED ROLL DIAMETER CALCULATION WITH CORE WEIGHT ---
+    # --- ROLL DIAMETER CALCULATION WITH CORE WEIGHT ---
 
     def calculate_outer_diameter_from_mass_with_core(self, gross_mass_kg, core_diameter_m, width_m,
                                                      thickness_um, density_g_cm3,
                                                      core_weight_kg=None,
                                                      core_calculation_method='dimensions',
-                                                     core_wall_thickness_mm=1.5,
-                                                     core_material_density_g_cm3=0.75,
+                                                     core_wall_thickness_mm=8.5,
+                                                     core_material_density_g_cm3=0.77,
                                                      provided_core_weight=None,
                                                      provided_core_weight_unit='kg'):
         """
@@ -286,6 +282,43 @@ class SlittingCalculator:
             'net_weight_kg': net_material_mass_kg,
             'material_mass_kg': net_material_mass_kg,
             'weight_source': weight_source
+        }
+
+    @staticmethod
+    def calculate_roll_thickness(outer_diameter_m, core_diameter_m):
+        """
+        Calculate the roll thickness (material thickness from core to outer surface).
+
+        Args:
+            outer_diameter_m: Outer diameter of the roll in meters
+            core_diameter_m: Core diameter in meters
+
+        Returns:
+            Roll thickness in meters, millimeters, and inches
+        """
+        if outer_diameter_m <= 0 or core_diameter_m <= 0 or outer_diameter_m <= core_diameter_m:
+            return {
+                'thickness_m': 0,
+                'thickness_mm': 0,
+                'thickness_inch': 0,
+                'radius_m': 0,
+                'radius_mm': 0,
+                'radius_inch': 0
+            }
+
+        # Roll thickness = (outer_diameter - core_diameter) / 2
+        thickness_m = (outer_diameter_m - core_diameter_m) / 2
+
+        # Radius from core center to outer surface (same as thickness)
+        radius_m = thickness_m
+
+        return {
+            'thickness_m': round(thickness_m, 4),
+            'thickness_mm': round(thickness_m * 1000, 1),
+            'thickness_inch': round(thickness_m * 39.3701, 2),
+            'radius_m': round(radius_m, 4),
+            'radius_mm': round(radius_m * 1000, 1),
+            'radius_inch': round(radius_m * 39.3701, 2)
         }
 
     # --- COMPREHENSIVE ROLL ANALYSIS FUNCTION ---
