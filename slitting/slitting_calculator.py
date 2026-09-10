@@ -285,31 +285,36 @@ class SlittingCalculator:
         }
 
     @staticmethod
-    def calculate_roll_thickness(outer_diameter_m, core_diameter_m):
+    def calculate_roll_thickness(outer_diameter_m, core_inner_diameter_m, core_wall_thickness_mm=8.5):
         """
-        Calculate the roll thickness (material thickness from core to outer surface).
+        Roll thickness measured from the OUTER core surface to the OUTER roll surface.
 
-        Args:
-            outer_diameter_m: Outer diameter of the roll in meters
-            core_diameter_m: Core diameter in meters
-
-        Returns:
-            Roll thickness in meters, millimeters, and inches
+        outer_diameter_m       : finished roll outer diameter (m)
+        core_inner_diameter_m  : INNER core diameter (m) — what the user enters
+        core_wall_thickness_mm : core wall thickness (mm)
         """
-        if outer_diameter_m <= 0 or core_diameter_m <= 0 or outer_diameter_m <= core_diameter_m:
+        if outer_diameter_m <= 0 or core_inner_diameter_m <= 0 or core_wall_thickness_mm <= 0:
             return {
-                'thickness_m': 0,
-                'thickness_mm': 0,
-                'thickness_inch': 0,
-                'radius_m': 0,
-                'radius_mm': 0,
-                'radius_inch': 0
+                'thickness_m': 0, 'thickness_mm': 0, 'thickness_inch': 0,
+                'radius_m': 0, 'radius_mm': 0, 'radius_inch': 0,
+                'core_inner_diameter_mm': 0, 'core_outer_diameter_mm': 0,
+                'core_wall_thickness_mm': 0
             }
 
-        # Roll thickness = (outer_diameter - core_diameter) / 2
-        thickness_m = (outer_diameter_m - core_diameter_m) / 2
+        wall_thickness_m = core_wall_thickness_mm / 1000.0
+        core_outer_diameter_m = core_inner_diameter_m + (2 * wall_thickness_m)
 
-        # Radius from core center to outer surface (same as thickness)
+        if outer_diameter_m <= core_outer_diameter_m:
+            return {
+                'thickness_m': 0, 'thickness_mm': 0, 'thickness_inch': 0,
+                'radius_m': 0, 'radius_mm': 0, 'radius_inch': 0,
+                'core_inner_diameter_mm': round(core_inner_diameter_m * 1000, 1),
+                'core_outer_diameter_mm': round(core_outer_diameter_m * 1000, 1),
+                'core_wall_thickness_mm': round(core_wall_thickness_mm, 1),
+                'warning': 'Outer roll diameter must be greater than outer core diameter'
+            }
+
+        thickness_m = (outer_diameter_m - core_outer_diameter_m) / 2.0
         radius_m = thickness_m
 
         return {
@@ -318,7 +323,10 @@ class SlittingCalculator:
             'thickness_inch': round(thickness_m * 39.3701, 2),
             'radius_m': round(radius_m, 4),
             'radius_mm': round(radius_m * 1000, 1),
-            'radius_inch': round(radius_m * 39.3701, 2)
+            'radius_inch': round(radius_m * 39.3701, 2),
+            'core_inner_diameter_mm': round(core_inner_diameter_m * 1000, 1),
+            'core_outer_diameter_mm': round(core_outer_diameter_m * 1000, 1),
+            'core_wall_thickness_mm': round(core_wall_thickness_mm, 1)
         }
 
     # --- COMPREHENSIVE ROLL ANALYSIS FUNCTION ---

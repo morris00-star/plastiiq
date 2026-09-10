@@ -2375,27 +2375,51 @@ function displayRollDiameterResult(result) {
             `;
         }
 
-        // Build roll thickness HTML
+        // ------------------------------------------------------------------
+        // Build roll thickness HTML (radius from OUTER core surface)
+        // ------------------------------------------------------------------
         let rollThicknessHtml = '';
         if (res.roll_thickness) {
+            const rt = res.roll_thickness;
             rollThicknessHtml = `
-                <div class="card mb-3">
+                <div class="card mb-3 border-info">
                     <div class="card-header bg-info text-white py-2">
-                        <strong><i class="fas fa-ruler-vertical"></i> Roll Thickness (from Core)</strong>
+                        <strong><i class="fas fa-ruler-vertical"></i> Roll Thickness (from Outer Core Surface)</strong>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <p class="mb-1"><strong>Thickness:</strong></p>
-                                <p class="mb-0"><span class="badge bg-primary">${res.roll_thickness.thickness_mm} mm</span></p>
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <p class="mb-1 text-muted small">Roll Thickness</p>
+                                <h5 class="mb-0">
+                                    <span class="badge bg-primary">${rt.thickness_mm} mm</span>
+                                </h5>
                             </div>
-                            <div class="col-md-4">
-                                <p class="mb-1"><strong>Radius:</strong></p>
-                                <p class="mb-0"><span class="badge bg-success">${res.roll_thickness.radius_mm} mm</span></p>
+                            <div class="col-md-3">
+                                <p class="mb-1 text-muted small">Radius from Core</p>
+                                <h5 class="mb-0">
+                                    <span class="badge bg-success">${rt.radius_mm} mm</span>
+                                </h5>
                             </div>
-                            <div class="col-md-4">
-                                <p class="mb-1"><strong>Thickness (Imperial):</strong></p>
-                                <p class="mb-0"><span class="badge bg-warning text-dark">${res.roll_thickness.thickness_inch} in</span></p>
+                            <div class="col-md-3">
+                                <p class="mb-1 text-muted small">Outer Core Diameter</p>
+                                <h5 class="mb-0">
+                                    <span class="badge bg-secondary">${rt.core_outer_diameter_mm} mm</span>
+                                </h5>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-1 text-muted small">Thickness (inch)</p>
+                                <h5 class="mb-0">
+                                    <span class="badge bg-warning text-dark">${rt.thickness_inch} in</span>
+                                </h5>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row text-center small text-muted">
+                            <div class="col-6">
+                                Core Inner Diameter: <strong>${rt.core_inner_diameter_mm} mm</strong>
+                            </div>
+                            <div class="col-6">
+                                Core Wall Thickness: <strong>${rt.core_wall_thickness_mm} mm</strong>
                             </div>
                         </div>
                     </div>
@@ -2462,14 +2486,20 @@ function displayRollDiameterResult(result) {
                                 <div class="card-body">
                                     ${coreWeightInfo}
                                     ${res.weight_summary ? `
-                                    <p><strong>Core Weight Impact:</strong> <span class="badge ${res.weight_summary.impact === 'Very High' || res.weight_summary.impact === 'High' ? 'bg-danger' : 'bg-warning text-dark'}">${res.weight_summary.impact}</span></p>
+                                    <p><strong>Core Weight Impact:</strong>
+                                        <span class="badge ${
+                                            res.weight_summary.impact === 'Very High' || res.weight_summary.impact === 'High'
+                                                ? 'bg-danger'
+                                                : 'bg-warning text-dark'
+                                        }">${res.weight_summary.impact}</span>
+                                    </p>
                                     <p class="mb-0">${res.weight_summary.description}</p>
                                     ` : ''}
                                     ${res.core_validation && res.core_validation.warnings && res.core_validation.warnings.length > 0 ? `
                                     <div class="mt-2">
                                         <strong><i class="fas fa-exclamation-triangle text-warning"></i> Core Warnings:</strong>
                                         <ul class="mb-0">
-                                            ${res.core_validation.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                            ${res.core_validation.warnings.map(w => `<li>${w}</li>`).join('')}
                                         </ul>
                                     </div>
                                     ` : ''}
@@ -2480,7 +2510,7 @@ function displayRollDiameterResult(result) {
 
                     <!-- Save confirmation if applicable -->
                     ${res.calculation_id ? `
-                    <div class="alert alert-success mt-3">
+                    <div class="alert alert-success mt-3 mb-0">
                         <i class="fas fa-save"></i> Calculation saved to history (ID: ${res.calculation_id})
                     </div>
                     ` : ''}

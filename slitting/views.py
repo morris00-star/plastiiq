@@ -194,8 +194,6 @@ def calculate_roll_mass(request):
 
 @login_required
 @csrf_exempt
-@login_required
-@csrf_exempt
 def calculate_roll_diameter(request):
     if request.method == 'POST':
         try:
@@ -213,6 +211,7 @@ def calculate_roll_diameter(request):
 
             # Convert to base units
             gross_mass_kg = calculator.convert_mass(gross_mass, gross_mass_unit, 'kg')
+            # NOTE: core_diameter here is the INNER core diameter (user input)
             core_diameter_m = calculator.convert_length(core_diameter, core_diameter_unit, 'm')
             width_m = calculator.convert_length(width, width_unit, 'm')
 
@@ -254,8 +253,9 @@ def calculate_roll_diameter(request):
                     layer_densities_g_cm3.append(material.density)
 
                 total_thickness_um = calculator.calculate_material_thickness_total(layer_thicknesses_um)
-                effective_density = calculator.calculate_material_density_effective(layer_thicknesses_um,
-                                                                                    layer_densities_g_cm3)
+                effective_density = calculator.calculate_material_density_effective(
+                    layer_thicknesses_um, layer_densities_g_cm3
+                )
                 material_id = layers_data[0].get('material_id') if layers_data else None
             else:
                 # Single layer calculation
@@ -268,6 +268,7 @@ def calculate_roll_diameter(request):
                 effective_density = material.density
 
             # Calculate outer diameter with core weight
+            # NOTE: core_diameter_m passed here is the INNER core diameter
             result = calculator.calculate_outer_diameter_from_mass_with_core(
                 gross_mass_kg=gross_mass_kg,
                 core_diameter_m=core_diameter_m,
@@ -284,10 +285,15 @@ def calculate_roll_diameter(request):
             # Calculate GSM
             gsm = calculator.calculate_gsm(total_thickness_um, effective_density)
 
-            # Calculate roll thickness (radius from core)
+            # ------------------------------------------------------------------
+            # Calculate roll thickness (radius from OUTER core surface)
+            # core_diameter_m here is the INNER core diameter entered by the user.
+            # The helper adds 2 × wall thickness to get the OUTER core diameter.
+            # ------------------------------------------------------------------
             roll_thickness = calculator.calculate_roll_thickness(
-                result['outer_diameter_m'],
-                core_diameter_m
+                outer_diameter_m=result['outer_diameter_m'],
+                core_inner_diameter_m=core_diameter_m,
+                core_wall_thickness_mm=core_wall_thickness_mm
             )
 
             # Add additional metrics
@@ -295,12 +301,20 @@ def calculate_roll_diameter(request):
             result['effective_density_g_cm3'] = round(effective_density, 4)
             result['total_thickness_um'] = round(total_thickness_um, 1)
             result['layer_count'] = len(layers_data) if layers_data else 1
-            result['roll_thickness'] = roll_thickness  # Add roll thickness to results
+            result['roll_thickness'] = roll_thickness
+
+            # If the roll thickness helper reported a warning, surface it too
+            if roll_thickness.get('warning'):
+                result['warning'] = roll_thickness['warning']
 
             # Add diameter conversions
             result['outer_diameter_mm'] = round(result['outer_diameter_m'] * 1000, 1)
-            result['outer_diameter_inch'] = round(calculator.convert_length(result['outer_diameter_m'], 'm', 'inch'), 1)
-            result['outer_diameter_ft'] = round(calculator.convert_length(result['outer_diameter_m'], 'm', 'ft'), 2)
+            result['outer_diameter_inch'] = round(
+                calculator.convert_length(result['outer_diameter_m'], 'm', 'inch'), 1
+            )
+            result['outer_diameter_ft'] = round(
+                calculator.convert_length(result['outer_diameter_m'], 'm', 'ft'), 2
+            )
 
             # Add weight conversions
             result['core_weight_lb'] = round(calculator.convert_mass(result['core_weight_kg'], 'kg', 'lb'), 2)
@@ -380,9 +394,9 @@ def get_core_materials(request):
             'success': True,
             'materials': [
                 {'id': 'paper', 'name': 'Standard Paper Core', 'material_type': 'Paper', 'density': 0.75,
-                 'wall_thickness_mm': 1.5},
+                 'wall_thickness_mm': 0.85},
                 {'id': 'heavy_paper', 'name': 'Heavy Duty Paper Core', 'material_type': 'Paper', 'density': 0.85,
-                 'wall_thickness_mm': 2.0},
+                 'wall_thickness_mm': 0.85},
                 {'id': 'plastic', 'name': 'Plastic Core', 'material_type': 'Plastic', 'density': 0.95,
                  'wall_thickness_mm': 2.0},
                 {'id': 'steel', 'name': 'Steel Core', 'material_type': 'Steel', 'density': 7.85,
