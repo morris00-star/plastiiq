@@ -541,3 +541,381 @@ class BagMakingCalculator:
         if sample_width_mm <= 0:
             return 0.0
         return seal_force_n / (sample_width_mm / standard_width_mm)
+
+    # ---------------------------------------------------------------------
+    # BIN LINER SIZING
+    # Designs a bag spec from bin dimensions, per the Bin Liner Sizing spec.
+    # All internal math is done in INCHES (the spec's native unit); callers
+    # convert at the boundary.
+    # ---------------------------------------------------------------------
+
+    IN3_PER_LITRE = 61.024
+    BIN_LINER_DEFAULT_FILL_FACTOR = 0.55
+    BIN_LINER_DEFAULT_FW_OVERLAP_IN = 3.0
+
+    @staticmethod
+    def bin_liner_overhang_in(capacity_liters):
+        """Overhang by bin size: <=30L -> 3in, 31-120L -> 5in, 121L+ -> 7in"""
+        if capacity_liters <= 30:
+            return 3.0
+        elif capacity_liters <= 120:
+            return 5.0
+        return 7.0
+
+    @classmethod
+    def bin_liner_volume_to_in3(cls, liters):
+        return liters * cls.IN3_PER_LITRE
+
+    @classmethod
+    def bin_liner_in3_to_liters(cls, in3):
+        return in3 / cls.IN3_PER_LITRE
+
+    @classmethod
+    def bin_liner_dims_from_volume(cls, liters, shape):
+        """
+        Derive bin dimensions when only volume is given.
+        Round:       V = pi x (D/2)^2 x H, assuming D = 0.55 x H
+        Square/Rect: V = Wb x Db x Hb,     assuming Wb = Db = 0.55 x Hb
+        Returns dict of inches.
+        """
+        v_in3 = cls.bin_liner_volume_to_in3(liters)
+
+        if shape == 'ROUND':
+            # V = pi x (0.55H/2)^2 x H = pi x 0.075625 x H^3
+            h = (v_in3 / (math.pi * (0.55 / 2) ** 2)) ** (1 / 3)
+            return {'diameter_in': 0.55 * h, 'height_in': h}
+
+        # V = (0.55H)^2 x H = 0.3025 x H^3
+        h = (v_in3 / (0.55 ** 2)) ** (1 / 3)
+        w = 0.55 * h
+        return {'bin_width_in': w, 'bin_depth_in': w, 'bin_height_in': h}
+
+    @classmethod
+    def bin_liner_volume_from_dims(cls, shape, diameter_in=0, height_in=0,
+                                    bin_width_in=0, bin_depth_in=0, bin_height_in=0):
+        """Bin's own geometric volume in litres, from its dimensions."""
+        if shape == 'ROUND':
+            v_in3 = math.pi * (diameter_in / 2) ** 2 * height_in
+        else:
+            v_in3 = bin_width_in * bin_depth_in * bin_height_in
+        return cls.bin_liner_in3_to_liters(v_in3)
+
+    @classmethod
+    def bin_liner_full_width(cls, shape, diameter_in=0, bin_width_in=0, bin_depth_in=0, overlap_in=None):
+        """
+        FW (full/flat width needed to wrap the bin).
+        Round:       half circumference + overlap
+        Square/Rect: (Wb + Db) + overlap
+        """
+        overlap_in = cls.BIN_LINER_DEFAULT_FW_OVERLAP_IN if overlap_in is None else overlap_in
+        if shape == 'ROUND':
+            return (math.pi * diameter_in) / 2 + overlap_in
+        return (bin_width_in + bin_depth_in) + overlap_in
+
+    @staticmethod
+    def bin_liner_side_gusset(shape, diameter_in=0, bin_depth_in=0):
+        """Side gusset: 0.6 x D (round) or = bin depth (square/rect)."""
+        if shape == 'ROUND':
+            return 0.6 * diameter_in
+        return bin_depth_in
+
+    @classmethod
+    def bin_liner_practical_liters(cls, bag_type, width_in, length_in,
+                                    side_gusset_in=0, bottom_gusset_in=0, fill_factor=None):
+        """
+        Practical (usable) capacity in litres for a candidate bag spec.
+
+        SIDE-GUSSETED:   cross-section = Width x Gusset (rectangular when opened over the bin)
+        BOTTOM-GUSSETED: cross-section = Width x (BottomGusset/2 + Width/4) (box-bottom shape)
+        FLAT:            cross-section = Width^2 / pi
+
+        NOTE ON THE FLAT FORMULA: the original written spec used
+        Width x (Width/2) = 0.500 x W^2 for flat bags. A flat bag fills to an
+        elliptical/round cross-section, not a rectangle, giving W^2/pi =
+        0.318 x W^2 - the same model already used by this app's Bag Capacity
+        calculator. The spec's version overestimates flat volume by ~57%
+        (which is why its own worked Example 3 needed two manual iterations to
+        converge). The geometrically correct form is used here.
+        """
+        fill_factor = cls.BIN_LINER_DEFAULT_FILL_FACTOR if fill_factor is None else fill_factor
+
+        if bag_type == 'SIDE_GUSSETED':
+            cross_section = width_in * side_gusset_in
+        elif bag_type == 'BOTTOM_GUSSETED':
+            cross_section = width_in * (bottom_gusset_in / 2 + width_in / 4)
+        else:  # FLAT
+            cross_section = (width_in ** 2) / math.pi
+
+        theoretical_in3 = cross_section * length_in
+        theoretical_liters = cls.bin_liner_in3_to_liters(theoretical_in3)
+        return theoretical_liters, theoretical_liters * fill_factor
+
+    @staticmethod
+    def bin_liner_base_gauge(capacity_liters):
+        """Volume-based base gauge per spec."""
+        if capacity_liters <= 15:
+            return 100
+        elif capacity_liters <= 30:
+            return 120
+        elif capacity_liters <= 80:
+            return 135   # spec says 120-150 range; midpoint
+        elif capacity_liters <= 120:
+            return 150
+        elif capacity_liters <= 240:
+            return 175   # spec says 150-200 range; midpoint
+        return 200
+
+    @staticmethod
+    def bin_liner_waste_adjustment(waste_type):
+        """Gauge adjustment by waste type per spec (midpoints used for ranges)."""
+        adjustments = {
+            'LIGHT': -10,
+            'GENERAL': 0,
+            'HEAVY': 10,
+            'WET': 10,
+            'SHARP': 25,       # spec: +20-30g
+            'INDUSTRIAL': 40,  # spec: +30-50g
+        }
+        return adjustments.get(waste_type, 0)
+
+    @classmethod
+    def bin_liner_final_gauge(cls, capacity_liters, waste_type):
+        base = cls.bin_liner_base_gauge(capacity_liters)
+        adjustment = cls.bin_liner_waste_adjustment(waste_type)
+        final = base + adjustment
+        final = max(final, 100)  # spec: minimum 100g
+        return int(round(final / 10.0) * 10), base, adjustment
+
+    @classmethod
+    def bin_liner_solve_spec(cls, bag_type, shape, required_liters,
+                              diameter_in=0, bin_height_in=0,
+                              bin_width_in=0, bin_depth_in=0,
+                              overlap_in=None, fill_factor=None,
+                              overhang_in=None, max_iterations=25):
+        """
+        Design a bin liner spec and auto-iterate until practical capacity is
+        within +/-15% of required litres.
+
+        Iteration rule (per spec): if practical < required, scale up 10%;
+        if practical exceeds required by >25%, reduce length. Returns the
+        converged spec plus the full iteration trail.
+        """
+        overhang_in = cls.bin_liner_overhang_in(required_liters) if overhang_in is None else overhang_in
+        fill_factor = cls.BIN_LINER_DEFAULT_FILL_FACTOR if fill_factor is None else fill_factor
+
+        fw = cls.bin_liner_full_width(shape, diameter_in, bin_width_in, bin_depth_in, overlap_in)
+        side_gusset = cls.bin_liner_side_gusset(shape, diameter_in, bin_depth_in)
+
+        # Initial candidate per bag type
+        if bag_type == 'SIDE_GUSSETED':
+            width = fw - side_gusset
+            # Constraint: width must be at least 40% of FW - reduce gusset if not
+            if width < 0.4 * fw:
+                side_gusset = 0.6 * fw
+                width = 0.4 * fw
+            length = bin_height_in + overhang_in
+            bottom_gusset = 0
+        elif bag_type == 'BOTTOM_GUSSETED':
+            base_width = (math.pi * diameter_in) / 2 if shape == 'ROUND' else bin_width_in
+            width = base_width + 2.5  # spec: 2-3in slack
+            length = bin_height_in + overhang_in
+            bottom_gusset = bin_depth_in if (shape != 'ROUND' and bin_depth_in) else 0.5 * width
+            side_gusset = 0
+        else:  # FLAT
+            width = fw
+            length = bin_height_in + overhang_in
+            side_gusset = 0
+            bottom_gusset = 0
+
+        iterations = []
+        for i in range(max_iterations):
+            theoretical_l, practical_l = cls.bin_liner_practical_liters(
+                bag_type, width, length, side_gusset, bottom_gusset, fill_factor
+            )
+            deviation_pct = ((practical_l - required_liters) / required_liters) * 100 if required_liters else 0
+
+            iterations.append({
+                'iteration': i + 1,
+                'width_in': round(width, 2),
+                'side_gusset_in': round(side_gusset, 2),
+                'bottom_gusset_in': round(bottom_gusset, 2),
+                'length_in': round(length, 2),
+                'theoretical_liters': round(theoretical_l, 1),
+                'practical_liters': round(practical_l, 1),
+                'deviation_percent': round(deviation_pct, 1),
+            })
+
+            if abs(deviation_pct) <= 15:
+                break
+
+            if practical_l < required_liters:
+                width *= 1.10
+                length *= 1.10
+                if side_gusset:
+                    side_gusset *= 1.10
+                if bottom_gusset:
+                    bottom_gusset *= 1.10
+            elif deviation_pct > 25:
+                length *= 0.90
+            else:
+                break
+
+        # Round to nearest half inch
+        def round_half(v):
+            return round(v * 2) / 2
+
+        width = round_half(width)
+        length = round_half(length)
+        side_gusset = round_half(side_gusset)
+        bottom_gusset = round_half(bottom_gusset)
+
+        theoretical_l, practical_l = cls.bin_liner_practical_liters(
+            bag_type, width, length, side_gusset, bottom_gusset, fill_factor
+        )
+
+        return {
+            'bag_type': bag_type,
+            'width_in': width,
+            'length_in': length,
+            'side_gusset_in': side_gusset,
+            'bottom_gusset_in': bottom_gusset,
+            'full_width_in': round_half(width + side_gusset) if bag_type == 'SIDE_GUSSETED' else None,
+            'full_length_in': round_half(length + bottom_gusset) if bag_type == 'BOTTOM_GUSSETED' else None,
+            'fw_in': round(fw, 2),
+            'overhang_in': overhang_in,
+            'fill_factor': fill_factor,
+            'theoretical_liters': round(theoretical_l, 1),
+            'practical_liters': round(practical_l, 1),
+            'deviation_percent': round(((practical_l - required_liters) / required_liters) * 100, 1) if required_liters else 0,
+            'iterations': iterations,
+            'converged': abs(((practical_l - required_liters) / required_liters) * 100) <= 15 if required_liters else True,
+        }
+
+    @staticmethod
+    def convert_volume_to_liters(value, unit):
+        """Convert a volume to litres. Accepts L, ml, m3, cm3, in3, ft3, gal."""
+        conversions = {
+            'L': 1.0, 'ml': 0.001, 'm3': 1000.0, 'cm3': 0.001,
+            'in3': 0.016387, 'ft3': 28.3168, 'gal': 3.78541,
+        }
+        if unit not in conversions:
+            raise ValueError(f"Invalid volume unit: {unit}")
+        return value * conversions[unit]
+
+    @staticmethod
+    def convert_thickness_to_gauge(value, unit):
+        """Convert a thickness to gauge. 1 gauge = 0.254 micron."""
+        if unit == 'gauge':
+            return value
+        if unit == 'micron':
+            return value / 0.254
+        if unit == 'mm':
+            return (value * 1000) / 0.254
+        raise ValueError(f"Invalid thickness unit: {unit}")
+
+    @staticmethod
+    def convert_gauge_to_microns(gauge):
+        return gauge * 0.254
+
+    # ---------------------------------------------------------------------
+    # BIN LINER SIZING — mm/micron-first wrapper
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def bin_liner_length_to_inches(value, unit):
+        """Convert a length to inches. Accepts mm (default), cm, m, inch."""
+        conversions_to_mm = {'mm': 1.0, 'cm': 10.0, 'm': 1000.0, 'inch': 25.4}
+        if unit not in conversions_to_mm:
+            raise ValueError(f"Invalid length unit: {unit}")
+        return (value * conversions_to_mm[unit]) / 25.4
+
+    @staticmethod
+    def bin_liner_inches_to_mm(value_in):
+        return value_in * 25.4
+
+    @classmethod
+    def bin_liner_design(cls, bag_type, shape, waste_type='GENERAL',
+                          required_volume=None, volume_unit='L',
+                          diameter=0, diameter_unit='mm',
+                          bin_height=0, bin_height_unit='mm',
+                          bin_width=0, bin_width_unit='mm',
+                          bin_depth=0, bin_depth_unit='mm',
+                          overlap=None, overlap_unit='mm',
+                          fill_factor=None, overhang=None, overhang_unit='mm'):
+        """
+        mm/micron-first entry point for Bin Liner Sizing. Converts all inputs
+        to inches, runs the validated spec math, then converts the result
+        back to mm (primary) and microns (primary thickness), keeping the
+        inch/gauge spec-format values alongside.
+        """
+        diameter_in = cls.bin_liner_length_to_inches(diameter, diameter_unit) if diameter else 0
+        bin_height_in = cls.bin_liner_length_to_inches(bin_height, bin_height_unit) if bin_height else 0
+        bin_width_in = cls.bin_liner_length_to_inches(bin_width, bin_width_unit) if bin_width else 0
+        bin_depth_in = cls.bin_liner_length_to_inches(bin_depth, bin_depth_unit) if bin_depth else 0
+        overlap_in = cls.bin_liner_length_to_inches(overlap, overlap_unit) if overlap else None
+        overhang_in = cls.bin_liner_length_to_inches(overhang, overhang_unit) if overhang else None
+
+        # Resolve required volume in litres, from dims if not given directly
+        if required_volume:
+            required_liters = cls.convert_volume_to_liters(required_volume, volume_unit)
+        else:
+            required_liters = cls.bin_liner_volume_from_dims(
+                shape, diameter_in, bin_height_in, bin_width_in, bin_depth_in, bin_height_in
+            )
+
+        # If dimensions weren't given, derive them from volume (still in inches)
+        if shape == 'ROUND' and not diameter_in:
+            dims = cls.bin_liner_dims_from_volume(required_liters, 'ROUND')
+            diameter_in, bin_height_in = dims['diameter_in'], dims['height_in']
+        elif shape != 'ROUND' and not bin_width_in:
+            dims = cls.bin_liner_dims_from_volume(required_liters, shape)
+            bin_width_in, bin_depth_in, bin_height_in = dims['bin_width_in'], dims['bin_depth_in'], dims['bin_height_in']
+
+        spec = cls.bin_liner_solve_spec(
+            bag_type, shape, required_liters,
+            diameter_in=diameter_in, bin_height_in=bin_height_in,
+            bin_width_in=bin_width_in, bin_depth_in=bin_depth_in,
+            overlap_in=overlap_in, fill_factor=fill_factor, overhang_in=overhang_in
+        )
+
+        gauge, base_gauge, waste_adjustment = cls.bin_liner_final_gauge(required_liters, waste_type)
+        thickness_microns = cls.convert_gauge_to_microns(gauge)
+
+        # mm conversions of every dimension the output format needs
+        to_mm = cls.bin_liner_inches_to_mm
+        spec['width_mm'] = round(to_mm(spec['width_in']), 1)
+        spec['length_mm'] = round(to_mm(spec['length_in']), 1)
+        spec['side_gusset_mm'] = round(to_mm(spec['side_gusset_in']), 1) if spec['side_gusset_in'] else 0
+        spec['bottom_gusset_mm'] = round(to_mm(spec['bottom_gusset_in']), 1) if spec['bottom_gusset_in'] else 0
+        spec['full_width_mm'] = round(to_mm(spec['full_width_in']), 1) if spec['full_width_in'] else None
+        spec['full_length_mm'] = round(to_mm(spec['full_length_in']), 1) if spec['full_length_in'] else None
+        spec['fw_mm'] = round(to_mm(spec['fw_in']), 1)
+        spec['overhang_mm'] = round(to_mm(spec['overhang_in']), 1)
+
+        for it in spec['iterations']:
+            it['width_mm'] = round(to_mm(it['width_in']), 1)
+            it['length_mm'] = round(to_mm(it['length_in']), 1)
+            it['side_gusset_mm'] = round(to_mm(it['side_gusset_in']), 1) if it['side_gusset_in'] else 0
+            it['bottom_gusset_mm'] = round(to_mm(it['bottom_gusset_in']), 1) if it['bottom_gusset_in'] else 0
+
+        spec['required_liters'] = round(required_liters, 1)
+        spec['bin_shape'] = shape
+        spec['waste_type'] = waste_type
+        spec['gauge'] = gauge
+        spec['thickness_microns'] = round(thickness_microns, 1)
+        spec['base_gauge'] = base_gauge
+        spec['waste_gauge_adjustment'] = waste_adjustment
+        spec['bin_dimensions_in'] = {
+            'diameter_in': round(diameter_in, 2) if shape == 'ROUND' else None,
+            'bin_width_in': round(bin_width_in, 2) if shape != 'ROUND' else None,
+            'bin_depth_in': round(bin_depth_in, 2) if shape != 'ROUND' else None,
+            'bin_height_in': round(bin_height_in, 2),
+        }
+        spec['bin_dimensions_mm'] = {
+            'diameter_mm': round(to_mm(diameter_in), 1) if shape == 'ROUND' else None,
+            'bin_width_mm': round(to_mm(bin_width_in), 1) if shape != 'ROUND' else None,
+            'bin_depth_mm': round(to_mm(bin_depth_in), 1) if shape != 'ROUND' else None,
+            'bin_height_mm': round(to_mm(bin_height_in), 1),
+        }
+
+        return spec

@@ -160,3 +160,57 @@ class AddonComponent(models.Model):
 
     def __str__(self):
         return f"{self.get_addon_type_display()} - {self.weight_per_piece}g"
+
+
+class BinLinerSpec(models.Model):
+    """Saved Bin Liner Sizing calculations - a design/quoting tool, distinct from the
+    weight/costing calculators above (no material/weight involved)."""
+    BAG_TYPE_CHOICES = [
+        ('SIDE_GUSSETED', 'Side-Gusseted'),
+        ('BOTTOM_GUSSETED', 'Bottom-Gusseted'),
+        ('FLAT', 'Flat'),
+    ]
+    SHAPE_CHOICES = [
+        ('ROUND', 'Round'),
+        ('SQUARE', 'Square'),
+        ('RECTANGULAR', 'Rectangular'),
+    ]
+    WASTE_TYPE_CHOICES = [
+        ('LIGHT', 'Light'),
+        ('GENERAL', 'General'),
+        ('HEAVY', 'Heavy'),
+        ('WET', 'Wet'),
+        ('SHARP', 'Sharp'),
+        ('INDUSTRIAL', 'Industrial'),
+    ]
+
+    bag_type = models.CharField(max_length=20, choices=BAG_TYPE_CHOICES)
+    bin_shape = models.CharField(max_length=15, choices=SHAPE_CHOICES)
+    waste_type = models.CharField(max_length=15, choices=WASTE_TYPE_CHOICES, default='GENERAL')
+    machine_name = models.CharField(max_length=20, choices=MACHINE_CHOICES, blank=True)
+    customer_name = models.CharField(max_length=150, blank=True)
+    order_name = models.CharField(max_length=150, blank=True)
+    input_data = models.JSONField()
+    result_data = models.JSONField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    @property
+    def calculation_type(self):
+        """Synthetic calculation_type so this model fits the shared history
+        display pattern (get_calculation_type_display expects one)."""
+        return f"BIN_LINER_{self.bag_type}"
+
+    def get_calculation_type_display(self):
+        return f"Bin Liner Sizing ({self.get_bag_type_display()})"
+
+    def __str__(self):
+        return f"{self.get_bag_type_display()} - {self.get_bin_shape_display()} - {self.timestamp}"

@@ -70,6 +70,10 @@ class CustomUser(AbstractUser):
         ('qc_technician', 'QC Technician'),
         ('sales_representative', 'Sales Representative'),
         ('engineer', 'Engineer'),
+        ('accountant', 'Accountant'),
+        ('auditor', 'Auditor'),
+        ('procurement officer', 'Procurement Officer'),
+        ('store manager', 'Store Manager'),
         ('other', 'Other'),
     ]
     SECTION_CHOICES = [
@@ -81,6 +85,9 @@ class CustomUser(AbstractUser):
         ('quality_control', 'Quality Control'),
         ('maintenance', 'Maintenance'),
         ('sales', 'Sales'),
+        ('accounts and finance', 'Accounts and Finance'),
+        ('procurement', 'Procurement'),
+        ('stores', 'Stores'),
         ('other', 'Other'),
     ]
 

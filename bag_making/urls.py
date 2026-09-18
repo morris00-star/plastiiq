@@ -4,6 +4,7 @@ from . import views
 app_name = 'bag_making'
 
 urlpatterns = [
+    path('calculate-bin-liner-size/', views.calculate_bin_liner_size, name='calculate_bin_liner_size'),
     path('list-cutout-geometries/', views.list_cutout_geometries, name='list_cutout_geometries'),
     path('list-bulk-products/', views.list_bulk_products, name='list_bulk_products'),
     path('calculate-bag-capacity/', views.calculate_bag_capacity, name='calculate_bag_capacity'),

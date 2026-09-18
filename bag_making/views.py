@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from calculator.models import PlasticMaterial
-from .models import BagMakingCalculation, AddonComponent, BagLayer, CutoutGeometry, BulkProduct
+from .models import BagMakingCalculation, AddonComponent, BagLayer, CutoutGeometry, BulkProduct, BinLinerSpec
 from .bag_calculator import BagMakingCalculator
 import json
 import logging
@@ -243,6 +243,7 @@ def bag_making_home(request):
         {'id': 'bag_capacity', 'name': 'Bag Fill Volume/Capacity', 'icon': 'fas fa-fill-drip'},
         {'id': 'roll_requirement', 'name': 'Bags per Roll / Roll Requirement', 'icon': 'fas fa-scroll'},
         {'id': 'seal_strength', 'name': 'Heat Seal Strength', 'icon': 'fas fa-thermometer-three-quarters'},
+        {'id': 'bin_liner_sizing', 'name': 'Bin Liner Sizing', 'icon': 'fas fa-trash-alt'},
     ]
 
     # Updated bag types with flap option and gusset types
@@ -1440,6 +1441,92 @@ def calculate_seal_strength(request):
 
         except Exception as e:
             logger.error(f"Error in seal_strength calculation: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@csrf_exempt
+def calculate_bin_liner_size(request):
+    """Bin Liner Sizing - design a bag spec from bin dimensions (mm/micron-first, unit-flexible)."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            machine_name, customer_name, order_name = resolve_common_fields(data)
+            calculator = BagMakingCalculator()
+
+            bag_type = data.get('bag_type', 'SIDE_GUSSETED')
+            bin_shape = data.get('bin_shape', 'ROUND')
+            waste_type = data.get('waste_type', 'GENERAL')
+
+            required_volume = data.get('required_volume')
+            required_volume = float(required_volume) if required_volume else None
+            volume_unit = data.get('volume_unit', 'L')
+
+            diameter = float(data.get('diameter', 0) or 0)
+            diameter_unit = data.get('diameter_unit', 'mm')
+            bin_height = float(data.get('bin_height', 0) or 0)
+            bin_height_unit = data.get('bin_height_unit', 'mm')
+            bin_width = float(data.get('bin_width', 0) or 0)
+            bin_width_unit = data.get('bin_width_unit', 'mm')
+            bin_depth = float(data.get('bin_depth', 0) or 0)
+            bin_depth_unit = data.get('bin_depth_unit', 'mm')
+
+            overlap = data.get('overlap')
+            overlap = float(overlap) if overlap else None
+            overlap_unit = data.get('overlap_unit', 'mm')
+
+            overhang = data.get('overhang')
+            overhang = float(overhang) if overhang else None
+            overhang_unit = data.get('overhang_unit', 'mm')
+
+            fill_factor = data.get('fill_factor')
+            fill_factor = float(fill_factor) if fill_factor else None
+
+            if not required_volume and not (diameter or bin_width):
+                return JsonResponse({'success': False, 'error': 'Provide either a required volume or bin dimensions'})
+
+            spec = calculator.bin_liner_design(
+                bag_type=bag_type, shape=bin_shape, waste_type=waste_type,
+                required_volume=required_volume, volume_unit=volume_unit,
+                diameter=diameter, diameter_unit=diameter_unit,
+                bin_height=bin_height, bin_height_unit=bin_height_unit,
+                bin_width=bin_width, bin_width_unit=bin_width_unit,
+                bin_depth=bin_depth, bin_depth_unit=bin_depth_unit,
+                overlap=overlap, overlap_unit=overlap_unit,
+                fill_factor=fill_factor,
+                overhang=overhang, overhang_unit=overhang_unit,
+            )
+
+            # Max production width check (2.6m hard constraint)
+            max_width_mm = 2600
+            check_width_mm = spec.get('full_width_mm') or spec.get('width_mm')
+            if check_width_mm and check_width_mm > max_width_mm:
+                spec['width_warning'] = (
+                    f"Required width {check_width_mm}mm exceeds the maximum production width "
+                    f"of {max_width_mm}mm - this bag cannot be produced as specified. "
+                    f"Consider a taller/narrower bag or splitting into two smaller units."
+                )
+            else:
+                spec['width_warning'] = None
+
+            if request.user.is_authenticated:
+                BinLinerSpec.objects.create(
+                    bag_type=bag_type,
+                    bin_shape=bin_shape,
+                    waste_type=waste_type,
+                    machine_name=machine_name,
+                    customer_name=customer_name,
+                    order_name=order_name,
+                    input_data=data,
+                    result_data=spec,
+                    user=request.user
+                )
+
+            return JsonResponse({'success': True, 'result': spec})
+
+        except Exception as e:
+            logger.error(f"Error in bin_liner_size calculation: {str(e)}", exc_info=True)
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})

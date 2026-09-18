@@ -31,7 +31,7 @@ def calculation_history(request):
     from printing.models import PrintingCalculation
     from lamination.models import LaminationCalculation
     from slitting.models import SlittingCalculation
-    from bag_making.models import BagMakingCalculation
+    from bag_making.models import BagMakingCalculation, BinLinerSpec
     from sales.models import SalesCalculation
 
     # Get calculations from all sections - handle models without material field
@@ -119,6 +119,20 @@ def calculation_history(request):
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading bag making calculations: {e}")
+
+    # Bin Liner Sizing calculations (no material field - design tool, not a costing one)
+    try:
+        bin_liner_calculations = BinLinerSpec.objects.filter(user=request.user).order_by('-timestamp')
+        for calc in bin_liner_calculations:
+            calc.section = 'bag_making'
+            calc.is_recent = is_recent(calc.timestamp)
+            calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
+            all_calculations.append(calc)
+    except Exception as e:
+        print(f"Error loading bin liner calculations: {e}")
 
     # Sales calculations (no material field - uses input_data)
     try:
@@ -418,7 +432,7 @@ def download_calculation_history(request, format_type):
     from printing.models import PrintingCalculation
     from lamination.models import LaminationCalculation
     from slitting.models import SlittingCalculation
-    from bag_making.models import BagMakingCalculation
+    from bag_making.models import BagMakingCalculation, BinLinerSpec
     from sales.models import SalesCalculation
 
     all_calculations = []
@@ -493,6 +507,18 @@ def download_calculation_history(request, format_type):
             all_calculations.append(calc)
     except Exception as e:
         print(f"Error loading bag making calculations for export: {e}")
+
+    try:
+        bin_liner_calculations = BinLinerSpec.objects.filter(user=request.user)
+        for calc in bin_liner_calculations:
+            calc.section = 'bag_making'
+            calc.display_material = get_display_material(calc)
+            calc.display_machine = get_display_machine(calc)
+            calc.display_customer = get_display_customer(calc)
+            calc.display_order = get_display_order(calc)
+            all_calculations.append(calc)
+    except Exception as e:
+        print(f"Error loading bin liner calculations for export: {e}")
 
     try:
         sales_calculations = SalesCalculation.objects.filter(user=request.user)

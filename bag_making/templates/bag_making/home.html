@@ -1453,6 +1453,188 @@
     </div>
 </div>
 
+<!-- Bin Liner Sizing -->
+<div class="card shadow mb-4" id="bin_liner_sizing">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Bin Liner Sizing</h5>
+    </div>
+    <div class="card-body">
+        <form id="binLinerForm">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Bag Type</label>
+                    <select class="form-select" name="bag_type" id="binLinerBagType">
+                        <option value="SIDE_GUSSETED">Side-Gusseted</option>
+                        <option value="BOTTOM_GUSSETED">Bottom-Gusseted</option>
+                        <option value="FLAT">Flat</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Bin Shape</label>
+                    <select class="form-select" name="bin_shape" id="binLinerShape">
+                        <option value="ROUND">Round</option>
+                        <option value="SQUARE">Square</option>
+                        <option value="RECTANGULAR">Rectangular</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Waste Type</label>
+                    <select class="form-select" name="waste_type">
+                        <option value="LIGHT">Light</option>
+                        <option value="GENERAL" selected>General</option>
+                        <option value="HEAVY">Heavy</option>
+                        <option value="WET">Wet</option>
+                        <option value="SHARP">Sharp</option>
+                        <option value="INDUSTRIAL">Industrial</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Input Method</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="binliner_input_method" value="dimensions" checked>
+                    <label class="form-check-label">Bin Dimensions</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="binliner_input_method" value="volume">
+                    <label class="form-check-label">Volume Only</label>
+                </div>
+                <div class="form-text">If dimensions are given, volume is derived from them (and cross-checked if you also enter one). If only volume is given, dimensions are estimated from it.</div>
+            </div>
+
+            <div id="binLinerRoundFields">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Diameter</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="diameter" placeholder="e.g., 381">
+                            <select class="form-select" name="diameter_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Bin Height</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="bin_height" placeholder="e.g., 610">
+                            <select class="form-select" name="bin_height_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="binLinerRectFields" style="display: none;">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Bin Width</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="bin_width" placeholder="e.g., 500">
+                            <select class="form-select" name="bin_width_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Bin Depth</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="bin_depth" placeholder="e.g., 400">
+                            <select class="form-select" name="bin_depth_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Bin Height</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" name="bin_height_rect" placeholder="e.g., 900">
+                            <select class="form-select" name="bin_height_rect_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Required/Rated Volume (optional if dimensions given)</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="required_volume" placeholder="e.g., 60">
+                        <select class="form-select" name="volume_unit" style="max-width: 100px;">
+                            <option value="L" selected>L</option>
+                            <option value="ml">ml</option>
+                            <option value="m3">m&sup3;</option>
+                            <option value="cm3">cm&sup3;</option>
+                            <option value="in3">in&sup3;</option>
+                            <option value="ft3">ft&sup3;</option>
+                            <option value="gal">gal</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" href="#binLinerAdvanced" role="button">
+                    <i class="fas fa-sliders-h"></i> Advanced Overrides (optional - defaults per spec)
+                </a>
+            </div>
+            <div class="collapse mb-3" id="binLinerAdvanced">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">FW Overlap</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="overlap" placeholder="default 3in">
+                            <select class="form-select" name="overlap_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Overhang</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" class="form-control" name="overhang" placeholder="default by size">
+                            <select class="form-select" name="overhang_unit" style="max-width: 100px;">
+                                <option value="mm" selected>mm</option>
+                                <option value="cm">cm</option>
+                                <option value="inch">inch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Fill Factor</label>
+                        <input type="number" step="0.01" min="0" max="1" class="form-control" name="fill_factor" placeholder="default 0.55">
+                    </div>
+                </div>
+            </div>
+
+            {% include 'bag_making/_machine_customer_order.html' %}
+
+            <button type="submit" class="btn btn-dark"><i class="fas fa-calculator"></i> Calculate Bin Liner Spec</button>
+        </form>
+        <div id="binLinerResult" class="mt-4" style="display: none;"></div>
+    </div>
+</div>
+
 <!-- Information Section -->
 <div class="alert alert-info mt-4">
     <h6><i class="fas fa-info-circle"></i> Bag Making Calculator Features:</h6>
@@ -1684,6 +1866,128 @@ document.getElementById('bulkProductSelect').addEventListener('change', function
     const selectedOption = this.options[this.selectedIndex];
     notesDiv.textContent = selectedOption ? (selectedOption.dataset.notes || '') : '';
 });
+
+// Bin Liner Sizing: shape toggle
+document.getElementById('binLinerShape').addEventListener('change', function() {
+    const isRound = this.value === 'ROUND';
+    document.getElementById('binLinerRoundFields').style.display = isRound ? 'block' : 'none';
+    document.getElementById('binLinerRectFields').style.display = isRound ? 'none' : 'block';
+});
+
+document.getElementById('binLinerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+
+    // Rectangular height field is named differently to avoid colliding with the round one
+    if (data.bin_shape !== 'ROUND' && data.bin_height_rect) {
+        data.bin_height = data.bin_height_rect;
+        data.bin_height_unit = data.bin_height_rect_unit;
+    }
+
+    fetch('/bag-making/calculate-bin-liner-size/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => displayBinLinerResult(result))
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Calculation failed: ' + error);
+    });
+});
+
+function displayBinLinerResult(result) {
+    const resultDiv = document.getElementById('binLinerResult');
+    if (!result.success) {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error: ${result.error}</div>`;
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    const res = result.result;
+    let specLine = '';
+    if (res.bag_type === 'SIDE_GUSSETED') {
+        specLine = `${res.width_mm} &times; ${res.full_width_mm} &times; ${res.length_mm} mm &times; ${res.gauge}g (${res.thickness_microns}&mu;m) &mdash; SIDE-GUSSETED`;
+    } else if (res.bag_type === 'BOTTOM_GUSSETED') {
+        specLine = `${res.width_mm} &times; ${res.length_mm} &times; ${res.full_length_mm} mm &times; ${res.gauge}g (${res.thickness_microns}&mu;m) &mdash; BOTTOM-GUSSETED`;
+    } else {
+        specLine = `${res.width_mm} &times; ${res.length_mm} mm &times; ${res.gauge}g (${res.thickness_microns}&mu;m) &mdash; FLAT`;
+    }
+
+    const convergedBadge = res.converged
+        ? `<span class="badge bg-success">Converged (${res.deviation_percent}% deviation)</span>`
+        : `<span class="badge bg-warning text-dark">Not converged - ${res.deviation_percent}% deviation, see detail</span>`;
+
+    let html = `
+        <div class="alert alert-success">
+            <h6><i class="fas fa-check-circle"></i> Final Spec:</h6>
+            <p class="fs-5 fw-bold">${specLine}</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Practical Volume:</strong> ${res.practical_liters} L (required: ${res.required_liters} L)</p>
+                    <p class="mb-1"><strong>Thickness:</strong> ${res.gauge}g / ${res.thickness_microns}&mu;m (${res.waste_type} waste)</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1">${convergedBadge}</p>
+                    <p class="mb-1"><small>In inches: ${res.width_in}" ${res.full_width_in ? '&times; ' + res.full_width_in + '"' : ''} &times; ${res.length_in}"${res.full_length_in ? ' &times; ' + res.full_length_in + '"' : ''}</small></p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (res.width_warning) {
+        html += `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ${res.width_warning}</div>`;
+    }
+
+    html += `
+        <a class="btn btn-sm btn-outline-secondary mb-2" data-bs-toggle="collapse" href="#binLinerDetail" role="button">
+            <i class="fas fa-list"></i> Show Full Breakdown & Iteration Trail
+        </a>
+        <div class="collapse" id="binLinerDetail">
+            <div class="card mb-3">
+                <div class="card-header">Breakdown</div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr><td>Bag Type</td><td>${res.bag_type}</td></tr>
+                            <tr><td>Bin Shape</td><td>${res.bin_shape}</td></tr>
+                            <tr><td>Bin Dimensions</td><td>${JSON.stringify(res.bin_dimensions_mm)}</td></tr>
+                            <tr><td>FW (Full Width for wrap)</td><td>${res.fw_mm} mm</td></tr>
+                            <tr><td>Side Gusset</td><td>${res.side_gusset_mm} mm</td></tr>
+                            <tr><td>Bottom Gusset</td><td>${res.bottom_gusset_mm} mm</td></tr>
+                            <tr><td>Overhang</td><td>${res.overhang_mm} mm</td></tr>
+                            <tr><td>Fill Factor</td><td>${res.fill_factor}</td></tr>
+                            <tr><td>Theoretical Volume</td><td>${res.theoretical_liters} L</td></tr>
+                            <tr><td>Gauge Chosen</td><td>${res.gauge}g = ${res.base_gauge}g base ${res.waste_gauge_adjustment >= 0 ? '+' : ''}${res.waste_gauge_adjustment}g (${res.waste_type})</td></tr>
+                            <tr><td>Iterations Needed</td><td>${res.iterations.length}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Iteration Trail</div>
+                <div class="card-body">
+                    <table class="table table-sm table-striped">
+                        <thead><tr><th>#</th><th>Width (mm)</th><th>Length (mm)</th><th>Side Gusset (mm)</th><th>Bottom Gusset (mm)</th><th>Theoretical (L)</th><th>Practical (L)</th><th>Deviation</th></tr></thead>
+                        <tbody>
+    `;
+    res.iterations.forEach(it => {
+        html += `<tr><td>${it.iteration}</td><td>${it.width_mm}</td><td>${it.length_mm}</td><td>${it.side_gusset_mm}</td><td>${it.bottom_gusset_mm}</td><td>${it.theoretical_liters}</td><td>${it.practical_liters}</td><td>${it.deviation_percent}%</td></tr>`;
+    });
+    html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    resultDiv.innerHTML = html;
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
 
 // Roll Requirement: length source toggle
 document.querySelectorAll('input[name="roll_length_source"]').forEach(radio => {
