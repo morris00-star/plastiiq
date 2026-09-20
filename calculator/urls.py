@@ -4,6 +4,7 @@ from .views_history import calculation_history, download_calculation_history
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('unit-converter/', views.unit_converter, name='unit_converter'),
     path('calculate-density/', views.calculate_density, name='calculate_density'),
     path('reference/', views.material_reference, name='material_reference'),
     path('calculation-reasons/', views.calculation_reasons, name='calculation_reasons'),
@@ -18,5 +19,4 @@ urlpatterns = [
 
     path('delete-calculation/<int:calculation_id>/', views.delete_calculation, name='delete_calculation'),
     path('delete-calculations-bulk/', views.delete_calculations_bulk, name='delete_calculations_bulk'),
-    path('export-calculations/', views.export_selected_calculations, name='export_calculations'),
 ]

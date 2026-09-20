@@ -1,0 +1,706 @@
+<style>
+#unitConverterWidget {
+    position: fixed;
+    top: 80px;
+    right: 30px;
+    width: 480px;
+    max-width: 95vw;
+    background: var(--bg-panel, #fff);
+    color: var(--text-main, #171b21);
+    border: 1px solid var(--line, transparent);
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    z-index: 2000;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width .18s ease, height .18s ease, top .18s ease, left .18s ease,
+                right .18s ease, bottom .18s ease, border-radius .18s ease;
+}
+#unitConverterWidget.ucw-dragging { transition: none; }
+
+/* ---- Maximize (full screen) ---- */
+#unitConverterWidget.maximized {
+    top: 20px !important; left: 20px !important; right: auto !important; bottom: auto !important;
+    width: calc(100vw - 40px) !important;
+    height: calc(100vh - 40px) !important;
+}
+#unitConverterWidget.maximized .ucw-body { max-height: calc(100vh - 100px); }
+
+/* ---- Dock left / right (snap to a screen edge, full height) ---- */
+#unitConverterWidget.docked-left,
+#unitConverterWidget.docked-right {
+    top: 0 !important; bottom: 0 !important;
+    height: 100vh !important;
+    width: min(440px, 95vw) !important;
+    border-radius: 0;
+}
+#unitConverterWidget.docked-left {
+    left: 0 !important; right: auto !important;
+    border-right: 1px solid var(--line, #ddd);
+}
+#unitConverterWidget.docked-right {
+    right: 0 !important; left: auto !important;
+    border-left: 1px solid var(--line, #ddd);
+}
+#unitConverterWidget.docked-left .ucw-body,
+#unitConverterWidget.docked-right .ucw-body { max-height: calc(100vh - 56px); }
+
+/* ---- Minimized: collapses to a small edge tab, no dragging ---- */
+#unitConverterWidget.minimized {
+    top: auto !important; left: auto !important;
+    bottom: 20px !important; right: 20px !important;
+    width: auto !important; height: auto !important;
+}
+#unitConverterWidget.minimized .ucw-body { display: none; }
+#unitConverterWidget.minimized .ucw-titlebar { cursor: pointer; border-radius: 10px; }
+#unitConverterWidget.minimized .ucw-titlebar span span { display: none; }
+#unitConverterWidget.minimized .ucw-window-btn[data-action="dockLeft"],
+#unitConverterWidget.minimized .ucw-window-btn[data-action="dockRight"],
+#unitConverterWidget.minimized .ucw-window-btn[data-action="maximize"] { display: none; }
+
+.ucw-titlebar {
+    background: var(--molten, #ff6b35);
+    color: #fff;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: move;
+    user-select: none;
+    flex-shrink: 0;
+}
+.ucw-titlebar > span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: .92rem;
+    font-weight: 600;
+}
+.ucw-titlebar-controls {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.ucw-titlebar-controls button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    margin-left: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    flex-shrink: 0;
+}
+.ucw-titlebar-controls button:hover { background: rgba(255,255,255,0.35); }
+.ucw-titlebar-controls button.active { background: rgba(255,255,255,0.5); }
+
+.ucw-body {
+    padding: 14px;
+    overflow-y: auto;
+    max-height: 75vh;
+    background: var(--bg-panel, #fff);
+}
+
+.ucw-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+.ucw-nav button {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+}
+
+.ucw-swap-btn {
+    width: 100%;
+    border: 1px solid var(--line, #ced4da);
+    background: transparent;
+    color: var(--text-main, inherit);
+    border-radius: 6px;
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform .15s ease, color .15s ease, border-color .15s ease;
+}
+.ucw-swap-btn:hover { color: var(--molten, #ff6b35); border-color: var(--molten, #ff6b35); transform: rotate(180deg); }
+
+.ucw-result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.ucw-copy-btn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    opacity: .65;
+    flex-shrink: 0;
+    padding: 2px 6px;
+}
+.ucw-copy-btn:hover { opacity: 1; }
+
+/* ---- Calculator grid (fixed 5-column layout, no row-count bug) ---- */
+#ucwCalcButtons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+#ucwCalcButtons button { padding: .5rem 0; }
+.ucw-calc-btn[data-val="="] { background: var(--molten, #ff6b35); border-color: var(--molten, #ff6b35); color: #fff; }
+.ucw-calc-btn[data-val="C"] { color: #dc3545; border-color: #dc3545; }
+
+#ucwToggleBtn { cursor: pointer; }
+
+@media (max-width: 768px) {
+    #unitConverterWidget:not(.minimized) {
+        top: 10px !important; left: 10px !important; right: 10px !important; bottom: 10px !important;
+        width: auto !important; height: auto !important;
+        max-width: none;
+    }
+    #unitConverterWidget:not(.minimized) .ucw-body { max-height: calc(100vh - 90px); }
+    .ucw-window-btn[data-action="dockLeft"],
+    .ucw-window-btn[data-action="dockRight"] { display: none; }
+}
+</style>
+
+<div id="unitConverterWidget" role="dialog" aria-label="Unit Converter & Calculator">
+    <div class="ucw-titlebar" id="ucwTitlebar">
+        <span><i class="fas fa-exchange-alt"></i> <span>Unit Converter &amp; Calculator</span></span>
+        <div class="ucw-titlebar-controls">
+            <button type="button" class="ucw-window-btn" data-action="dockLeft" title="Dock left"><i class="fas fa-caret-left"></i></button>
+            <button type="button" class="ucw-window-btn" data-action="dockRight" title="Dock right"><i class="fas fa-caret-right"></i></button>
+            <button type="button" class="ucw-window-btn" data-action="minimize" title="Minimize"><i class="fas fa-window-minimize"></i></button>
+            <button type="button" class="ucw-window-btn" data-action="maximize" title="Maximize"><i class="fas fa-expand"></i></button>
+            <button type="button" class="ucw-window-btn" data-action="close" title="Close"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+    <div class="ucw-body">
+        <div class="ucw-nav" id="ucwTabs">
+            <button type="button" class="btn btn-sm btn-outline-primary active" data-target="ucwLengthPanel">Length</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwThicknessPanel">Thickness</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwWeightPanel">Weight</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwSpeedPanel">Speed</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwTimePanel">Time</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwAreaPanel">Area</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwVolumePanel">Volume</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwDensityPanel">Density</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwForcePanel">Force</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwTempPanel">Temp</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwFlowPanel">Flow Rate</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwCalcPanel">Calc</button>
+        </div>
+
+        {% verbatim %}
+        <!-- Length -->
+        <div class="ucw-panel" id="ucwLengthPanel">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwLengthValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwLengthFrom">
+                        <option value="mm">mm</option><option value="cm" selected>cm</option><option value="m">m</option>
+                        <option value="inch">inch</option><option value="ft">ft</option><option value="yard">yard</option><option value="mile">mile</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Length" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwLengthTo">
+                        <option value="mm">mm</option><option value="cm">cm</option><option value="m" selected>m</option>
+                        <option value="inch">inch</option><option value="ft">ft</option><option value="yard">yard</option><option value="mile">mile</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwLengthResult"></span><button type="button" class="ucw-copy-btn" data-copy="Length" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Thickness -->
+        <div class="ucw-panel" id="ucwThicknessPanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwThicknessValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwThicknessFrom">
+                        <option value="micron" selected>micron</option><option value="mm">mm</option><option value="gauge">gauge</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Thickness" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwThicknessTo">
+                        <option value="micron">micron</option><option value="mm">mm</option><option value="gauge" selected>gauge</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwThicknessResult"></span><button type="button" class="ucw-copy-btn" data-copy="Thickness" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Weight -->
+        <div class="ucw-panel" id="ucwWeightPanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwWeightValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwWeightFrom">
+                        <option value="g">g</option><option value="kg" selected>kg</option><option value="lb">lb</option>
+                        <option value="oz">oz</option><option value="ton_metric">metric ton</option><option value="ton_short">short ton</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Weight" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwWeightTo">
+                        <option value="g">g</option><option value="kg">kg</option><option value="lb" selected>lb</option>
+                        <option value="oz">oz</option><option value="ton_metric">metric ton</option><option value="ton_short">short ton</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwWeightResult"></span><button type="button" class="ucw-copy-btn" data-copy="Weight" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Speed -->
+        <div class="ucw-panel" id="ucwSpeedPanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwSpeedValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwSpeedFrom">
+                        <option value="m_min" selected>m/min</option><option value="m_hr">m/hr</option><option value="cm_hr">cm/hr</option>
+                        <option value="m_s">m/s</option><option value="ft_min">ft/min</option><option value="km_hr">km/hr</option><option value="mph">mph</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Speed" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwSpeedTo">
+                        <option value="m_min">m/min</option><option value="m_hr">m/hr</option><option value="cm_hr">cm/hr</option>
+                        <option value="m_s">m/s</option><option value="ft_min">ft/min</option><option value="km_hr" selected>km/hr</option><option value="mph">mph</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwSpeedResult"></span><button type="button" class="ucw-copy-btn" data-copy="Speed" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Time -->
+        <div class="ucw-panel" id="ucwTimePanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwTimeValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwTimeFrom">
+                        <option value="sec">sec</option><option value="min">min</option><option value="hr" selected>hr</option>
+                        <option value="day">day</option><option value="week">week</option><option value="month">month</option><option value="year">year</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Time" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwTimeTo">
+                        <option value="sec">sec</option><option value="min">min</option><option value="hr">hr</option>
+                        <option value="day" selected>day</option><option value="week">week</option><option value="month">month</option><option value="year">year</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwTimeResult"></span><button type="button" class="ucw-copy-btn" data-copy="Time" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Area -->
+        <div class="ucw-panel" id="ucwAreaPanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwAreaValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwAreaFrom">
+                        <option value="mm2">mm&sup2;</option><option value="cm2">cm&sup2;</option><option value="m2" selected>m&sup2;</option>
+                        <option value="ft2">ft&sup2;</option><option value="sq_yard">sq yard</option><option value="acre">acre</option>
+                        <option value="hectare">hectare</option><option value="sq_mile">sq mile</option><option value="km2">km&sup2;</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Area" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwAreaTo">
+                        <option value="mm2">mm&sup2;</option><option value="cm2">cm&sup2;</option><option value="m2">m&sup2;</option>
+                        <option value="ft2">ft&sup2;</option><option value="sq_yard">sq yard</option><option value="acre" selected>acre</option>
+                        <option value="hectare">hectare</option><option value="sq_mile">sq mile</option><option value="km2">km&sup2;</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwAreaResult"></span><button type="button" class="ucw-copy-btn" data-copy="Area" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Volume -->
+        <div class="ucw-panel" id="ucwVolumePanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwVolumeValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwVolumeFrom">
+                        <option value="ml">mL</option><option value="L" selected>L</option><option value="m3">m&sup3;</option>
+                        <option value="cm3">cm&sup3;</option><option value="in3">in&sup3;</option><option value="ft3">ft&sup3;</option><option value="gal">gal</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Volume" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwVolumeTo">
+                        <option value="ml">mL</option><option value="L">L</option><option value="m3" selected>m&sup3;</option>
+                        <option value="cm3">cm&sup3;</option><option value="in3">in&sup3;</option><option value="ft3">ft&sup3;</option><option value="gal">gal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwVolumeResult"></span><button type="button" class="ucw-copy-btn" data-copy="Volume" title="Copy result"><i class="fas fa-copy"></i></button></div>
+            <div class="form-text">Matches the conversion table used by bag_calculator.py's convert_volume_to_liters</div>
+        </div>
+
+        <!-- Density -->
+        <div class="ucw-panel" id="ucwDensityPanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwDensityValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwDensityFrom">
+                        <option value="kg_m3">kg/m&sup3;</option><option value="g_cm3" selected>g/cm&sup3;</option>
+                        <option value="g_L">g/L</option><option value="lb_ft3">lb/ft&sup3;</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Density" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwDensityTo">
+                        <option value="kg_m3" selected>kg/m&sup3;</option><option value="g_cm3">g/cm&sup3;</option>
+                        <option value="g_L">g/L</option><option value="lb_ft3">lb/ft&sup3;</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwDensityResult"></span><button type="button" class="ucw-copy-btn" data-copy="Density" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Force -->
+        <div class="ucw-panel" id="ucwForcePanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwForceValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwForceFrom">
+                        <option value="N" selected>N</option><option value="kN">kN</option><option value="lbf">lbf</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Force" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwForceTo">
+                        <option value="N">N</option><option value="kN">kN</option><option value="lbf" selected>lbf</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwForceResult"></span><button type="button" class="ucw-copy-btn" data-copy="Force" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Temperature -->
+        <div class="ucw-panel" id="ucwTempPanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwTempValue" value="0"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwTempFrom">
+                        <option value="C" selected>&deg;C</option><option value="F">&deg;F</option><option value="K">K</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Temp" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwTempTo">
+                        <option value="C">&deg;C</option><option value="F" selected>&deg;F</option><option value="K">K</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwTempResult"></span><button type="button" class="ucw-copy-btn" data-copy="Temp" title="Copy result"><i class="fas fa-copy"></i></button></div>
+        </div>
+
+        <!-- Flow Rate -->
+        <div class="ucw-panel" id="ucwFlowPanel" style="display:none;">
+            <div class="mb-2"><input type="number" step="any" class="form-control form-control-sm" id="ucwFlowValue" value="1"></div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwFlowFrom">
+                        <option value="kg_hr" selected>kg/hr</option><option value="kg_min">kg/min</option><option value="lb_hr">lb/hr</option>
+                    </select>
+                </div>
+                <div class="col-2 text-center"><button type="button" class="ucw-swap-btn" data-swap="Flow" title="Swap units"><i class="fas fa-arrow-right"></i></button></div>
+                <div class="col-5">
+                    <select class="form-select form-select-sm" id="ucwFlowTo">
+                        <option value="kg_hr">kg/hr</option><option value="kg_min" selected>kg/min</option><option value="lb_hr">lb/hr</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success py-2 mb-0 ucw-result-row"><span id="ucwFlowResult"></span><button type="button" class="ucw-copy-btn" data-copy="Flow" title="Copy result"><i class="fas fa-copy"></i></button></div>
+            <div class="form-text">Matches Extrusion's Specific Output Rate calculator</div>
+        </div>
+
+        <!-- Simple Calculator -->
+        <div class="ucw-panel" id="ucwCalcPanel" style="display:none;">
+            <input type="text" class="form-control form-control-lg mb-2" id="ucwCalcDisplay" readonly style="text-align:right;" value="0">
+            <div id="ucwCalcButtons"></div>
+        </div>
+        {% endverbatim %}
+    </div>
+</div>
+
+<script>
+(function() {
+    const LENGTH = { mm: 1, cm: 10, m: 1000, inch: 25.4, ft: 304.8, yard: 914.4, mile: 1609344 };
+    const THICKNESS = { micron: 1, mm: 1000, gauge: 0.254 };
+    const WEIGHT = { g: 1, kg: 1000, lb: 453.592, oz: 28.3495, ton_metric: 1000000, ton_short: 907185 };
+    const SPEED = { m_min: 1, m_hr: 1/60, cm_hr: 1/6000, m_s: 60, ft_min: 0.3048, km_hr: 1000/60, mph: 26.8224 };
+    const TIME = { sec: 1, min: 60, hr: 3600, day: 86400, week: 604800, month: 2629800, year: 31557600 };
+    const AREA = { mm2: 0.000001, cm2: 0.0001, m2: 1, ft2: 0.092903, sq_yard: 0.836127, acre: 4046.86, hectare: 10000, sq_mile: 2589988.11, km2: 1000000 };
+    const VOLUME = { ml: 0.001, L: 1, m3: 1000, cm3: 0.001, in3: 0.016387, ft3: 28.3168, gal: 3.78541 };
+    const DENSITY = { kg_m3: 1, g_cm3: 1000, g_L: 1, lb_ft3: 16.0185 };
+    const FORCE = { N: 1, kN: 1000, lbf: 4.44822 };
+    const FLOW = { kg_hr: 1, kg_min: 60, lb_hr: 0.453592 };
+
+    function convert(table, value, from, to) {
+        if (!table[from] || !table[to]) return null;
+        return (value * table[from]) / table[to];
+    }
+
+    function convertTemp(value, from, to) {
+        let celsius;
+        if (from === 'C') celsius = value;
+        else if (from === 'F') celsius = (value - 32) * 5 / 9;
+        else celsius = value - 273.15;
+
+        if (to === 'C') return celsius;
+        if (to === 'F') return celsius * 9 / 5 + 32;
+        return celsius + 273.15;
+    }
+
+    let lastResults = {};
+
+    function wire(prefix, table) {
+        const valueEl = document.getElementById('ucw' + prefix + 'Value');
+        const fromEl = document.getElementById('ucw' + prefix + 'From');
+        const toEl = document.getElementById('ucw' + prefix + 'To');
+        const resultEl = document.getElementById('ucw' + prefix + 'Result');
+        if (!valueEl) return;
+
+        function update() {
+            const value = parseFloat(valueEl.value);
+            if (isNaN(value)) { resultEl.textContent = 'Enter a valid number'; return; }
+            const result = prefix === 'Temp' ? convertTemp(value, fromEl.value, toEl.value) : convert(table, value, fromEl.value, toEl.value);
+            const fromLabel = fromEl.options[fromEl.selectedIndex].text;
+            const toLabel = toEl.options[toEl.selectedIndex].text;
+            const formatted = result.toLocaleString(undefined, {maximumFractionDigits: 6});
+            resultEl.innerHTML = `<strong>${value} ${fromLabel} = ${formatted} ${toLabel}</strong>`;
+            lastResults[prefix] = `${formatted} ${toLabel}`;
+        }
+        [valueEl, fromEl, toEl].forEach(el => el.addEventListener('input', update));
+        update();
+
+        // Swap "from"/"to" units with one click
+        const swapBtn = document.querySelector('.ucw-swap-btn[data-swap="' + prefix + '"]');
+        if (swapBtn) {
+            swapBtn.addEventListener('click', function() {
+                const tmp = fromEl.value;
+                fromEl.value = toEl.value;
+                toEl.value = tmp;
+                update();
+            });
+        }
+
+        // Copy the current result to the clipboard
+        const copyBtn = document.querySelector('.ucw-copy-btn[data-copy="' + prefix + '"]');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                const text = lastResults[prefix] || '';
+                if (!text || !navigator.clipboard) return;
+                navigator.clipboard.writeText(text).then(function() {
+                    const icon = copyBtn.querySelector('i');
+                    icon.classList.remove('fa-copy');
+                    icon.classList.add('fa-check');
+                    setTimeout(function() {
+                        icon.classList.remove('fa-check');
+                        icon.classList.add('fa-copy');
+                    }, 1200);
+                }).catch(function() {});
+            });
+        }
+    }
+
+    wire('Length', LENGTH);
+    wire('Thickness', THICKNESS);
+    wire('Weight', WEIGHT);
+    wire('Speed', SPEED);
+    wire('Time', TIME);
+    wire('Area', AREA);
+    wire('Volume', VOLUME);
+    wire('Density', DENSITY);
+    wire('Force', FORCE);
+    wire('Temp', null);
+    wire('Flow', FLOW);
+
+    // Tabs (remembers the last-opened tab across sessions)
+    const TAB_KEY = 'ucw-active-tab';
+    function activateTab(btn) {
+        if (!btn) return;
+        document.querySelectorAll('#ucwTabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.ucw-panel').forEach(p => p.style.display = 'none');
+        document.getElementById(btn.dataset.target).style.display = 'block';
+        try { localStorage.setItem(TAB_KEY, btn.dataset.target); } catch (e) {}
+    }
+    document.querySelectorAll('#ucwTabs button').forEach(btn => {
+        btn.addEventListener('click', function() { activateTab(this); });
+    });
+    try {
+        const savedTarget = localStorage.getItem(TAB_KEY);
+        if (savedTarget) {
+            const savedBtn = document.querySelector('#ucwTabs button[data-target="' + savedTarget + '"]');
+            if (savedBtn) activateTab(savedBtn);
+        }
+    } catch (e) {}
+
+    // Simple calculator (fixed 5-per-row grid, keyboard support, safer eval)
+    let calcExpression = '';
+    const calcButtonLabels = ['7','8','9','/','C','4','5','6','*','\u2190','1','2','3','-','(','0','.','=','+',')'];
+
+    function renderCalcButtons() {
+        const container = document.getElementById('ucwCalcButtons');
+        container.innerHTML = calcButtonLabels.map(label =>
+            `<button type="button" class="btn btn-outline-primary btn-sm ucw-calc-btn" data-val="${label}">${label}</button>`
+        ).join('');
+        document.querySelectorAll('.ucw-calc-btn').forEach(btn => {
+            btn.addEventListener('click', function() { handleCalcInput(this.dataset.val); });
+        });
+    }
+    function handleCalcInput(val) {
+        const display = document.getElementById('ucwCalcDisplay');
+        if (val === 'C') calcExpression = '';
+        else if (val === '\u2190') calcExpression = calcExpression.slice(0, -1);
+        else if (val === '=') calcExpression = evaluateExpression(calcExpression);
+        else calcExpression += val;
+        display.value = calcExpression || '0';
+    }
+    function evaluateExpression(expr) {
+        if (!expr || !/^[0-9+\-*/().\s]*$/.test(expr)) return 'Error';
+        try {
+            const result = Function('"use strict"; return (' + expr + ')')();
+            if (typeof result !== 'number' || !isFinite(result)) return 'Error';
+            return String(Math.round(result * 1e10) / 1e10);
+        } catch (e) { return 'Error'; }
+    }
+    renderCalcButtons();
+
+    // Let the keyboard drive the calculator when its tab is open
+    document.addEventListener('keydown', function(e) {
+        const calcPanel = document.getElementById('ucwCalcPanel');
+        if (!calcPanel || calcPanel.style.display === 'none') return;
+        if (widgetHidden()) return;
+        if ('0123456789+-*/().'.includes(e.key)) { handleCalcInput(e.key); e.preventDefault(); }
+        else if (e.key === 'Enter' || e.key === '=') { handleCalcInput('='); e.preventDefault(); }
+        else if (e.key === 'Backspace') { handleCalcInput('\u2190'); e.preventDefault(); }
+        else if (e.key === 'Escape') { handleCalcInput('C'); e.preventDefault(); }
+    });
+    function widgetHidden() {
+        const w = document.getElementById('unitConverterWidget');
+        return !w || w.style.display === 'none' || w.style.display === '';
+    }
+
+    // --- Floating window behavior: open/close, minimize, maximize, dock, drag ---
+    const widget = document.getElementById('unitConverterWidget');
+    const titlebar = document.getElementById('ucwTitlebar');
+    const STATE_KEY = 'ucw-window-state';
+    const STATE_CLASSES = ['minimized', 'maximized', 'docked-left', 'docked-right'];
+
+    function clearStateClasses() { STATE_CLASSES.forEach(c => widget.classList.remove(c)); }
+
+    function setWindowState(state) {
+        clearStateClasses();
+        if (state && state !== 'normal') widget.classList.add(state);
+        try { localStorage.setItem(STATE_KEY, state || 'normal'); } catch (e) {}
+        updateActiveButtons(state);
+    }
+
+    function updateActiveButtons(state) {
+        document.querySelectorAll('.ucw-window-btn').forEach(b => b.classList.remove('active'));
+        const map = { minimized: 'minimize', maximized: 'maximize', 'docked-left': 'dockLeft', 'docked-right': 'dockRight' };
+        if (map[state]) {
+            const btn = document.querySelector('.ucw-window-btn[data-action="' + map[state] + '"]');
+            if (btn) btn.classList.add('active');
+        }
+    }
+
+    window.toggleUnitConverter = function() {
+        const isOpen = widget.style.display === 'flex';
+        widget.style.display = isOpen ? 'none' : 'flex';
+        if (!isOpen) {
+            try {
+                const savedState = localStorage.getItem(STATE_KEY);
+                if (savedState) setWindowState(savedState === 'normal' ? null : savedState);
+            } catch (e) {}
+        }
+    };
+
+    document.querySelectorAll('.ucw-window-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const action = this.dataset.action;
+            const current = STATE_CLASSES.find(c => widget.classList.contains(c)) || 'normal';
+            if (action === 'close') { widget.style.display = 'none'; return; }
+            if (action === 'minimize') { setWindowState(current === 'minimized' ? null : 'minimized'); return; }
+            if (action === 'maximize') { setWindowState(current === 'maximized' ? null : 'maximized'); return; }
+            if (action === 'dockLeft') { setWindowState(current === 'docked-left' ? null : 'docked-left'); return; }
+            if (action === 'dockRight') { setWindowState(current === 'docked-right' ? null : 'docked-right'); return; }
+        });
+    });
+
+    // Clicking the titlebar while minimized restores the widget
+    titlebar.addEventListener('click', function() {
+        if (widget.classList.contains('minimized')) setWindowState(null);
+    });
+
+    // Double-click the titlebar to toggle maximize (skip while minimized)
+    titlebar.addEventListener('dblclick', function() {
+        if (widget.classList.contains('minimized')) return;
+        setWindowState(widget.classList.contains('maximized') ? null : 'maximized');
+    });
+
+    function isFreeFloating() {
+        return !widget.classList.contains('maximized') &&
+               !widget.classList.contains('minimized') &&
+               !widget.classList.contains('docked-left') &&
+               !widget.classList.contains('docked-right');
+    }
+
+    let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
+    titlebar.addEventListener('mousedown', function(e) {
+        if (!isFreeFloating()) return;
+        if (e.target.closest('.ucw-window-btn')) return;
+        isDragging = true;
+        widget.classList.add('ucw-dragging');
+        const rect = widget.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+        widget.style.right = 'auto';
+        widget.style.bottom = 'auto';
+    });
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        const rect = widget.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - 4;
+        const maxTop = window.innerHeight - rect.height - 4;
+        const left = Math.min(Math.max(4, e.clientX - dragOffsetX), Math.max(4, maxLeft));
+        const top = Math.min(Math.max(4, e.clientY - dragOffsetY), Math.max(4, maxTop));
+        widget.style.left = left + 'px';
+        widget.style.top = top + 'px';
+    });
+    document.addEventListener('mouseup', function() {
+        isDragging = false;
+        widget.classList.remove('ucw-dragging');
+    });
+
+    // Keep the widget on-screen if the window gets resized
+    window.addEventListener('resize', function() {
+        if (!isFreeFloating()) return;
+        const rect = widget.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - 4;
+        const maxTop = window.innerHeight - rect.height - 4;
+        if (rect.left > maxLeft) widget.style.left = Math.max(4, maxLeft) + 'px';
+        if (rect.top > maxTop) widget.style.top = Math.max(4, maxTop) + 'px';
+    });
+})();
+</script>

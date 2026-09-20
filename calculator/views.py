@@ -20,6 +20,11 @@ def home(request):
     })
 
 
+def unit_converter(request):
+    """Standalone unit conversion + simple calculator tool - pure client-side, no material context needed."""
+    return render(request, 'calculator/unit_converter.html')
+
+
 def calculate_density(request):
     """Calculate density from mass and volume"""
     if request.method == 'POST':
@@ -266,53 +271,6 @@ def delete_calculations_bulk(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@login_required
-def export_selected_calculations(request):
-    """Export selected calculations"""
-    calculation_ids = request.GET.get('ids', '').split(',')
-    if not calculation_ids or calculation_ids == ['']:
-        return JsonResponse({'error': 'No calculations selected'})
-
-    # Filter valid IDs
-    valid_ids = [id for id in calculation_ids if id.isdigit()]
-
-    # Import all section models
-    from extrusion.models import ExtrusionCalculation
-    from printing.models import PrintingCalculation
-    from lamination.models import LaminationCalculation
-    from slitting.models import SlittingCalculation
-    from bag_making.models import BagMakingCalculation
-    from sales.models import SalesCalculation
-
-    all_calculations = []
-
-    # Get calculations from each section
-    models = [
-        ExtrusionCalculation,
-        PrintingCalculation,
-        LaminationCalculation,
-        SlittingCalculation,
-        BagMakingCalculation,
-        SalesCalculation
-    ]
-
-    for model in models:
-        try:
-            calculations = model.objects.filter(
-                id__in=valid_ids,
-                user=request.user
-            )
-            for calc in calculations:
-                calc.section = get_section_name(calc)
-                calc.display_material = get_display_material(calc)
-                all_calculations.append(calc)
-        except Exception as e:
-            print(f"Error loading calculations for {model}: {e}")
-            continue
-
-    return download_csv_history(all_calculations, f"{request.user.username}_selected")
 
 
 @login_required

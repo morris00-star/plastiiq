@@ -1,0 +1,327 @@
+{% extends 'calculator/base.html' %}
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow mb-4">
+        <div class="card-body text-center">
+            <h2 class="card-title"><i class="fas fa-exchange-alt"></i> Unit Converter & Quick Calculator</h2>
+            <p class="mb-0">Length, Thickness, Weight, Speed, Time conversions, and a simple calculator - all instant, client-side.</p>
+        </div>
+    </div>
+
+    <ul class="nav nav-pills mb-3" id="converterTabs">
+        <li class="nav-item"><button class="nav-link active" data-target="lengthPanel">Length</button></li>
+        <li class="nav-item"><button class="nav-link" data-target="thicknessPanel">Thickness</button></li>
+        <li class="nav-item"><button class="nav-link" data-target="weightPanel">Weight</button></li>
+        <li class="nav-item"><button class="nav-link" data-target="speedPanel">Speed</button></li>
+        <li class="nav-item"><button class="nav-link" data-target="timePanel">Time</button></li>
+        <li class="nav-item"><button class="nav-link" data-target="calcPanel">Calculator</button></li>
+    </ul>
+
+    <!-- Length -->
+    <div class="card converter-panel" id="lengthPanel">
+        <div class="card-body">
+            <h5 class="card-title">Length Conversion</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Value</label>
+                    <input type="number" step="any" class="form-control" id="lengthValue" value="1">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <select class="form-select" id="lengthFrom">
+                        <option value="mm">Millimeter (mm)</option>
+                        <option value="cm" selected>Centimeter (cm)</option>
+                        <option value="m">Meter (m)</option>
+                        <option value="inch">Inch (in)</option>
+                        <option value="ft">Foot (ft)</option>
+                        <option value="yard">Yard (yd)</option>
+                        <option value="mile">Mile (mi)</option>
+                    </select>
+                </div>
+                <div class="col-md-1 text-center"><i class="fas fa-arrow-right"></i></div>
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <select class="form-select" id="lengthTo">
+                        <option value="mm">Millimeter (mm)</option>
+                        <option value="cm">Centimeter (cm)</option>
+                        <option value="m" selected>Meter (m)</option>
+                        <option value="inch">Inch (in)</option>
+                        <option value="ft">Foot (ft)</option>
+                        <option value="yard">Yard (yd)</option>
+                        <option value="mile">Mile (mi)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success mt-3" id="lengthResult"></div>
+        </div>
+    </div>
+
+    <!-- Thickness -->
+    <div class="card converter-panel" id="thicknessPanel" style="display:none;">
+        <div class="card-body">
+            <h5 class="card-title">Thickness Conversion</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Value</label>
+                    <input type="number" step="any" class="form-control" id="thicknessValue" value="1">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <select class="form-select" id="thicknessFrom">
+                        <option value="micron" selected>Micron (&mu;m)</option>
+                        <option value="mm">Millimeter (mm)</option>
+                        <option value="gauge">Gauge</option>
+                    </select>
+                </div>
+                <div class="col-md-1 text-center"><i class="fas fa-arrow-right"></i></div>
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <select class="form-select" id="thicknessTo">
+                        <option value="micron">Micron (&mu;m)</option>
+                        <option value="mm">Millimeter (mm)</option>
+                        <option value="gauge" selected>Gauge</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success mt-3" id="thicknessResult"></div>
+            <div class="form-text">1 gauge = 0.254 micron (matches every calculator in this app)</div>
+        </div>
+    </div>
+
+    <!-- Weight -->
+    <div class="card converter-panel" id="weightPanel" style="display:none;">
+        <div class="card-body">
+            <h5 class="card-title">Weight Conversion</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Value</label>
+                    <input type="number" step="any" class="form-control" id="weightValue" value="1">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <select class="form-select" id="weightFrom">
+                        <option value="g">Gram (g)</option>
+                        <option value="kg" selected>Kilogram (kg)</option>
+                        <option value="lb">Pound (lb)</option>
+                        <option value="oz">Ounce (oz)</option>
+                        <option value="ton_metric">Metric Ton (t)</option>
+                        <option value="ton_short">Short Ton (US)</option>
+                    </select>
+                </div>
+                <div class="col-md-1 text-center"><i class="fas fa-arrow-right"></i></div>
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <select class="form-select" id="weightTo">
+                        <option value="g">Gram (g)</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="lb" selected>Pound (lb)</option>
+                        <option value="oz">Ounce (oz)</option>
+                        <option value="ton_metric">Metric Ton (t)</option>
+                        <option value="ton_short">Short Ton (US)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success mt-3" id="weightResult"></div>
+        </div>
+    </div>
+
+    <!-- Speed -->
+    <div class="card converter-panel" id="speedPanel" style="display:none;">
+        <div class="card-body">
+            <h5 class="card-title">Speed Conversion</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Value</label>
+                    <input type="number" step="any" class="form-control" id="speedValue" value="1">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <select class="form-select" id="speedFrom">
+                        <option value="m_min" selected>m/min</option>
+                        <option value="m_hr">m/hr</option>
+                        <option value="cm_hr">cm/hr</option>
+                        <option value="m_s">m/s</option>
+                        <option value="ft_min">ft/min</option>
+                        <option value="km_hr">km/hr</option>
+                        <option value="mph">mph</option>
+                    </select>
+                </div>
+                <div class="col-md-1 text-center"><i class="fas fa-arrow-right"></i></div>
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <select class="form-select" id="speedTo">
+                        <option value="m_min">m/min</option>
+                        <option value="m_hr">m/hr</option>
+                        <option value="cm_hr">cm/hr</option>
+                        <option value="m_s">m/s</option>
+                        <option value="ft_min">ft/min</option>
+                        <option value="km_hr" selected>km/hr</option>
+                        <option value="mph">mph</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success mt-3" id="speedResult"></div>
+        </div>
+    </div>
+
+    <!-- Time -->
+    <div class="card converter-panel" id="timePanel" style="display:none;">
+        <div class="card-body">
+            <h5 class="card-title">Time Conversion</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Value</label>
+                    <input type="number" step="any" class="form-control" id="timeValue" value="1">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <select class="form-select" id="timeFrom">
+                        <option value="sec">Seconds</option>
+                        <option value="min">Minutes</option>
+                        <option value="hr" selected>Hours</option>
+                        <option value="day">Days</option>
+                        <option value="week">Weeks</option>
+                        <option value="month">Months (avg)</option>
+                        <option value="year">Years</option>
+                    </select>
+                </div>
+                <div class="col-md-1 text-center"><i class="fas fa-arrow-right"></i></div>
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <select class="form-select" id="timeTo">
+                        <option value="sec">Seconds</option>
+                        <option value="min">Minutes</option>
+                        <option value="hr">Hours</option>
+                        <option value="day" selected>Days</option>
+                        <option value="week">Weeks</option>
+                        <option value="month">Months (avg)</option>
+                        <option value="year">Years</option>
+                    </select>
+                </div>
+            </div>
+            <div class="alert alert-success mt-3" id="timeResult"></div>
+        </div>
+    </div>
+
+    <!-- Simple Calculator -->
+    <div class="card converter-panel" id="calcPanel" style="display:none;">
+        <div class="card-body">
+            <h5 class="card-title">Simple Calculator</h5>
+            <div class="mb-3">
+                <input type="text" class="form-control form-control-lg" id="calcDisplay" readonly style="text-align: right; font-size: 1.8rem;" value="0">
+            </div>
+            <div class="row g-2">
+                <div class="col-12" id="calcButtons"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- Tab switching ---
+document.querySelectorAll('#converterTabs .nav-link').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('#converterTabs .nav-link').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.converter-panel').forEach(p => p.style.display = 'none');
+        document.getElementById(this.dataset.target).style.display = 'block';
+    });
+});
+
+// --- Conversion tables (base unit = 1) ---
+const LENGTH = { mm: 1, cm: 10, m: 1000, inch: 25.4, ft: 304.8, yard: 914.4, mile: 1609344 };
+const THICKNESS = { micron: 1, mm: 1000, gauge: 0.254 };
+const WEIGHT = { g: 1, kg: 1000, lb: 453.592, oz: 28.3495, ton_metric: 1000000, ton_short: 907185 };
+const SPEED = { m_min: 1, m_hr: 1/60, cm_hr: 1/6000, m_s: 60, ft_min: 0.3048, km_hr: 1000/60, mph: 26.8224 };
+const TIME = { sec: 1, min: 60, hr: 3600, day: 86400, week: 604800, month: 2629800, year: 31557600 };
+
+function convert(table, value, from, to) {
+    if (!table[from] || !table[to]) return null;
+    return (value * table[from]) / table[to];
+}
+
+function wireConverter(prefix, table) {
+    const valueEl = document.getElementById(prefix + 'Value');
+    const fromEl = document.getElementById(prefix + 'From');
+    const toEl = document.getElementById(prefix + 'To');
+    const resultEl = document.getElementById(prefix + 'Result');
+
+    function update() {
+        const value = parseFloat(valueEl.value);
+        if (isNaN(value)) {
+            resultEl.textContent = 'Enter a valid number';
+            return;
+        }
+        const result = convert(table, value, fromEl.value, toEl.value);
+        const fromLabel = fromEl.options[fromEl.selectedIndex].text;
+        const toLabel = toEl.options[toEl.selectedIndex].text;
+        resultEl.innerHTML = `<strong>${value} ${fromLabel} = ${result.toLocaleString(undefined, {maximumFractionDigits: 6})} ${toLabel}</strong>`;
+    }
+
+    [valueEl, fromEl, toEl].forEach(el => el.addEventListener('input', update));
+    update();
+}
+
+wireConverter('length', LENGTH);
+wireConverter('thickness', THICKNESS);
+wireConverter('weight', WEIGHT);
+wireConverter('speed', SPEED);
+wireConverter('time', TIME);
+
+// --- Simple calculator (guarded expression evaluator - no raw eval of arbitrary input) ---
+let calcExpression = '';
+
+function calcButtonLabels() {
+    return ['7','8','9','/','C','4','5','6','*','(',
+            '1','2','3','-',')','0','.','=','+','\u2190'];
+}
+
+function renderCalcButtons() {
+    const container = document.getElementById('calcButtons');
+    let html = '<div class="row g-2">';
+    calcButtonLabels().forEach((label, i) => {
+        html += `<div class="col-2"><button type="button" class="btn btn-outline-primary w-100 calc-btn" data-val="${label}">${label}</button></div>`;
+        if ((i + 1) % 5 === 0 && i !== calcButtonLabels().length - 1) html += '</div><div class="row g-2 mt-1">';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+
+    document.querySelectorAll('.calc-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            handleCalcInput(this.dataset.val);
+        });
+    });
+}
+
+function handleCalcInput(val) {
+    const display = document.getElementById('calcDisplay');
+    if (val === 'C') {
+        calcExpression = '';
+    } else if (val === '\u2190') {
+        calcExpression = calcExpression.slice(0, -1);
+    } else if (val === '=') {
+        calcExpression = evaluateExpression(calcExpression);
+    } else {
+        calcExpression += val;
+    }
+    display.value = calcExpression || '0';
+}
+
+function evaluateExpression(expr) {
+    // Only digits, whitespace, and + - * / ( ) . are allowed - anything else is rejected
+    // before ever reaching Function(), so no arbitrary code can run.
+    if (!/^[0-9+\-*/().\s]*$/.test(expr)) {
+        return 'Error';
+    }
+    try {
+        const result = Function('"use strict"; return (' + expr + ')')();
+        if (typeof result !== 'number' || !isFinite(result)) return 'Error';
+        return String(Math.round(result * 1e10) / 1e10);
+    } catch (e) {
+        return 'Error';
+    }
+}
+
+renderCalcButtons();
+</script>
+{% endblock %}
