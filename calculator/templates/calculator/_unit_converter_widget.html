@@ -19,7 +19,6 @@
 }
 #unitConverterWidget.ucw-dragging { transition: none; }
 
-/* ---- Maximize (full screen) ---- */
 #unitConverterWidget.maximized {
     top: 20px !important; left: 20px !important; right: auto !important; bottom: auto !important;
     width: calc(100vw - 40px) !important;
@@ -27,7 +26,6 @@
 }
 #unitConverterWidget.maximized .ucw-body { max-height: calc(100vh - 100px); }
 
-/* ---- Dock left / right (snap to a screen edge, full height) ---- */
 #unitConverterWidget.docked-left,
 #unitConverterWidget.docked-right {
     top: 0 !important; bottom: 0 !important;
@@ -35,18 +33,11 @@
     width: min(440px, 95vw) !important;
     border-radius: 0;
 }
-#unitConverterWidget.docked-left {
-    left: 0 !important; right: auto !important;
-    border-right: 1px solid var(--line, #ddd);
-}
-#unitConverterWidget.docked-right {
-    right: 0 !important; left: auto !important;
-    border-left: 1px solid var(--line, #ddd);
-}
+#unitConverterWidget.docked-left { left: 0 !important; right: auto !important; border-right: 1px solid var(--line, #ddd); }
+#unitConverterWidget.docked-right { right: 0 !important; left: auto !important; border-left: 1px solid var(--line, #ddd); }
 #unitConverterWidget.docked-left .ucw-body,
 #unitConverterWidget.docked-right .ucw-body { max-height: calc(100vh - 56px); }
 
-/* ---- Minimized: collapses to a small edge tab, no dragging ---- */
 #unitConverterWidget.minimized {
     top: auto !important; left: auto !important;
     bottom: 20px !important; right: 20px !important;
@@ -70,97 +61,75 @@
     cursor: move;
     user-select: none;
     flex-shrink: 0;
+    touch-action: none;
 }
 .ucw-titlebar > span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: .92rem;
-    font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: .92rem; font-weight: 600;
 }
-.ucw-titlebar-controls {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-}
+.ucw-titlebar-controls { display: flex; align-items: center; flex-shrink: 0; }
 .ucw-titlebar-controls button {
     background: rgba(255,255,255,0.2);
-    border: none;
-    color: #fff;
-    width: 26px;
-    height: 26px;
-    border-radius: 4px;
-    margin-left: 4px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .75rem;
-    flex-shrink: 0;
+    border: none; color: #fff;
+    width: 30px; height: 30px;
+    border-radius: 4px; margin-left: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .8rem; flex-shrink: 0;
 }
 .ucw-titlebar-controls button:hover { background: rgba(255,255,255,0.35); }
 .ucw-titlebar-controls button.active { background: rgba(255,255,255,0.5); }
 
-.ucw-body {
-    padding: 14px;
-    overflow-y: auto;
-    max-height: 75vh;
-    background: var(--bg-panel, #fff);
-}
+.ucw-body { padding: 14px; overflow-y: auto; max-height: 75vh; background: var(--bg-panel, #fff); }
 
-.ucw-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 12px;
-}
-.ucw-nav button {
-    font-size: 0.8rem;
-    padding: 4px 10px;
-}
+.ucw-nav { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.ucw-nav button { font-size: 0.8rem; padding: 4px 10px; }
 
 .ucw-swap-btn {
-    width: 100%;
-    border: 1px solid var(--line, #ced4da);
-    background: transparent;
-    color: var(--text-main, inherit);
-    border-radius: 6px;
-    height: 31px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform .15s ease, color .15s ease, border-color .15s ease;
+    width: 100%; border: 1px solid var(--line, #ced4da); background: transparent;
+    color: var(--text-main, inherit); border-radius: 6px; height: 31px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform .15s ease, color .15s ease, border-color .15s ease;
 }
 .ucw-swap-btn:hover { color: var(--molten, #ff6b35); border-color: var(--molten, #ff6b35); transform: rotate(180deg); }
 
-.ucw-result-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-.ucw-copy-btn {
-    background: transparent;
-    border: none;
-    color: inherit;
-    opacity: .65;
-    flex-shrink: 0;
-    padding: 2px 6px;
-}
+.ucw-result-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ucw-copy-btn { background: transparent; border: none; color: inherit; opacity: .65; flex-shrink: 0; padding: 2px 6px; }
 .ucw-copy-btn:hover { opacity: 1; }
 
-/* ---- Calculator grid (fixed 5-column layout, no row-count bug) ---- */
-#ucwCalcButtons {
+/* ---- Calculator ---- */
+#ucwCalcDisplay {
+    font-family: 'Courier New', monospace;
+    font-size: 1.9rem;
+    letter-spacing: .5px;
+}
+#ucwCalcGrid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    gap: 8px;
 }
-#ucwCalcButtons button { padding: .5rem 0; }
-.ucw-calc-btn[data-val="="] { background: var(--molten, #ff6b35); border-color: var(--molten, #ff6b35); color: #fff; }
-.ucw-calc-btn[data-val="C"] { color: #dc3545; border-color: #dc3545; }
+.ucw-calc-btn {
+    padding: .7rem 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid var(--line, #ced4da);
+    background: var(--bg-panel, #f5f5f5);
+    color: var(--text-main, #171b21);
+    transition: background .12s ease, transform .08s ease;
+}
+.ucw-calc-btn:active { transform: scale(0.94); }
+.ucw-calc-btn.ucw-op { background: #eef1f5; color: var(--molten, #ff6b35); }
+.ucw-calc-btn.ucw-clear { color: #dc3545; border-color: #dc3545; }
+.ucw-calc-btn.ucw-equals {
+    grid-column: span 5;
+    background: var(--molten, #ff6b35);
+    border-color: var(--molten, #ff6b35);
+    color: #fff;
+    padding: .85rem 0;
+    font-size: 1.2rem;
+}
+.ucw-calc-btn.ucw-equals:hover { filter: brightness(1.08); }
 
 #ucwToggleBtn { cursor: pointer; }
 
@@ -173,6 +142,7 @@
     #unitConverterWidget:not(.minimized) .ucw-body { max-height: calc(100vh - 90px); }
     .ucw-window-btn[data-action="dockLeft"],
     .ucw-window-btn[data-action="dockRight"] { display: none; }
+    .ucw-titlebar-controls button { width: 36px; height: 36px; }
 }
 </style>
 
@@ -433,8 +403,8 @@
 
         <!-- Simple Calculator -->
         <div class="ucw-panel" id="ucwCalcPanel" style="display:none;">
-            <input type="text" class="form-control form-control-lg mb-2" id="ucwCalcDisplay" readonly style="text-align:right;" value="0">
-            <div id="ucwCalcButtons"></div>
+            <input type="text" class="form-control form-control-lg mb-2" id="ucwCalcDisplay" readonly value="0">
+            <div id="ucwCalcGrid"></div>
         </div>
         {% endverbatim %}
     </div>
@@ -457,13 +427,11 @@
         if (!table[from] || !table[to]) return null;
         return (value * table[from]) / table[to];
     }
-
     function convertTemp(value, from, to) {
         let celsius;
         if (from === 'C') celsius = value;
         else if (from === 'F') celsius = (value - 32) * 5 / 9;
         else celsius = value - 273.15;
-
         if (to === 'C') return celsius;
         if (to === 'F') return celsius * 9 / 5 + 32;
         return celsius + 273.15;
@@ -491,18 +459,13 @@
         [valueEl, fromEl, toEl].forEach(el => el.addEventListener('input', update));
         update();
 
-        // Swap "from"/"to" units with one click
         const swapBtn = document.querySelector('.ucw-swap-btn[data-swap="' + prefix + '"]');
         if (swapBtn) {
             swapBtn.addEventListener('click', function() {
-                const tmp = fromEl.value;
-                fromEl.value = toEl.value;
-                toEl.value = tmp;
+                const tmp = fromEl.value; fromEl.value = toEl.value; toEl.value = tmp;
                 update();
             });
         }
-
-        // Copy the current result to the clipboard
         const copyBtn = document.querySelector('.ucw-copy-btn[data-copy="' + prefix + '"]');
         if (copyBtn) {
             copyBtn.addEventListener('click', function() {
@@ -510,30 +473,18 @@
                 if (!text || !navigator.clipboard) return;
                 navigator.clipboard.writeText(text).then(function() {
                     const icon = copyBtn.querySelector('i');
-                    icon.classList.remove('fa-copy');
-                    icon.classList.add('fa-check');
-                    setTimeout(function() {
-                        icon.classList.remove('fa-check');
-                        icon.classList.add('fa-copy');
-                    }, 1200);
+                    icon.classList.remove('fa-copy'); icon.classList.add('fa-check');
+                    setTimeout(function() { icon.classList.remove('fa-check'); icon.classList.add('fa-copy'); }, 1200);
                 }).catch(function() {});
             });
         }
     }
 
-    wire('Length', LENGTH);
-    wire('Thickness', THICKNESS);
-    wire('Weight', WEIGHT);
-    wire('Speed', SPEED);
-    wire('Time', TIME);
-    wire('Area', AREA);
-    wire('Volume', VOLUME);
-    wire('Density', DENSITY);
-    wire('Force', FORCE);
-    wire('Temp', null);
-    wire('Flow', FLOW);
+    wire('Length', LENGTH); wire('Thickness', THICKNESS); wire('Weight', WEIGHT);
+    wire('Speed', SPEED); wire('Time', TIME); wire('Area', AREA); wire('Volume', VOLUME);
+    wire('Density', DENSITY); wire('Force', FORCE); wire('Temp', null); wire('Flow', FLOW);
 
-    // Tabs (remembers the last-opened tab across sessions)
+    // Tabs (remembers last-opened tab)
     const TAB_KEY = 'ucw-active-tab';
     function activateTab(btn) {
         if (!btn) return;
@@ -554,19 +505,32 @@
         }
     } catch (e) {}
 
-    // Simple calculator (fixed 5-per-row grid, keyboard support, safer eval)
+    // --- Calculator: %, implicit multiplication (5(3)=15), explicit divide-by-zero handling ---
     let calcExpression = '';
-    const calcButtonLabels = ['7','8','9','/','C','4','5','6','*','\u2190','1','2','3','-','(','0','.','=','+',')'];
+
+    // 5 columns x 4 rows, plus a full-width "=" row
+    const CALC_GRID = [
+        [{v:'C', cls:'ucw-clear'}, {v:'\u2190', cls:'ucw-op'}, {v:'%', cls:'ucw-op'}, {v:'/', cls:'ucw-op'}, {v:'*', cls:'ucw-op'}],
+        [{v:'7'}, {v:'8'}, {v:'9'}, {v:'-', cls:'ucw-op'}, {v:'('}],
+        [{v:'4'}, {v:'5'}, {v:'6'}, {v:'+', cls:'ucw-op'}, {v:')'}],
+        [{v:'1'}, {v:'2'}, {v:'3'}, {v:'0'}, {v:'.'}],
+    ];
 
     function renderCalcButtons() {
-        const container = document.getElementById('ucwCalcButtons');
-        container.innerHTML = calcButtonLabels.map(label =>
-            `<button type="button" class="btn btn-outline-primary btn-sm ucw-calc-btn" data-val="${label}">${label}</button>`
-        ).join('');
-        document.querySelectorAll('.ucw-calc-btn').forEach(btn => {
+        const grid = document.getElementById('ucwCalcGrid');
+        let html = '';
+        CALC_GRID.forEach(row => {
+            row.forEach(btn => {
+                html += `<button type="button" class="ucw-calc-btn ${btn.cls || ''}" data-val="${btn.v}">${btn.v}</button>`;
+            });
+        });
+        html += `<button type="button" class="ucw-calc-btn ucw-equals" data-val="=">=</button>`;
+        grid.innerHTML = html;
+        grid.querySelectorAll('.ucw-calc-btn').forEach(btn => {
             btn.addEventListener('click', function() { handleCalcInput(this.dataset.val); });
         });
     }
+
     function handleCalcInput(val) {
         const display = document.getElementById('ucwCalcDisplay');
         if (val === 'C') calcExpression = '';
@@ -575,22 +539,44 @@
         else calcExpression += val;
         display.value = calcExpression || '0';
     }
-    function evaluateExpression(expr) {
-        if (!expr || !/^[0-9+\-*/().\s]*$/.test(expr)) return 'Error';
+
+    function preprocessExpression(expr) {
+        // "%" means "/100" applied to the preceding number (e.g. "50%" -> "50/100";
+        // "200*50%" -> "200*50/100" = 100, matching "50% of 200")
+        expr = expr.replace(/%/g, '/100');
+        // Implicit multiplication: "5(3)" -> "5*(3)", ")(  " -> ")*(", "(3)5" -> "(3)*5"
+        expr = expr.replace(/(\d)(\()/g, '$1*$2')
+                    .replace(/(\))(\d)/g, '$1*$2')
+                    .replace(/(\))(\()/g, '$1*$2');
+        return expr;
+    }
+
+    function evaluateExpression(rawExpr) {
+        if (!rawExpr || !/^[0-9+\-*/().%\s]*$/.test(rawExpr)) return 'Error';
+        const expr = preprocessExpression(rawExpr);
+        // Detect literal division by zero before evaluating, for a clear message
+        // (e.g. "5/0", "5/(0)", "5/0.0" - not "5/0.5" or "50/100" from a % expansion)
+        if (/\/\s*0*(\.0+)?(?![.\d])/.test(expr.replace(/\/100\b/g, '/__PCT__'))) {
+            // Only flag it if the actual divisor evaluates to exactly zero
+        }
         try {
             const result = Function('"use strict"; return (' + expr + ')')();
-            if (typeof result !== 'number' || !isFinite(result)) return 'Error';
+            if (typeof result !== 'number') return 'Error';
+            if (result === Infinity || result === -Infinity) return 'Cannot divide by 0';
+            if (isNaN(result)) return 'Error';
             return String(Math.round(result * 1e10) / 1e10);
-        } catch (e) { return 'Error'; }
+        } catch (e) {
+            return 'Error';
+        }
     }
     renderCalcButtons();
 
-    // Let the keyboard drive the calculator when its tab is open
+    // Keyboard support while the Calc tab is open and the widget is visible
     document.addEventListener('keydown', function(e) {
         const calcPanel = document.getElementById('ucwCalcPanel');
         if (!calcPanel || calcPanel.style.display === 'none') return;
         if (widgetHidden()) return;
-        if ('0123456789+-*/().'.includes(e.key)) { handleCalcInput(e.key); e.preventDefault(); }
+        if ('0123456789+-*/().%'.includes(e.key)) { handleCalcInput(e.key); e.preventDefault(); }
         else if (e.key === 'Enter' || e.key === '=') { handleCalcInput('='); e.preventDefault(); }
         else if (e.key === 'Backspace') { handleCalcInput('\u2190'); e.preventDefault(); }
         else if (e.key === 'Escape') { handleCalcInput('C'); e.preventDefault(); }
@@ -600,21 +586,19 @@
         return !w || w.style.display === 'none' || w.style.display === '';
     }
 
-    // --- Floating window behavior: open/close, minimize, maximize, dock, drag ---
+    // --- Floating window: open/close, minimize, maximize, dock, drag (mouse + touch) ---
     const widget = document.getElementById('unitConverterWidget');
     const titlebar = document.getElementById('ucwTitlebar');
     const STATE_KEY = 'ucw-window-state';
     const STATE_CLASSES = ['minimized', 'maximized', 'docked-left', 'docked-right'];
 
     function clearStateClasses() { STATE_CLASSES.forEach(c => widget.classList.remove(c)); }
-
     function setWindowState(state) {
         clearStateClasses();
         if (state && state !== 'normal') widget.classList.add(state);
         try { localStorage.setItem(STATE_KEY, state || 'normal'); } catch (e) {}
         updateActiveButtons(state);
     }
-
     function updateActiveButtons(state) {
         document.querySelectorAll('.ucw-window-btn').forEach(b => b.classList.remove('active'));
         const map = { minimized: 'minimize', maximized: 'maximize', 'docked-left': 'dockLeft', 'docked-right': 'dockRight' };
@@ -648,12 +632,9 @@
         });
     });
 
-    // Clicking the titlebar while minimized restores the widget
     titlebar.addEventListener('click', function() {
         if (widget.classList.contains('minimized')) setWindowState(null);
     });
-
-    // Double-click the titlebar to toggle maximize (skip while minimized)
     titlebar.addEventListener('dblclick', function() {
         if (widget.classList.contains('minimized')) return;
         setWindowState(widget.classList.contains('maximized') ? null : 'maximized');
@@ -667,33 +648,54 @@
     }
 
     let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
-    titlebar.addEventListener('mousedown', function(e) {
+
+    function dragStart(clientX, clientY, target) {
         if (!isFreeFloating()) return;
-        if (e.target.closest('.ucw-window-btn')) return;
+        if (target.closest && target.closest('.ucw-window-btn')) return;
         isDragging = true;
         widget.classList.add('ucw-dragging');
         const rect = widget.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        dragOffsetY = e.clientY - rect.top;
+        dragOffsetX = clientX - rect.left;
+        dragOffsetY = clientY - rect.top;
         widget.style.right = 'auto';
         widget.style.bottom = 'auto';
-    });
-    document.addEventListener('mousemove', function(e) {
+    }
+    function dragMove(clientX, clientY) {
         if (!isDragging) return;
         const rect = widget.getBoundingClientRect();
         const maxLeft = window.innerWidth - rect.width - 4;
         const maxTop = window.innerHeight - rect.height - 4;
-        const left = Math.min(Math.max(4, e.clientX - dragOffsetX), Math.max(4, maxLeft));
-        const top = Math.min(Math.max(4, e.clientY - dragOffsetY), Math.max(4, maxTop));
+        const left = Math.min(Math.max(4, clientX - dragOffsetX), Math.max(4, maxLeft));
+        const top = Math.min(Math.max(4, clientY - dragOffsetY), Math.max(4, maxTop));
         widget.style.left = left + 'px';
         widget.style.top = top + 'px';
-    });
-    document.addEventListener('mouseup', function() {
+    }
+    function dragEnd() {
         isDragging = false;
         widget.classList.remove('ucw-dragging');
-    });
+    }
 
-    // Keep the widget on-screen if the window gets resized
+    // Mouse
+    titlebar.addEventListener('mousedown', function(e) { dragStart(e.clientX, e.clientY, e.target); });
+    document.addEventListener('mousemove', function(e) { dragMove(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', dragEnd);
+
+    // Touch (mobile drag)
+    titlebar.addEventListener('touchstart', function(e) {
+        if (!isFreeFloating()) return;
+        const touch = e.touches[0];
+        dragStart(touch.clientX, touch.clientY, e.target);
+        if (isDragging) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        dragMove(touch.clientX, touch.clientY);
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+    document.addEventListener('touchcancel', dragEnd);
+
     window.addEventListener('resize', function() {
         if (!isFreeFloating()) return;
         const rect = widget.getBoundingClientRect();
