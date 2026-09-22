@@ -97,40 +97,6 @@
 .ucw-copy-btn { background: transparent; border: none; color: inherit; opacity: .65; flex-shrink: 0; padding: 2px 6px; }
 .ucw-copy-btn:hover { opacity: 1; }
 
-/* ---- Calculator ---- */
-#ucwCalcDisplay {
-    font-family: 'Courier New', monospace;
-    font-size: 1.9rem;
-    letter-spacing: .5px;
-}
-#ucwCalcGrid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-}
-.ucw-calc-btn {
-    padding: .7rem 0;
-    font-size: 1.05rem;
-    font-weight: 600;
-    border-radius: 8px;
-    border: 1px solid var(--line, #ced4da);
-    background: var(--bg-panel, #f5f5f5);
-    color: var(--text-main, #171b21);
-    transition: background .12s ease, transform .08s ease;
-}
-.ucw-calc-btn:active { transform: scale(0.94); }
-.ucw-calc-btn.ucw-op { background: #eef1f5; color: var(--molten, #ff6b35); }
-.ucw-calc-btn.ucw-clear { color: #dc3545; border-color: #dc3545; }
-.ucw-calc-btn.ucw-equals {
-    grid-column: span 5;
-    background: var(--molten, #ff6b35);
-    border-color: var(--molten, #ff6b35);
-    color: #fff;
-    padding: .85rem 0;
-    font-size: 1.2rem;
-}
-.ucw-calc-btn.ucw-equals:hover { filter: brightness(1.08); }
-
 #ucwToggleBtn { cursor: pointer; }
 
 @media (max-width: 768px) {
@@ -146,9 +112,9 @@
 }
 </style>
 
-<div id="unitConverterWidget" role="dialog" aria-label="Unit Converter & Calculator">
+<div id="unitConverterWidget" role="dialog" aria-label="Unit Converter">
     <div class="ucw-titlebar" id="ucwTitlebar">
-        <span><i class="fas fa-exchange-alt"></i> <span>Unit Converter &amp; Calculator</span></span>
+        <span><i class="fas fa-exchange-alt"></i> <span>Unit Converter</span></span>
         <div class="ucw-titlebar-controls">
             <button type="button" class="ucw-window-btn" data-action="dockLeft" title="Dock left"><i class="fas fa-caret-left"></i></button>
             <button type="button" class="ucw-window-btn" data-action="dockRight" title="Dock right"><i class="fas fa-caret-right"></i></button>
@@ -170,7 +136,6 @@
             <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwForcePanel">Force</button>
             <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwTempPanel">Temp</button>
             <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwFlowPanel">Flow Rate</button>
-            <button type="button" class="btn btn-sm btn-outline-primary" data-target="ucwCalcPanel">Calc</button>
         </div>
 
         {% verbatim %}
@@ -401,11 +366,6 @@
             <div class="form-text">Matches Extrusion's Specific Output Rate calculator</div>
         </div>
 
-        <!-- Simple Calculator -->
-        <div class="ucw-panel" id="ucwCalcPanel" style="display:none;">
-            <input type="text" class="form-control form-control-lg mb-2" id="ucwCalcDisplay" readonly value="0">
-            <div id="ucwCalcGrid"></div>
-        </div>
         {% endverbatim %}
     </div>
 </div>
@@ -504,87 +464,6 @@
             if (savedBtn) activateTab(savedBtn);
         }
     } catch (e) {}
-
-    // --- Calculator: %, implicit multiplication (5(3)=15), explicit divide-by-zero handling ---
-    let calcExpression = '';
-
-    // 5 columns x 4 rows, plus a full-width "=" row
-    const CALC_GRID = [
-        [{v:'C', cls:'ucw-clear'}, {v:'\u2190', cls:'ucw-op'}, {v:'%', cls:'ucw-op'}, {v:'/', cls:'ucw-op'}, {v:'*', cls:'ucw-op'}],
-        [{v:'7'}, {v:'8'}, {v:'9'}, {v:'-', cls:'ucw-op'}, {v:'('}],
-        [{v:'4'}, {v:'5'}, {v:'6'}, {v:'+', cls:'ucw-op'}, {v:')'}],
-        [{v:'1'}, {v:'2'}, {v:'3'}, {v:'0'}, {v:'.'}],
-    ];
-
-    function renderCalcButtons() {
-        const grid = document.getElementById('ucwCalcGrid');
-        let html = '';
-        CALC_GRID.forEach(row => {
-            row.forEach(btn => {
-                html += `<button type="button" class="ucw-calc-btn ${btn.cls || ''}" data-val="${btn.v}">${btn.v}</button>`;
-            });
-        });
-        html += `<button type="button" class="ucw-calc-btn ucw-equals" data-val="=">=</button>`;
-        grid.innerHTML = html;
-        grid.querySelectorAll('.ucw-calc-btn').forEach(btn => {
-            btn.addEventListener('click', function() { handleCalcInput(this.dataset.val); });
-        });
-    }
-
-    function handleCalcInput(val) {
-        const display = document.getElementById('ucwCalcDisplay');
-        if (val === 'C') calcExpression = '';
-        else if (val === '\u2190') calcExpression = calcExpression.slice(0, -1);
-        else if (val === '=') calcExpression = evaluateExpression(calcExpression);
-        else calcExpression += val;
-        display.value = calcExpression || '0';
-    }
-
-    function preprocessExpression(expr) {
-        // "%" means "/100" applied to the preceding number (e.g. "50%" -> "50/100";
-        // "200*50%" -> "200*50/100" = 100, matching "50% of 200")
-        expr = expr.replace(/%/g, '/100');
-        // Implicit multiplication: "5(3)" -> "5*(3)", ")(  " -> ")*(", "(3)5" -> "(3)*5"
-        expr = expr.replace(/(\d)(\()/g, '$1*$2')
-                    .replace(/(\))(\d)/g, '$1*$2')
-                    .replace(/(\))(\()/g, '$1*$2');
-        return expr;
-    }
-
-    function evaluateExpression(rawExpr) {
-        if (!rawExpr || !/^[0-9+\-*/().%\s]*$/.test(rawExpr)) return 'Error';
-        const expr = preprocessExpression(rawExpr);
-        // Detect literal division by zero before evaluating, for a clear message
-        // (e.g. "5/0", "5/(0)", "5/0.0" - not "5/0.5" or "50/100" from a % expansion)
-        if (/\/\s*0*(\.0+)?(?![.\d])/.test(expr.replace(/\/100\b/g, '/__PCT__'))) {
-            // Only flag it if the actual divisor evaluates to exactly zero
-        }
-        try {
-            const result = Function('"use strict"; return (' + expr + ')')();
-            if (typeof result !== 'number') return 'Error';
-            if (result === Infinity || result === -Infinity) return 'Cannot divide by 0';
-            if (isNaN(result)) return 'Error';
-            return String(Math.round(result * 1e10) / 1e10);
-        } catch (e) {
-            return 'Error';
-        }
-    }
-    renderCalcButtons();
-
-    // Keyboard support while the Calc tab is open and the widget is visible
-    document.addEventListener('keydown', function(e) {
-        const calcPanel = document.getElementById('ucwCalcPanel');
-        if (!calcPanel || calcPanel.style.display === 'none') return;
-        if (widgetHidden()) return;
-        if ('0123456789+-*/().%'.includes(e.key)) { handleCalcInput(e.key); e.preventDefault(); }
-        else if (e.key === 'Enter' || e.key === '=') { handleCalcInput('='); e.preventDefault(); }
-        else if (e.key === 'Backspace') { handleCalcInput('\u2190'); e.preventDefault(); }
-        else if (e.key === 'Escape') { handleCalcInput('C'); e.preventDefault(); }
-    });
-    function widgetHidden() {
-        const w = document.getElementById('unitConverterWidget');
-        return !w || w.style.display === 'none' || w.style.display === '';
-    }
 
     // --- Floating window: open/close, minimize, maximize, dock, drag (mouse + touch) ---
     const widget = document.getElementById('unitConverterWidget');

@@ -560,6 +560,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="toggleCalculator(); return false;">
+                            <i class="fas fa-calculator"></i><span>Calculator</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'troubleshooting' %}">
                             <i class="fas fa-bug"></i><span>Troubleshooting</span>
                         </a>
@@ -628,6 +633,9 @@
                             <i class="fas fa-moon"></i>
                         </button>
                     </li>
+
+                    {% include 'calculator/_live_clock_widget.html' %}
+
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
@@ -738,6 +746,7 @@
                     <h6 class="mb-3">Quick Actions</h6>
                     <div class="footer-links">
                         <a href="#" onclick="toggleUnitConverter(); return false;"><i class="fas fa-exchange-alt"></i>Unit Converter</a>
+                        <a href="#" onclick="toggleCalculator(); return false;"><i class="fas fa-calculator"></i>Calculator</a>
                         <a href="{% url 'material_reference' %}"><i class="fas fa-database"></i>Material Reference</a>
                         <a href="{% url 'additives_resins' %}"><i class="fas fa-flask"></i>Additives Guide</a>
                         <a href="{% url 'calculation_history' %}"><i class="fas fa-history"></i>Calculation History</a>
@@ -846,7 +855,7 @@
     </script>
 
     {% include 'calculator/_unit_converter_widget.html' %}
-    {% include 'calculator/_live_clock_widget.html' %}
+    {% include 'calculator/_calculator_widget.html' %}
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,402 @@
+<style>
+#calculatorWidget {
+    position: fixed;
+    top: 80px;
+    right: 30px;
+    width: 340px;
+    max-width: 95vw;
+    background: var(--bg-panel, #fff);
+    color: var(--text-main, #171b21);
+    border: 1px solid var(--line, transparent);
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    z-index: 2000;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width .18s ease, height .18s ease, top .18s ease, left .18s ease,
+                right .18s ease, bottom .18s ease, border-radius .18s ease;
+}
+#calculatorWidget.calc-dragging { transition: none; }
+
+#calculatorWidget.maximized {
+    top: 20px !important; left: 20px !important; right: auto !important; bottom: auto !important;
+    width: min(520px, calc(100vw - 40px)) !important;
+    height: calc(100vh - 40px) !important;
+}
+#calculatorWidget.maximized .calc-body { max-height: calc(100vh - 100px); }
+
+#calculatorWidget.docked-left,
+#calculatorWidget.docked-right {
+    top: 0 !important; bottom: 0 !important;
+    height: 100vh !important;
+    width: min(360px, 95vw) !important;
+    border-radius: 0;
+}
+#calculatorWidget.docked-left { left: 0 !important; right: auto !important; border-right: 1px solid var(--line, #ddd); }
+#calculatorWidget.docked-right { right: 0 !important; left: auto !important; border-left: 1px solid var(--line, #ddd); }
+#calculatorWidget.docked-left .calc-body,
+#calculatorWidget.docked-right .calc-body { max-height: calc(100vh - 56px); }
+
+#calculatorWidget.minimized {
+    top: auto !important; left: auto !important;
+    bottom: 20px !important; right: 20px !important;
+    width: auto !important; height: auto !important;
+}
+#calculatorWidget.minimized .calc-body { display: none; }
+#calculatorWidget.minimized .calc-titlebar { cursor: pointer; border-radius: 10px; }
+#calculatorWidget.minimized .calc-titlebar span span { display: none; }
+#calculatorWidget.minimized .calc-window-btn[data-action="dockLeft"],
+#calculatorWidget.minimized .calc-window-btn[data-action="dockRight"],
+#calculatorWidget.minimized .calc-window-btn[data-action="maximize"] { display: none; }
+
+.calc-titlebar {
+    background: var(--violet, #8f7cf7);
+    color: #fff;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: move;
+    user-select: none;
+    flex-shrink: 0;
+    touch-action: none;
+}
+.calc-titlebar > span {
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: .92rem; font-weight: 600;
+}
+.calc-titlebar-controls { display: flex; align-items: center; flex-shrink: 0; }
+.calc-titlebar-controls button {
+    background: rgba(255,255,255,0.2);
+    border: none; color: #fff;
+    width: 30px; height: 30px;
+    border-radius: 4px; margin-left: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .8rem; flex-shrink: 0;
+}
+.calc-titlebar-controls button:hover { background: rgba(255,255,255,0.35); }
+.calc-titlebar-controls button.active { background: rgba(255,255,255,0.5); }
+
+.calc-body { padding: 14px; overflow-y: auto; max-height: 75vh; background: var(--bg-panel, #fff); }
+
+#calcMemoryFlag {
+    font-family: var(--font-mono, 'Courier New', monospace);
+    font-size: .7rem;
+    color: var(--molten, #ff6b35);
+    min-height: 1rem;
+    margin-bottom: 2px;
+}
+#calcDisplay {
+    font-family: 'Courier New', monospace;
+    font-size: 1.7rem;
+    letter-spacing: .5px;
+    text-align: right;
+}
+#calcGrid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+}
+.calc-btn {
+    padding: .6rem 0;
+    font-size: .88rem;
+    font-weight: 600;
+    border-radius: 7px;
+    border: 1px solid var(--line, #ced4da);
+    background: var(--bg-panel, #f5f5f5);
+    color: var(--text-main, #171b21);
+    transition: background .12s ease, transform .08s ease;
+    white-space: nowrap;
+}
+.calc-btn:active { transform: scale(0.94); }
+.calc-btn.calc-op { background: #eef1f5; color: var(--molten, #ff6b35); }
+.calc-btn.calc-fn { background: rgba(143, 124, 247, .12); color: var(--violet, #8f7cf7); }
+.calc-btn.calc-mem { background: rgba(47, 214, 198, .12); color: var(--teal, #2fd6c6); }
+.calc-btn.calc-clear { color: #dc3545; border-color: #dc3545; }
+.calc-btn.calc-equals {
+    grid-column: span 6;
+    background: var(--violet, #8f7cf7);
+    border-color: var(--violet, #8f7cf7);
+    color: #fff;
+    padding: .8rem 0;
+    font-size: 1.15rem;
+    margin-top: 2px;
+}
+.calc-btn.calc-equals:hover { filter: brightness(1.08); }
+
+@media (max-width: 768px) {
+    #calculatorWidget:not(.minimized) {
+        top: 10px !important; left: 10px !important; right: 10px !important; bottom: 10px !important;
+        width: auto !important; height: auto !important;
+        max-width: none;
+    }
+    #calculatorWidget:not(.minimized) .calc-body { max-height: calc(100vh - 90px); }
+    .calc-window-btn[data-action="dockLeft"],
+    .calc-window-btn[data-action="dockRight"] { display: none; }
+    .calc-titlebar-controls button { width: 36px; height: 36px; }
+    .calc-btn { font-size: .78rem; padding: .5rem 0; }
+}
+</style>
+
+<div id="calculatorWidget" role="dialog" aria-label="Calculator">
+    <div class="calc-titlebar" id="calcTitlebar">
+        <span><i class="fas fa-calculator"></i> <span>Calculator</span></span>
+        <div class="calc-titlebar-controls">
+            <button type="button" class="calc-window-btn" data-action="dockLeft" title="Dock left"><i class="fas fa-caret-left"></i></button>
+            <button type="button" class="calc-window-btn" data-action="dockRight" title="Dock right"><i class="fas fa-caret-right"></i></button>
+            <button type="button" class="calc-window-btn" data-action="minimize" title="Minimize"><i class="fas fa-window-minimize"></i></button>
+            <button type="button" class="calc-window-btn" data-action="maximize" title="Maximize"><i class="fas fa-expand"></i></button>
+            <button type="button" class="calc-window-btn" data-action="close" title="Close"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+    <div class="calc-body">
+        <div id="calcMemoryFlag"></div>
+        <input type="text" class="form-control form-control-lg" id="calcDisplay" readonly value="0">
+        <div id="calcGrid"></div>
+        <div class="form-text mt-2">Trig functions use degrees. MC/MR/M+/M- store a running memory value.</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // --- Scientific calculator ---
+    // Basic ops + parentheses are typed straight into the expression (with
+    // %, ^ and implicit multiplication preprocessed before eval). Unary
+    // functions (√, x², 1/x, ±, sin/cos/tan, log/ln) act immediately on the
+    // current expression's evaluated value, keeping the button grid simple
+    // while still supporting full scientific use.
+    let calcExpression = '';
+    let calcMemory = 0;
+
+    const CALC_BUTTONS = [
+        { v: 'MC', cls: 'calc-mem', act: 'mc' }, { v: 'MR', cls: 'calc-mem', act: 'mr' }, { v: 'M+', cls: 'calc-mem', act: 'mplus' }, { v: 'M-', cls: 'calc-mem', act: 'mminus' }, { v: 'C', cls: 'calc-clear' }, { v: '\u232B', cls: 'calc-op', act: 'back' },
+        { v: '\u221A', cls: 'calc-fn', act: 'sqrt' }, { v: 'x\u00B2', cls: 'calc-fn', act: 'sq' }, { v: '1/x', cls: 'calc-fn', act: 'inv' }, { v: '\u00B1', cls: 'calc-fn', act: 'neg' }, { v: '\u03C0', cls: 'calc-fn', act: 'pi' }, { v: 'e', cls: 'calc-fn', act: 'euler' },
+        { v: 'sin', cls: 'calc-fn', act: 'sin' }, { v: 'cos', cls: 'calc-fn', act: 'cos' }, { v: 'tan', cls: 'calc-fn', act: 'tan' }, { v: 'log', cls: 'calc-fn', act: 'log' }, { v: 'ln', cls: 'calc-fn', act: 'ln' }, { v: '^', cls: 'calc-op' },
+        { v: '7' }, { v: '8' }, { v: '9' }, { v: '(' }, { v: ')' }, { v: '%', cls: 'calc-op' },
+        { v: '4' }, { v: '5' }, { v: '6' }, { v: '*', cls: 'calc-op' }, { v: '/', cls: 'calc-op' }, { v: '-', cls: 'calc-op' },
+        { v: '1' }, { v: '2' }, { v: '3' }, { v: '0' }, { v: '.' }, { v: '+', cls: 'calc-op' },
+    ];
+
+    function renderCalcButtons() {
+        const grid = document.getElementById('calcGrid');
+        let html = '';
+        CALC_BUTTONS.forEach(btn => {
+            html += `<button type="button" class="calc-btn ${btn.cls || ''}" data-val="${btn.v}" data-act="${btn.act || ''}">${btn.v}</button>`;
+        });
+        html += `<button type="button" class="calc-btn calc-equals" data-val="=" data-act="equals">=</button>`;
+        grid.innerHTML = html;
+        grid.querySelectorAll('.calc-btn').forEach(btn => {
+            btn.addEventListener('click', function() { handleCalcInput(this.dataset.val, this.dataset.act); });
+        });
+    }
+
+    function updateDisplay() {
+        document.getElementById('calcDisplay').value = calcExpression || '0';
+        document.getElementById('calcMemoryFlag').textContent = calcMemory !== 0 ? 'M = ' + formatNum(calcMemory) : '';
+    }
+
+    function preprocessExpression(expr) {
+        // "%" means "/100" applied to the preceding number; "^" is JS power.
+        expr = expr.replace(/%/g, '/100').replace(/\^/g, '**');
+        // Implicit multiplication: "5(3)" -> "5*(3)", ")(  " -> ")*(", "(3)5" -> "(3)*5"
+        expr = expr.replace(/(\d)(\()/g, '$1*$2')
+                    .replace(/(\))(\d)/g, '$1*$2')
+                    .replace(/(\))(\()/g, '$1*$2');
+        return expr;
+    }
+
+    function formatNum(n) {
+        if (!isFinite(n)) return 'Error';
+        return String(Math.round(n * 1e10) / 1e10);
+    }
+
+    function evaluateNumeric(rawExpr) {
+        if (!rawExpr) return 0;
+        if (!/^[0-9+\-*/().%^\s]*$/.test(rawExpr)) return NaN;
+        const expr = preprocessExpression(rawExpr);
+        try {
+            const result = Function('"use strict"; return (' + expr + ')')();
+            return (typeof result === 'number' && isFinite(result)) ? result : NaN;
+        } catch (e) { return NaN; }
+    }
+
+    function evaluateExpression(rawExpr) {
+        const value = evaluateNumeric(rawExpr);
+        if (isNaN(value)) return 'Error';
+        return formatNum(value);
+    }
+
+    function toRad(deg) { return deg * Math.PI / 180; }
+
+    function applyUnary(fn) {
+        const val = evaluateNumeric(calcExpression);
+        if (isNaN(val)) { calcExpression = 'Error'; return; }
+        calcExpression = formatNum(fn(val));
+    }
+
+    function handleCalcInput(val, act) {
+        switch (act) {
+            case 'back': calcExpression = calcExpression.slice(0, -1); break;
+            case 'equals': calcExpression = evaluateExpression(calcExpression); break;
+            case 'mc': calcMemory = 0; break;
+            case 'mr': calcExpression += formatNum(calcMemory); break;
+            case 'mplus': { const v = evaluateNumeric(calcExpression); if (!isNaN(v)) calcMemory += v; break; }
+            case 'mminus': { const v = evaluateNumeric(calcExpression); if (!isNaN(v)) calcMemory -= v; break; }
+            case 'sqrt': applyUnary(v => Math.sqrt(v)); break;
+            case 'sq': applyUnary(v => v * v); break;
+            case 'inv': applyUnary(v => 1 / v); break;
+            case 'neg': applyUnary(v => -v); break;
+            case 'sin': applyUnary(v => Math.sin(toRad(v))); break;
+            case 'cos': applyUnary(v => Math.cos(toRad(v))); break;
+            case 'tan': applyUnary(v => Math.tan(toRad(v))); break;
+            case 'log': applyUnary(v => Math.log10(v)); break;
+            case 'ln': applyUnary(v => Math.log(v)); break;
+            case 'pi': calcExpression += formatNum(Math.PI); break;
+            case 'euler': calcExpression += formatNum(Math.E); break;
+            default:
+                if (val === 'C') calcExpression = '';
+                else calcExpression += val; // digits, ( ) . + - * / % ^
+        }
+        updateDisplay();
+    }
+
+    renderCalcButtons();
+    updateDisplay();
+
+    // Keyboard support while the calculator is open
+    document.addEventListener('keydown', function(e) {
+        if (widgetHidden()) return;
+        if ('0123456789+-*/().%^'.includes(e.key)) { handleCalcInput(e.key); e.preventDefault(); }
+        else if (e.key === 'Enter' || e.key === '=') { handleCalcInput('=', 'equals'); e.preventDefault(); }
+        else if (e.key === 'Backspace') { handleCalcInput('', 'back'); e.preventDefault(); }
+        else if (e.key === 'Escape') { handleCalcInput('C'); e.preventDefault(); }
+    });
+    function widgetHidden() {
+        const w = document.getElementById('calculatorWidget');
+        return !w || w.style.display === 'none' || w.style.display === '';
+    }
+
+    // --- Floating window: open/close, minimize, maximize, dock, drag (mouse + touch) ---
+    const widget = document.getElementById('calculatorWidget');
+    const titlebar = document.getElementById('calcTitlebar');
+    const STATE_KEY = 'calc-window-state';
+    const STATE_CLASSES = ['minimized', 'maximized', 'docked-left', 'docked-right'];
+
+    function clearStateClasses() { STATE_CLASSES.forEach(c => widget.classList.remove(c)); }
+    function setWindowState(state) {
+        clearStateClasses();
+        if (state && state !== 'normal') widget.classList.add(state);
+        try { localStorage.setItem(STATE_KEY, state || 'normal'); } catch (e) {}
+        updateActiveButtons(state);
+    }
+    function updateActiveButtons(state) {
+        document.querySelectorAll('.calc-window-btn').forEach(b => b.classList.remove('active'));
+        const map = { minimized: 'minimize', maximized: 'maximize', 'docked-left': 'dockLeft', 'docked-right': 'dockRight' };
+        if (map[state]) {
+            const btn = document.querySelector('.calc-window-btn[data-action="' + map[state] + '"]');
+            if (btn) btn.classList.add('active');
+        }
+    }
+
+    window.toggleCalculator = function() {
+        const isOpen = widget.style.display === 'flex';
+        widget.style.display = isOpen ? 'none' : 'flex';
+        if (!isOpen) {
+            try {
+                const savedState = localStorage.getItem(STATE_KEY);
+                if (savedState) setWindowState(savedState === 'normal' ? null : savedState);
+            } catch (e) {}
+        }
+    };
+
+    document.querySelectorAll('.calc-window-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const action = this.dataset.action;
+            const current = STATE_CLASSES.find(c => widget.classList.contains(c)) || 'normal';
+            if (action === 'close') { widget.style.display = 'none'; return; }
+            if (action === 'minimize') { setWindowState(current === 'minimized' ? null : 'minimized'); return; }
+            if (action === 'maximize') { setWindowState(current === 'maximized' ? null : 'maximized'); return; }
+            if (action === 'dockLeft') { setWindowState(current === 'docked-left' ? null : 'docked-left'); return; }
+            if (action === 'dockRight') { setWindowState(current === 'docked-right' ? null : 'docked-right'); return; }
+        });
+    });
+
+    titlebar.addEventListener('click', function() {
+        if (widget.classList.contains('minimized')) setWindowState(null);
+    });
+    titlebar.addEventListener('dblclick', function() {
+        if (widget.classList.contains('minimized')) return;
+        setWindowState(widget.classList.contains('maximized') ? null : 'maximized');
+    });
+
+    function isFreeFloating() {
+        return !widget.classList.contains('maximized') &&
+               !widget.classList.contains('minimized') &&
+               !widget.classList.contains('docked-left') &&
+               !widget.classList.contains('docked-right');
+    }
+
+    let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
+
+    function dragStart(clientX, clientY, target) {
+        if (!isFreeFloating()) return;
+        if (target.closest && target.closest('.calc-window-btn')) return;
+        isDragging = true;
+        widget.classList.add('calc-dragging');
+        const rect = widget.getBoundingClientRect();
+        dragOffsetX = clientX - rect.left;
+        dragOffsetY = clientY - rect.top;
+        widget.style.right = 'auto';
+        widget.style.bottom = 'auto';
+    }
+    function dragMove(clientX, clientY) {
+        if (!isDragging) return;
+        const rect = widget.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - 4;
+        const maxTop = window.innerHeight - rect.height - 4;
+        const left = Math.min(Math.max(4, clientX - dragOffsetX), Math.max(4, maxLeft));
+        const top = Math.min(Math.max(4, clientY - dragOffsetY), Math.max(4, maxTop));
+        widget.style.left = left + 'px';
+        widget.style.top = top + 'px';
+    }
+    function dragEnd() {
+        isDragging = false;
+        widget.classList.remove('calc-dragging');
+    }
+
+    // Mouse
+    titlebar.addEventListener('mousedown', function(e) { dragStart(e.clientX, e.clientY, e.target); });
+    document.addEventListener('mousemove', function(e) { dragMove(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', dragEnd);
+
+    // Touch (mobile drag)
+    titlebar.addEventListener('touchstart', function(e) {
+        if (!isFreeFloating()) return;
+        const touch = e.touches[0];
+        dragStart(touch.clientX, touch.clientY, e.target);
+        if (isDragging) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        dragMove(touch.clientX, touch.clientY);
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+    document.addEventListener('touchcancel', dragEnd);
+
+    window.addEventListener('resize', function() {
+        if (!isFreeFloating()) return;
+        const rect = widget.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - 4;
+        const maxTop = window.innerHeight - rect.height - 4;
+        if (rect.left > maxLeft) widget.style.left = Math.max(4, maxLeft) + 'px';
+        if (rect.top > maxTop) widget.style.top = Math.max(4, maxTop) + 'px';
+    });
+})();
+</script>
