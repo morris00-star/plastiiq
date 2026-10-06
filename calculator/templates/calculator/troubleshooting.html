@@ -1,24 +1,17 @@
 {% extends 'calculator/base.html' %}
 
 {% block content %}
+
 <style>
     .department-section { scroll-margin-top: 90px; }
-
-    .tg-header {
-        background: var(--bg-panel);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 1.25rem 1.5rem;
-        margin-bottom: 1.25rem;
-    }
+    .tg-header { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
     .tg-header h1 { font-size: 1.5rem; margin: 0; }
-
+    .tg-header p { margin: .35rem 0 0; font-size: .88rem; color: var(--text-dim); }
     .panel-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden; }
     .panel-head { padding: 1rem 1.4rem; border-bottom: 1px solid var(--line); }
     .panel-head h2 { font-size: 1.15rem; margin: 0; color: var(--text-main); }
     .panel-head p { margin: .3rem 0 0; font-size: .85rem; color: rgba(16,20,26,.75); }
     .panel-body { padding: 1.4rem; }
-
     .accent-molten { border-left: 4px solid var(--molten); }
     .accent-violet { border-left: 4px solid var(--violet); }
     .accent-teal { border-left: 4px solid var(--teal); }
@@ -26,7 +19,6 @@
     .accent-rose { border-left: 4px solid var(--rose); }
     .accent-green { border-left: 4px solid var(--green); }
     .accent-dim { border-left: 4px solid var(--line); }
-
     .head-molten { background: var(--molten); }
     .head-violet { background: var(--violet); }
     .head-teal { background: var(--teal); }
@@ -35,118 +27,39 @@
     .head-green { background: var(--green); }
     .head-molten h2, .head-violet h2, .head-teal h2, .head-amber h2, .head-rose h2, .head-green h2 { color: #10141a; }
     .head-molten p, .head-violet p, .head-teal p, .head-amber p, .head-rose p, .head-green p { color: rgba(16,20,26,.75); }
-
-    .sub-card {
-        background: var(--bg-panel-raised);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 1.1rem 1.3rem;
-        margin-bottom: 1rem;
-        height: 100%;
-    }
+    .sub-card { background: var(--bg-panel-raised); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: 1rem; height: 100%; }
     .sub-card h5 { font-size: 1rem; margin-bottom: .75rem; }
-
     .tips-card { background: var(--bg-panel-raised); border: 1px solid var(--line); border-radius: 12px; margin-top: 1.5rem; }
     .tips-card .tips-head { padding: .85rem 1.25rem; border-bottom: 1px solid var(--line); font-weight: 600; }
     .tips-card .tips-body { padding: 1rem 1.25rem; }
-
-    .dept-table.table-striped > tbody > tr:nth-of-type(odd) > * {
-        background-color: var(--bg-panel-raised) !important;
-    }
+    .dept-table.table-striped > tbody > tr:nth-of-type(odd) > * { background-color: var(--bg-panel-raised) !important; }
     .dept-table th, .dept-table td { font-size: .88rem; }
     .dept-table td ul, .dept-table td ol { padding-left: 1.1rem; margin-bottom: 0; }
     .dept-table td li { margin-bottom: .35rem; }
+    .dept-table tr.group-row > td { background: var(--bg-panel) !important; font-weight: 700; font-size: .95rem; padding: .9rem .75rem; border-top: 2px solid var(--line); }
+    .dept-table .qc-check { font-size: .8rem; color: var(--text-dim); margin-top: .5rem; }
+    .dept-table .qc-check b { color: var(--text-main); }
+    .counts-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+    .counts-row .badge { font-weight: 500; }
 
-    /* ---------- Process rail nav (same pattern as the homepage flow diagram) ---------- */
-    .rail-wrap {
-        background: var(--bg-panel);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 1.1rem 1rem .9rem;
-        margin-bottom: 1.5rem;
-        position: sticky;
-        top: 10px;
-        z-index: 5;
-    }
-    .rail-eyebrow {
-        font-family: var(--font-mono);
-        font-size: .68rem;
-        letter-spacing: .1em;
-        text-transform: uppercase;
-        color: var(--text-dim);
-        text-align: center;
-        margin-bottom: .8rem;
-    }
-    .process-rail {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: .25rem;
-        max-width: 880px;
-        margin: 0 auto;
-        position: relative;
-    }
-    .rail-track {
-        position: absolute;
-        top: 24px;
-        left: 8%;
-        right: 8%;
-        height: 2px;
-        background-image: repeating-linear-gradient(90deg, var(--molten) 0 10px, transparent 10px 22px);
-        background-size: 44px 2px;
-        animation: rail-flow 1.4s linear infinite;
-        z-index: 0;
-    }
+    /* ---------- Process rail nav ---------- */
+    .rail-wrap { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem 1rem .9rem; margin-bottom: 1.5rem; position: sticky; top: 10px; z-index: 5; }
+    .rail-eyebrow { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); text-align: center; margin-bottom: .8rem; }
+    .process-rail { display: flex; justify-content: space-between; align-items: flex-start; gap: .25rem; max-width: 880px; margin: 0 auto; position: relative; }
+    .rail-track { position: absolute; top: 24px; left: 8%; right: 8%; height: 2px; background-image: repeating-linear-gradient(90deg, var(--molten) 0 10px, transparent 10px 22px); background-size: 44px 2px; animation: rail-flow 1.4s linear infinite; z-index: 0; }
     @keyframes rail-flow { from { background-position: 0 0; } to { background-position: 44px 0; } }
-
-    .rail-node {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-decoration: none;
-        flex: 1;
-        min-width: 0;
-        cursor: pointer;
-        background: none;
-        border: none;
-        padding: 0;
-    }
-    .rail-node .stage-num {
-        font-family: var(--font-mono);
-        font-size: .64rem;
-        color: var(--text-dim);
-        margin-bottom: .3rem;
-    }
-    .rail-dot {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: var(--bg-panel-raised);
-        border: 2px solid var(--line);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all .25s ease;
-    }
-    .rail-node span.rail-label {
-        font-size: .72rem;
-        color: var(--text-dim);
-        margin-top: .4rem;
-        text-align: center;
-        transition: color .2s ease;
-    }
+    .rail-node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-decoration: none; flex: 1; min-width: 0; cursor: pointer; background: none; border: none; padding: 0; }
+    .rail-node .stage-num { font-family: var(--font-mono); font-size: .64rem; color: var(--text-dim); margin-bottom: .3rem; }
+    .rail-dot { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-panel-raised); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; transition: all .25s ease; }
+    .rail-node span.rail-label { font-size: .72rem; color: var(--text-dim); margin-top: .4rem; text-align: center; transition: color .2s ease; }
     .rail-node:hover .rail-label { color: var(--text-main); }
     .rail-node:hover .rail-dot { transform: translateY(-3px); }
-
     .stage-extrusion .rail-dot i { color: var(--molten); }
     .stage-printing .rail-dot i { color: var(--violet); }
     .stage-lamination .rail-dot i { color: var(--teal); }
     .stage-slitting .rail-dot i { color: var(--amber); }
     .stage-bagmaking .rail-dot i { color: var(--rose); }
     .stage-sales .rail-dot i { color: var(--green); }
-
     .stage-extrusion.in-view .rail-dot { border-color: var(--molten); background: rgba(255,122,69,.14); box-shadow: 0 0 0 4px rgba(255,122,69,.1); }
     .stage-printing.in-view .rail-dot { border-color: var(--violet); background: rgba(143,124,247,.14); box-shadow: 0 0 0 4px rgba(143,124,247,.1); }
     .stage-lamination.in-view .rail-dot { border-color: var(--teal); background: rgba(47,214,198,.14); box-shadow: 0 0 0 4px rgba(47,214,198,.1); }
@@ -154,7 +67,6 @@
     .stage-bagmaking.in-view .rail-dot { border-color: var(--rose); background: rgba(242,87,143,.14); box-shadow: 0 0 0 4px rgba(242,87,143,.1); }
     .stage-sales.in-view .rail-dot { border-color: var(--green); background: rgba(74,222,128,.14); box-shadow: 0 0 0 4px rgba(74,222,128,.1); }
     .rail-node.in-view .rail-label { color: var(--text-main); font-weight: 600; }
-
     @media (max-width: 768px) {
         .process-rail { gap: 0; }
         .rail-track { left: 6%; right: 6%; }
@@ -165,26 +77,26 @@
 
 <div class="tg-header">
     <h1>Quality Control &amp; Troubleshooting Guide</h1>
+    <p>Defect causes, corrective actions and QC checks for every stage: Extrusion, Printing &amp; Coating, Lamination, Slitting, Bag Making and Sales.</p>
 </div>
 
 <div class="panel-card accent-dim">
-    <div class="panel-head">
-        <h2>Executive Summary</h2>
-    </div>
+    <div class="panel-head"><h2>Executive Summary</h2></div>
     <div class="panel-body">
         <div class="alert alert-warning">
             <strong>Critical Issues Identified:</strong> Based on complaint analysis, these areas require immediate attention
         </div>
-
         <div class="row">
             <div class="col-md-6">
                 <div class="sub-card">
                     <h5>&#128680; High Priority Issues</h5>
                     <ul>
-                        <li><strong>Gauge Variation</strong> - Most frequent extrusion complaint</li>
-                        <li><strong>Misprints &amp; Registration</strong> - Leading printing failure</li>
-                        <li><strong>Delamination</strong> - Critical structural failure</li>
-                        <li><strong>Wrong Material/Size</strong> - Systemic communication breakdown</li>
+                        <li><strong>Gauge Variation &amp; Under/Over Size</strong> - Most frequent extrusion complaint</li>
+                        <li><strong>Misprints, Registration &amp; Re-prints</strong> - Leading printing failure</li>
+                        <li><strong>Delamination</strong> - Critical structural failure (co-extrusion, coating and lamination)</li>
+                        <li><strong>Sealing Failure</strong> - Poor edge sealing, poor coating balance (OPV) and coated orders</li>
+                        <li><strong>Wrong Material/Size/Product</strong> - Systemic communication breakdown</li>
+                        <li><strong>Unqualified Orders</strong> - Missing end-use, machine specs and feasibility review</li>
                     </ul>
                 </div>
             </div>
@@ -193,12 +105,22 @@
                     <h5>&#128202; Impact Analysis</h5>
                     <ul>
                         <li><strong>Extrusion:</strong> 45% of all complaints</li>
-                        <li><strong>Printing:</strong> 35% of all complaints</li>
+                        <li><strong>Printing &amp; Coating:</strong> 35% of all complaints</li>
                         <li><strong>Bag Making:</strong> 12% of all complaints</li>
                         <li><strong>Sales/Admin:</strong> 8% of all complaints</li>
                     </ul>
+                    <p class="small mb-0" style="color: var(--text-dim);">Lamination and slitting errors surface mainly as delamination and seal failures counted under the departments above.</p>
                 </div>
             </div>
+        </div>
+        <div class="sub-card mt-1">
+            <h5>&#127919; Recurring Root-Cause Themes</h5>
+            <ul class="mb-0">
+                <li><strong>Treatment &amp; surface energy:</strong> Low dyne affects ink adhesion, coating bond and lamination strength</li>
+                <li><strong>Edge and lane consistency:</strong> Edge gauge, sealant and OPV balance determine seal integrity at the customer</li>
+                <li><strong>Job card interpretation:</strong> Wrong product, wrong direction and unverified new materials</li>
+                <li><strong>End-use blindness:</strong> Food/pharma, filling-line COF and sealing conditions not captured at order stage</li>
+            </ul>
         </div>
     </div>
 </div>
@@ -207,40 +129,16 @@
     <div class="rail-eyebrow">Jump to a department</div>
     <div class="process-rail">
         <div class="rail-track"></div>
-        <a href="#extrusion" class="rail-node stage-extrusion">
-            <span class="stage-num">01</span>
-            <span class="rail-dot"><i class="fas fa-industry"></i></span>
-            <span class="rail-label">Extrusion</span>
-        </a>
-        <a href="#printing" class="rail-node stage-printing">
-            <span class="stage-num">02</span>
-            <span class="rail-dot"><i class="fas fa-print"></i></span>
-            <span class="rail-label">Printing</span>
-        </a>
-        <a href="#lamination" class="rail-node stage-lamination">
-            <span class="stage-num">03</span>
-            <span class="rail-dot"><i class="fas fa-layer-group"></i></span>
-            <span class="rail-label">Lamination</span>
-        </a>
-        <a href="#slitting" class="rail-node stage-slitting">
-            <span class="stage-num">04</span>
-            <span class="rail-dot"><i class="fas fa-cut"></i></span>
-            <span class="rail-label">Slitting</span>
-        </a>
-        <a href="#bag-making" class="rail-node stage-bagmaking">
-            <span class="stage-num">05</span>
-            <span class="rail-dot"><i class="fas fa-shopping-bag"></i></span>
-            <span class="rail-label">Bag Making</span>
-        </a>
-        <a href="#sales" class="rail-node stage-sales">
-            <span class="stage-num">06</span>
-            <span class="rail-dot"><i class="fas fa-chart-line"></i></span>
-            <span class="rail-label">Sales</span>
-        </a>
+        <a href="#extrusion" class="rail-node stage-extrusion"><span class="stage-num">01</span><span class="rail-dot"><i class="fas fa-industry"></i></span><span class="rail-label">Extrusion</span></a>
+        <a href="#printing" class="rail-node stage-printing"><span class="stage-num">02</span><span class="rail-dot"><i class="fas fa-print"></i></span><span class="rail-label">Printing</span></a>
+        <a href="#lamination" class="rail-node stage-lamination"><span class="stage-num">03</span><span class="rail-dot"><i class="fas fa-layer-group"></i></span><span class="rail-label">Lamination</span></a>
+        <a href="#slitting" class="rail-node stage-slitting"><span class="stage-num">04</span><span class="rail-dot"><i class="fas fa-cut"></i></span><span class="rail-label">Slitting</span></a>
+        <a href="#bag-making" class="rail-node stage-bagmaking"><span class="stage-num">05</span><span class="rail-dot"><i class="fas fa-shopping-bag"></i></span><span class="rail-label">Bag Making</span></a>
+        <a href="#sales" class="rail-node stage-sales"><span class="stage-num">06</span><span class="rail-dot"><i class="fas fa-chart-line"></i></span><span class="rail-label">Sales</span></a>
     </div>
 </div>
 
-<!-- Extrusion Section -->
+<!-- Extrusion Department Section -->
 <section id="extrusion" class="department-section">
     <div class="panel-card accent-molten">
         <div class="panel-head head-molten">
@@ -249,309 +147,173 @@
         </div>
         <div class="panel-body">
             <div class="alert alert-info">
-                <strong>Key Takeaway for Extrusion Team:</strong> Consistent gauge control solves 60% of downstream problems.
-                Implement hourly documentation and SPC monitoring.
+                <strong>Key Takeaway for Extrusion Team:</strong> Consistent gauge control solves 60% of downstream problems. Implement hourly documentation and SPC monitoring. Dry hygroscopic resins and check edge quality on barrier and sealable structures.
             </div>
 
             <div class="table-responsive">
                 <table class="table table-striped dept-table">
                     <thead class="table-dark">
-                        <tr>
-                            <th width="20%">Common Error</th>
-                            <th width="40%">Root Causes</th>
-                            <th width="40%">Troubleshooting Steps</th>
-                        </tr>
+                        <tr><th width="20%">Common Error</th><th width="40%">Root Causes</th><th width="40%">Troubleshooting Steps</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <strong>Gauge Variation</strong><br>
-                                <span class="badge bg-danger">HIGH FREQUENCY</span>
-                            </td>
-                            <td>
-                                <ul>
-                                    <li>Worn/damaged die lips</li>
-                                    <li>Unstable melt temperature profile</li>
-                                    <li>Inconsistent screw speed or take-up speed</li>
-                                    <li>Poor resin mixing (masterbatch distribution)</li>
-                                    <li>Air ring cooling imbalance (blown film)</li>
-                                    <li>Human error in parameter setting</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Calibrate</strong> all sensors (temperature, pressure, speed)</li>
-                                    <li><strong>Inspect and clean</strong> die lips and air ring weekly</li>
-                                    <li><strong>Verify</strong> resin blend consistency and feeder calibration</li>
-                                    <li><strong>Implement SPC</strong> - track gauge every 30 minutes</li>
-                                    <li><strong>Standardize</strong> startup and shutdown procedures</li>
-                                    <li><strong>Train</strong> operators on interpreting gauge profiles</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Wrong Material/Shade</strong><br>
-                                <span class="badge bg-warning text-dark">CRITICAL ERROR</span>
-                            </td>
-                            <td>
-                                <ul>
-                                    <li><strong>Human Error:</strong> Wrong resin/masterbatch selection</li>
-                                    <li><strong>SOP Failure:</strong> No pre-production verification</li>
-                                    <li><strong>Sales Error:</strong> Incorrect job card information</li>
-                                    <li>Contaminated material in hopper/silo</li>
-                                    <li>Inadequate purging between material changes</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Color-code</strong> all raw materials and storage areas</li>
-                                    <li><strong>Pre-production checklist</strong> with supervisor sign-off</li>
-                                    <li><strong>First-article inspection</strong> before full production run</li>
-                                    <li><strong>Material verification</strong> at shift changeover</li>
-                                    <li><strong>Standardize purging</strong> procedure with documentation</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Wrinkles &amp; Creases</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Nip roll pressure imbalance</li>
-                                    <li>Misaligned collapsing frames</li>
-                                    <li>Uneven cooling across web width</li>
-                                    <li>Gauge variation causing web instability</li>
-                                    <li>Improper tension control</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Mechanical alignment</strong> check of all guides and rolls</li>
-                                    <li><strong>Adjust nip pressures</strong> uniformly across width</li>
-                                    <li><strong>Review gauge profile</strong> and adjust die bolts accordingly</li>
-                                    <li><strong>Optimize tension</strong> settings for material type</li>
-                                    <li><strong>Implement visual inspection</strong> every 15 minutes</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Pinholes &amp; Black Spots</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Contaminated resin (dirty regrind, foreign particles)</li>
-                                    <li>Degraded polymer from overheating</li>
-                                    <li>Die lip buildup breaking off into film</li>
-                                    <li>Inadequate filtration</li>
-                                    <li>Poor housekeeping in production area</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Improve raw material handling</strong> and storage protocols</li>
-                                    <li><strong>Audit regrind quality</strong> - implement quality standards</li>
-                                    <li><strong>Clean and maintain</strong> die area with scheduled downtime</li>
-                                    <li><strong>Upgrade filtration</strong> system if necessary</li>
-                                    <li><strong>Implement 5S</strong> in production area</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Poor Treatment (Wetting)</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Dirty or worn treater electrodes</li>
-                                    <li>Incorrect power setting for material</li>
-                                    <li>Line speed too high for treatment effectiveness</li>
-                                    <li>Contamination on film surface</li>
-                                    <li>Inadequate maintenance schedule</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Regular cleaning</strong> of treater electrodes (daily)</li>
-                                    <li><strong>Monitor and document</strong> dyne levels hourly</li>
-                                    <li><strong>Correlate line speed</strong> with treater power settings</li>
-                                    <li><strong>Preventive maintenance</strong> schedule for treater system</li>
-                                    <li><strong>Train operators</strong> on dyne testing procedure</li>
-                                </ol>
-                            </td>
-                        </tr>
+<tr>
+<td><strong>Gauge Variation</strong><br><span class="badge bg-danger">HIGH FREQUENCY</span></td>
+<td><ul><li>Worn/damaged die lips</li><li>Unstable melt temperature profile</li><li>Inconsistent screw speed or take-up speed</li><li>Poor resin mixing (masterbatch distribution)</li><li>Air ring cooling imbalance (blown film)</li><li>Die bolt / die gap settings not adjusted to the measured profile</li><li><strong>Human Error</strong> Wrong parameter setting or undocumented adjustments</li></ul></td>
+<td><ol><li><strong>Calibrate</strong> all sensors (temperature, pressure, speed)</li><li><strong>Inspect and clean</strong> die lips and air ring weekly</li><li><strong>Verify</strong> resin blend consistency and feeder calibration</li><li><strong>Implement SPC</strong> track gauge every 30 minutes</li><li><strong>Rotate/profile-check</strong> the web to separate die-related from take-up-related variation</li><li><strong>Standardize</strong> startup and shutdown procedures</li><li><strong>Train</strong> operators on interpreting gauge profiles</li></ol><div class="qc-check"><b>QC check:</b> Gauge at both edges and centre, start / middle / end of every roll; record in the run sheet.</div></td>
+</tr>
+<tr>
+<td><strong>Wrong Material/Shade</strong><br><span class="badge bg-warning text-dark">CRITICAL ERROR</span></td>
+<td><ul><li><strong>Human Error</strong> Wrong resin/masterbatch selection</li><li><strong>SOP Failure</strong> No pre-production verification</li><li><strong>Sales Error</strong> Incorrect job card information</li><li>Contaminated material in hopper/silo</li><li>Inadequate purging between material changes</li><li>Unlabelled or mixed-up resin bags and masterbatch containers</li></ul></td>
+<td><ol><li><strong>Color-code</strong> all raw materials and storage areas</li><li><strong>Pre-production checklist</strong> with supervisor sign-off</li><li><strong>First-article inspection</strong> before full production run</li><li><strong>Material verification</strong> at shift changeover</li><li><strong>Standardize purging</strong> procedure with documentation</li><li><strong>Retain a shade standard</strong> (sample chip/film) for every repeat colour</li></ol><div class="qc-check"><b>QC check:</b> Compare first roll against the approved shade standard under the same light source.</div></td>
+</tr>
+<tr>
+<td><strong>Wrinkles &amp; Creases</strong></td>
+<td><ul><li>Nip roll pressure imbalance</li><li>Misaligned collapsing frames</li><li>Uneven cooling across web width</li><li>Gauge variation causing web instability</li><li>Improper tension control</li><li>Bowed or damaged idler rolls</li></ul></td>
+<td><ol><li><strong>Mechanical alignment</strong> check of all guides and rolls</li><li><strong>Adjust nip pressures</strong> uniformly across width</li><li><strong>Review gauge profile</strong> and adjust die bolts accordingly</li><li><strong>Optimize tension</strong> settings for material type</li><li><strong>Implement visual inspection</strong> every 15 minutes</li></ol></td>
+</tr>
+<tr>
+<td><strong>Pinholes &amp; Black Spots</strong></td>
+<td><ul><li>Contaminated resin (dirty regrind, foreign particles)</li><li>Degraded polymer from overheating</li><li>Die lip buildup breaking off into film</li><li>Inadequate filtration</li><li>Poor housekeeping in production area</li><li>Long residence time during stoppages (carbonised polymer)</li></ul></td>
+<td><ol><li><strong>Improve raw material handling</strong> and storage protocols</li><li><strong>Audit regrind quality</strong> and implement quality standards</li><li><strong>Clean and maintain</strong> die area with scheduled downtime</li><li><strong>Upgrade filtration</strong> system if necessary</li><li><strong>Reduce temperature/purge</strong> before extended stoppages</li><li><strong>Implement 5S</strong> in production area</li></ol></td>
+</tr>
+<tr>
+<td><strong>Poor Treatment (Wetting)</strong></td>
+<td><ul><li>Dirty or worn treater electrodes</li><li>Incorrect power setting for material</li><li>Line speed too high for treatment effectiveness</li><li>Contamination on film surface</li><li>Excess slip/anti-block additive migrating to the surface (treatment fades)</li><li>Inadequate maintenance schedule</li></ul></td>
+<td><ol><li><strong>Regular cleaning</strong> of treater electrodes (daily)</li><li><strong>Monitor and document</strong> dyne levels hourly</li><li><strong>Correlate line speed</strong> with treater power settings</li><li><strong>Re-test dyne</strong> on rolls stored more than a few weeks before printing/lamination</li><li><strong>Preventive maintenance</strong> schedule for treater system</li><li><strong>Train operators</strong> on dyne testing procedure</li></ol><div class="qc-check"><b>QC check:</b> Dyne pen / dyne solution test on the treated side at start, middle and end of each roll.</div></td>
+</tr>
+<tr>
+<td><strong>Under / Over Size (Gauge, Layflat Width &amp; Length)</strong><br><span class="badge bg-warning text-dark">COMMON ERROR</span></td>
+<td><ul><li>Output rate (kg/hr) not calibrated against line speed for target gauge</li><li>Incorrect screw RPM or take-up speed ratio set at startup</li><li>Blow-up ratio (BUR) or layflat width set incorrectly, or drifting during the run</li><li>Micrometer / gauge instrument out of calibration</li><li>Job card target gauge or size not verified before full run</li><li>Material/resin density assumption incorrect for the formula used</li><li>Edge trim width not allowed for in the job card width</li></ul></td>
+<td><ol><li><strong>Verify target gauge and size</strong> against the job card before setup, every time</li><li><strong>Calibrate output rate</strong> (kg/hr) against line speed for the specified gauge</li><li><strong>Check layflat width and BUR</strong> at start, then every roll change</li><li><strong>Sample-check gauge</strong> at start, middle, and end of every run</li><li><strong>Maintain a calibration schedule</strong> for micrometers, tapes and gauge instruments</li><li><strong>Hold first roll</strong> for QC sign-off before continuing production</li><li><strong>Weigh a metre sample</strong> (g/m) and back-calculate gauge as a cross-check</li></ol><div class="qc-check"><b>QC check:</b> Gauge (µm), layflat width (mm) and g/m vs job card tolerance; record on the first-roll sheet.</div></td>
+</tr>
+<tr>
+<td><strong>Die Lines and Streaks Leading to Ruptures</strong><br></td>
+<td><ul><li>Scratched or damaged die lips</li><li>Contamination lodged in the die gap</li><li>Degraded polymer buildup at the die exit</li><li>Dirty or worn breaker plate/screen pack</li><li>Inconsistent melt flow across the die width</li><li>Hard gels or burnt particles dragging on the die lip</li></ul></td>
+<td><ol><li><strong>Inspect and polish</strong> die lips on a fixed schedule (use brass/copper tools only)</li><li><strong>Clean the die exit</strong> during every changeover</li><li><strong>Replace screen packs</strong> based on contamination level, not just time elapsed</li><li><strong>Upgrade melt filtration</strong> where streaking recurs</li><li><strong>Track die line location</strong> across the roll (measure distance from edge) to isolate the root cause</li><li><strong>Reject rolls</strong> below a defined severity threshold before they reach rupture downstream</li><li><strong>Alert printing/lamination</strong> when a streaked roll is released on concession</li></ol><div class="qc-check"><b>QC check:</b> Hold the roll against light and mark line position; a fixed position on every wrap = die/screen issue.</div></td>
+</tr>
+<tr>
+<td><strong>Delamination in Co-Extrusion<br><small>NYLON (PE/Nylon/PE) or EVOH (PE/EVOH/PE) barrier structures</small></strong><br><span class="badge bg-danger">CRITICAL FAILURE</span></td>
+<td><ul><li>Incompatible or insufficient tie-layer (adhesive resin) selection</li><li>Incorrect layer ratio for the specified structure</li><li>Moisture in Nylon or EVOH resin (both hygroscopic, require drying)</li><li>Temperature profile mismatch between layers; tie layer too cold or overheated</li><li>Poor layer distribution or interfacial instability at the die</li><li>Tie-layer resin contaminated or past shelf life</li><li>Nylon/EVOH layer exposed to humidity after extrusion before conversion</li></ul></td>
+<td><ol><li><strong>Verify tie-layer resin spec</strong> and thickness ratio against the approved structure</li><li><strong>Mandatory resin drying</strong> (dew point check) for Nylon/EVOH before every run</li><li><strong>Verify extruder temperature profiles</strong> per layer material, not a single blanket setting</li><li><strong>Run a layer-distribution check</strong> (cross-section under microscope) at startup</li><li><strong>Check each extruder output (kg/hr)</strong> against the recipe to confirm layer ratios</li><li><strong>Cross-check structure</strong> against the approved recipe before production begins</li><li><strong>Protect rolls</strong> from humidity (wrap/seal) after extrusion, especially EVOH</li></ol><div class="qc-check"><b>QC check:</b> Hand peel test between layers on first roll and after 24 h; layer thickness by cross-section.</div></td>
+</tr>
+<tr>
+<td><strong>Gel Formation and Un-melts</strong><br></td>
+<td><ul><li>Degraded or cross-linked polymer present in regrind</li><li>Inadequate melt residence time or barrel temperature</li><li>Contamination from incompatible resin streams (e.g. PP in PE, or different MFI grades)</li><li>Poor screw design or excessive screw wear for the resin in use</li><li>Inadequate filtration</li><li>Resin grade mismatch in blends (very different melt index)</li></ul></td>
+<td><ol><li><strong>Audit regrind source</strong> and blend ratio</li><li><strong>Verify barrel temperature profile</strong> is adequate for full melt</li><li><strong>Inspect the screw</strong> for wear on a maintenance schedule</li><li><strong>Upgrade/maintain melt filtration</strong> (finer mesh, scheduled screen change)</li><li><strong>Segregate incompatible resin streams</strong> in storage and handling</li><li><strong>Check MFI compatibility</strong> of every blend component</li><li><strong>Visual gel-count inspection</strong> at startup before full production</li></ol><div class="qc-check"><b>QC check:</b> Gel count per m² against the customer/internal limit, especially for thin and printed film.</div></td>
+</tr>
+<tr>
+<td><strong>Bubble Instability and Flutter (Blown Film)</strong><br><span class="badge bg-info text-dark">NEW / ADDED</span></td>
+<td><ul><li>Air ring cooling imbalance</li><li>Inconsistent internal bubble pressure (IBC fluctuation)</li><li>Incorrect or undocumented frost line height</li><li>Drafts or airflow disturbance in the production bay</li><li>Inconsistent melt temperature causing bubble wobble</li><li>Output too high for the cooling capacity of the air ring</li><li>Low-MI or very high-MI resin behaving differently from the standard recipe</li></ul></td>
+<td><ol><li><strong>Calibrate and balance</strong> air ring cooling</li><li><strong>Verify the IBC system</strong> is functioning correctly</li><li><strong>Monitor and document</strong> frost line height for each recipe</li><li><strong>Shield the bubble</strong> from drafts and cross-winds</li><li><strong>Stabilize melt temperature</strong> control</li><li><strong>Reduce output or increase cooling</strong> rather than running at the edge of stability</li><li><strong>Train operators</strong> to recognize early flutter warning signs</li></ol></td>
+</tr>
+<tr>
+<td><strong>Poor Sealing on the Sides (Customer-Facing)</strong><br><span class="badge bg-danger">CRITICAL FAILURE</span></td>
+<td><ul><li>Sealant layer formulation or gauge inconsistent specifically at the film edges</li><li>Edge trim variation causing uneven sealant distribution</li><li>Contamination at the film edge from the trimming process</li><li>Gauge variation concentrated at the edges (bowing)</li><li>Excess slip/additive bloom at the edges or on the seal layer</li><li>Customer sealing parameters not matched to the sealant (customer-side)</li></ul></td>
+<td><ol><li><strong>Verify sealant layer consistency</strong> across the full web width, including edges</li><li><strong>Inspect the edge trim system</strong> for dust/contamination</li><li><strong>Check gauge profile</strong> specifically at the edges, not just the center web</li><li><strong>Run seal strength test</strong> (N/15 mm) and hot tack on samples from both edges and centre</li><li><strong>Communicate edge-specific seal test results</strong> to the bag-making QC team</li><li><strong>Coordinate with the customer</strong> on sealing temperature/pressure/dwell and share the seal-initiation curve</li></ol><div class="qc-check"><b>QC check:</b> Seal strength at edge vs centre; a gap of more than 15–20% points to an edge-specific problem.</div></td>
+</tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="tips-card">
                 <div class="tips-head">&#128203; Additional Tips for Extrusion Team</div>
-                <div class="tips-body">
-                    <ul class="mb-0">
-                        <li><strong>Document everything:</strong> Keep detailed logs of every parameter change</li>
-                        <li><strong>Cross-shift communication:</strong> Implement formal handover procedure</li>
-                        <li><strong>Preventive maintenance:</strong> Don't wait for breakdowns - schedule maintenance</li>
-                        <li><strong>Supplier partnership:</strong> Work closely with resin suppliers on formulation issues</li>
-                        <li><strong>Continuous training:</strong> Regular sessions on new materials and techniques</li>
-                    </ul>
-                </div>
+                <div class="tips-body"><ul class="mb-0"><li><strong>Document everything:</strong> Keep detailed logs of every parameter change</li><li><strong>Cross-shift communication:</strong> Implement formal handover procedure</li><li><strong>Preventive maintenance:</strong> Don't wait for breakdowns - schedule maintenance</li><li><strong>Supplier partnership:</strong> Work closely with resin suppliers on formulation issues</li><li><strong>Continuous training:</strong> Regular sessions on new materials and techniques</li><li><strong>Barrier structure handling:</strong> Dry hygroscopic resins (Nylon, EVOH) and verify tie-layer specs before every barrier run</li><li><strong>Edge quality matters:</strong> Don't check center-web gauge alone - edges determine seal integrity downstream</li><li><strong>Release status:</strong> Tag every roll with treatment (dyne), gauge and gel-level status before it leaves extrusion</li></ul></div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Printing Section -->
+<!-- Printing Department Section -->
 <section id="printing" class="department-section">
     <div class="panel-card accent-violet">
         <div class="panel-head head-violet">
             <h2>Printing Department</h2>
-            <p class="mb-0">CI Flexo, ST Flexo &amp; Roto - Where brand image is created</p>
+            <p class="mb-0">CI Flexo, ST Flexo &amp; Roto, including coating (OPV) done on the printing machine - Where brand image is created</p>
         </div>
         <div class="panel-body">
             <div class="alert alert-info">
-                <strong>Key Takeaway for Printing Team:</strong> First-piece approval prevents 80% of print rejects.
-                Never skip the verification process.
+                <strong>Key Takeaway for Printing Team:</strong> First-piece approval prevents 80% of print rejects. Never skip the verification process, and treat coating as a controlled process: weight, COF, cure and seal test.
             </div>
 
             <div class="table-responsive">
                 <table class="table table-striped dept-table">
                     <thead class="table-dark">
-                        <tr>
-                            <th width="20%">Common Error</th>
-                            <th width="40%">Root Causes</th>
-                            <th width="40%">Troubleshooting Steps</th>
-                        </tr>
+                        <tr><th width="20%">Common Error</th><th width="40%">Root Causes</th><th width="40%">Troubleshooting Steps</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <strong>Misprints &amp; Poor Registration</strong><br>
-                                <span class="badge bg-danger">HIGH FREQUENCY</span>
-                            </td>
-                            <td>
-                                <ul>
-                                    <li><strong>Human Error:</strong> Poor plate mounting/cylinder installation</li>
-                                    <li>Unstable or stretching substrate (extrusion issue)</li>
-                                    <li>Worn or damaged gears/bearings</li>
-                                    <li>Incorrect tension control</li>
-                                    <li>Plate/cylinder damage</li>
-                                    <li>SOP not followed during setup</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>SOP for mounting:</strong> Verified procedure with checklist</li>
-                                    <li><strong>Substrate inspection:</strong> Check gauge and treatment before printing</li>
-                                    <li><strong>Preventive maintenance:</strong> Regular inspection of mechanical components</li>
-                                    <li><strong>Tension optimization:</strong> Profile for specific materials</li>
-                                    <li><strong>Registration marks:</strong> Use and verify throughout run</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Ink Adhesion &amp; Peeling</strong><br>
-                                <span class="badge bg-warning text-dark">CRITICAL ERROR</span>
-                            </td>
-                            <td>
-                                <ul>
-                                    <li><strong>Insufficient substrate treatment</strong> (from extrusion)</li>
-                                    <li>Wrong ink system for substrate (PET vs. PE)</li>
-                                    <li>Incorrect ink viscosity or dilution ratio</li>
-                                    <li>Insufficient drying/curing</li>
-                                    <li>Contamination on substrate surface</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Verify treatment:</strong> Check dyne level of incoming film</li>
-                                    <li><strong>Adhesion test:</strong> Standard tape test at startup and hourly</li>
-                                    <li><strong>Review ink specs:</strong> Ensure compatibility with material</li>
-                                    <li><strong>Monitor oven temperatures</strong> and airflow regularly</li>
-                                    <li><strong>Clean substrate</strong> with antistatic equipment if needed</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Ink Smudges / Rubbing Off</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Ink not fully dried/cured</li>
-                                    <li>Poor ink film hardness</li>
-                                    <li>Incorrect rewinding (too much tension, too hot)</li>
-                                    <li>Lack of slip or incorrect COF</li>
-                                    <li>Ink formulation issues</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Optimize drying:</strong> Increase temp or reduce line speed</li>
-                                    <li><strong>Check ink formulation:</strong> Consult with supplier</li>
-                                    <li><strong>Adjust rewind tension</strong> and ensure cooling</li>
-                                    <li><strong>Test rub resistance</strong> before full production</li>
-                                    <li><strong>Verify slip additive</strong> compatibility with ink</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Wrong Print / Wrong Direction</strong></td>
-                            <td>
-                                <ul>
-                                    <li><strong>Human Error:</strong> Using wrong plates/cylinders</li>
-                                    <li><strong>SOP Failure:</strong> No verification of artwork vs. job card</li>
-                                    <li><strong>Sales/Graphics Error:</strong> Incorrect job card information</li>
-                                    <li>Poor communication between shifts</li>
-                                    <li>Inadequate storage/organization of plates</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Digital workflow:</strong> Link correct artwork to job digitally</li>
-                                    <li><strong>Pre-press proofing:</strong> Mandatory sign-off on physical proof</li>
-                                    <li><strong>First-sheet approval:</strong> Compare to approved proof</li>
-                                    <li><strong>Plate storage system:</strong> Organized with clear labeling</li>
-                                    <li><strong>Cross-check</strong> job details with two operators</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Color Shade Variation</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Inconsistent ink viscosity</li>
-                                    <li>Anilox roll cell volume variation or clogging</li>
-                                    <li>Variation in substrate color or opacity</li>
-                                    <li>Doctor blade pressure inconsistency</li>
-                                    <li>Printing pressure variations</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Control viscosity:</strong> Use cup and automate if possible</li>
-                                    <li><strong>Maintain anilox rolls:</strong> Regular cleaning and auditing</li>
-                                    <li><strong>Standardize press settings</strong> for each job</li>
-                                    <li><strong>Color measurement:</strong> Use spectrophotometer regularly</li>
-                                    <li><strong>Document standards</strong> for each job for future reference</li>
-                                </ol>
-                            </td>
-                        </tr>
+<tr class="group-row"><td colspan="3">&#128424; Printing Defects</td></tr>
+<tr>
+<td><strong>Misprints &amp; Poor Registration</strong><br><span class="badge bg-danger">HIGH FREQUENCY</span></td>
+<td><ul><li><strong>Human Error</strong> Poor plate mounting/cylinder installation</li><li>Unstable or stretching substrate (extrusion issue)</li><li>Worn or damaged gears/bearings</li><li>Incorrect tension control</li><li>Plate/cylinder damage</li><li>SOP not followed during setup</li></ul></td>
+<td><ol><li><strong>SOP for mounting</strong> Verified procedure with checklist</li><li><strong>Substrate inspection</strong> Check gauge and treatment before printing</li><li><strong>Preventive maintenance</strong> Regular inspection of mechanical components</li><li><strong>Tension optimization</strong> Profile for specific materials</li><li><strong>Registration marks</strong> Use and verify throughout run</li></ol></td>
+</tr>
+<tr>
+<td><strong>Re-prints &amp; Print on Either Side (Surface vs Reverse Print, Double-Pass Jobs)</strong><br></td>
+<td><ul><li><strong>Wrong side printed</strong> surface print done on a reverse-print job, or vice versa (mirror image not applied)</li><li>Film unwound the wrong way round (treated side facing away from the print unit)</li><li>Second-pass registration drift when printing the other side or re-running a printed roll</li><li>Ink set-off / marking from the first print onto rollers or the reverse side</li><li>Reverse-print layers printed in the wrong order (white/colours reversed)</li><li>Re-printing over existing ink without checking solvent attack or adhesion of the first print</li><li>Job card not stating print side, unwind direction or whether the roll is a re-run</li></ul></td>
+<td><ol><li><strong>Confirm print side</strong> (surface / reverse), unwind direction and mirror-image requirement on the job card before mounting plates</li><li><strong>Mark the treated side</strong> on every roll and verify at unwind</li><li><strong>Use a physical proof</strong> from the same orientation, signed off, for both sides</li><li><strong>For second-pass jobs</strong> align registration marks to the first print and check at start and every roll</li><li><strong>Check ink compatibility</strong> and adhesion of first-pass ink before over-printing</li><li><strong>Clean impression rollers</strong> and check for set-off between passes</li><li><strong>Record re-prints</strong> with cause code (wrong side, registration, ink, artwork) for trend analysis</li></ol><div class="qc-check"><b>QC check:</b> Compare first piece to the approved proof in the correct reading direction; confirm treated side facing the cylinder.</div></td>
+</tr>
+<tr>
+<td><strong>Ink Adhesion &amp; Peeling</strong><br><span class="badge bg-warning text-dark">CRITICAL ERROR</span></td>
+<td><ul><li><strong>Insufficient substrate treatment</strong> (from extrusion)</li><li>Wrong ink system for substrate (PET vs. PE vs. Nylon)</li><li>Incorrect ink viscosity or dilution ratio</li><li>Insufficient drying/curing</li><li>Contamination on substrate surface</li><li>Excess slip additive migrating to the surface</li></ul></td>
+<td><ol><li><strong>Verify treatment</strong> Check dyne level of incoming film</li><li><strong>Adhesion test</strong> Standard tape test at startup and hourly</li><li><strong>Review ink specs</strong> Ensure compatibility with material</li><li><strong>Monitor oven temperatures</strong> and airflow regularly</li><li><strong>Clean substrate</strong> with antistatic equipment if needed</li></ol></td>
+</tr>
+<tr>
+<td><strong>Ink Smudges / Rubbing Off</strong></td>
+<td><ul><li>Ink not fully dried/cured</li><li>Poor ink film hardness</li><li>Incorrect rewinding (too much tension, too hot)</li><li>Lack of slip or incorrect COF</li><li>Ink formulation issues</li><li>Retained solvent from insufficient airflow/exhaust</li></ul></td>
+<td><ol><li><strong>Optimize drying</strong> Increase temp or reduce line speed</li><li><strong>Check ink formulation</strong> Consult with supplier</li><li><strong>Adjust rewind tension</strong> and ensure cooling</li><li><strong>Test rub resistance</strong> before full production</li><li><strong>Verify slip additive</strong> compatibility with ink</li></ol></td>
+</tr>
+<tr>
+<td><strong>Wrong Print / Wrong Direction</strong></td>
+<td><ul><li><strong>Human Error</strong> Using wrong plates/cylinders</li><li><strong>SOP Failure</strong> No verification of artwork vs. job card</li><li><strong>Sales/Graphics Error</strong> Incorrect job card information</li><li>Poor communication between shifts</li><li>Inadequate storage/organization of plates</li></ul></td>
+<td><ol><li><strong>Digital workflow</strong> Link correct artwork to job digitally</li><li><strong>Pre-press proofing</strong> Mandatory sign-off on physical proof</li><li><strong>First-sheet approval</strong> Compare to approved proof</li><li><strong>Plate storage system</strong> Organized with clear labeling</li><li><strong>Cross-check</strong> job details with two operators</li></ol></td>
+</tr>
+<tr>
+<td><strong>Color Shade Variation</strong></td>
+<td><ul><li>Inconsistent ink viscosity</li><li>Anilox roll cell volume variation or clogging</li><li>Variation in substrate color or opacity</li><li>Doctor blade pressure inconsistency</li><li>Printing pressure variations</li></ul></td>
+<td><ol><li><strong>Control viscosity</strong> Use cup and automate if possible</li><li><strong>Maintain anilox rolls</strong> Regular cleaning and auditing</li><li><strong>Standardize press settings</strong> for each job</li><li><strong>Color measurement</strong> Use spectrophotometer regularly</li><li><strong>Document standards</strong> for each job for future reference</li></ol></td>
+</tr>
+<tr class="group-row"><td colspan="3">&#129524; Coating Problems (OPV / Coating Applied on the Printing Machine)</td></tr>
+<tr>
+<td><strong>Poor Coefficient of Friction (COF) / Slidability</strong><br></td>
+<td><ul><li>Coating weight too low or too high (OPV laydown not controlled)</li><li>Slip additive in the coating or film not at the required level, or blooming out and wearing off</li><li>Under-cured coating giving a tacky or high-friction surface</li><li>Wrong coating type for the end use (e.g. high-slip vs. sealable)</li><li>COF drifting with storage temperature and time (additive migration)</li><li>COF specification not matched to the customer's filling machine</li></ul></td>
+<td><ol><li><strong>Test COF</strong> (film-to-film and film-to-metal) at start and every roll against the spec, not only at order approval</li><li><strong>Control coating weight</strong> with gravimetric checks and anilox volume</li><li><strong>Verify cure/drying</strong> (oven temp, airflow, speed) before rewinding</li><li><strong>Re-test COF</strong> after 24–48 h and after storage to catch additive migration</li><li><strong>Request the customer's machine COF window</strong> before running the job</li><li><strong>Adjust slip package</strong> with the coating supplier when drift is repeated</li></ol><div class="qc-check"><b>QC check:</b> Static and kinetic COF per ASTM D1894 / ISO 8295 vs the specified range.</div></td>
+</tr>
+<tr>
+<td><strong>Optical Defects (Haziness, Ghosting and Creasing)</strong><br></td>
+<td><ul><li><strong>Haziness</strong> coating applied too heavy, incompletely dried, or incompatible with the film</li><li><strong>Haziness</strong> moisture or humidity pick-up, or additive bloom</li><li><strong>Ghosting</strong> uneven coating or ink laydown from the anilox/cylinder pattern repeating on the web</li><li><strong>Ghosting</strong> solvent entrapment, poor flow-out or off-contact doctor blade</li><li><strong>Creasing</strong> web tension imbalance or wrinkles entering the nip or oven</li><li><strong>Creasing</strong> uneven film gauge or poor web guiding</li><li>Dirty anilox, cylinder or oven contaminating the coating surface</li></ul></td>
+<td><ol><li><strong>Check coating viscosity</strong> and flow-out; adjust to the supplier's window</li><li><strong>Verify anilox condition</strong> and cell volume; clean or replace if clogged or worn</li><li><strong>Check oven temperature profile</strong> and airflow so coating dries evenly without trapping solvent</li><li><strong>Review web tension</strong> and guide alignment through the coater, oven and rewind</li><li><strong>Inspect incoming film</strong> for gauge variation and wrinkles before coating</li><li><strong>Control ambient humidity</strong> and storage of coating materials</li><li><strong>Compare against a retained gloss/haze standard</strong> at start and every roll</li></ol><div class="qc-check"><b>QC check:</b> Haze (%) and gloss measurement vs standard; visual check against the black/white background and light box.</div></td>
+</tr>
+<tr>
+<td><strong>Odor and Food Contamination</strong><br><span class="badge bg-danger">CRITICAL FAILURE</span></td>
+<td><ul><li>Retained solvent in the coating (insufficient drying or exhaust)</li><li>Coating/ink or additive system not food-contact approved</li><li>Cross-contamination from other coating or ink lines</li><li>Poor curing or residual unreacted components migrating</li><li>Rolls stored in an area with solvent vapours or odours</li><li>Rewinding the film hot, which traps volatiles</li></ul></td>
+<td><ol><li><strong>Measure residual solvent</strong> (GC headspace) on every coated food/pharma order and keep records</li><li><strong>Use only food-grade</strong> coating and ink approved for the end use; hold supplier compliance declarations</li><li><strong>Verify oven drying</strong> and exhaust, and lower line speed if odour is detected</li><li><strong>Run an odour (sensory) test</strong> on the first roll and a retained sample</li><li><strong>Clean the coating unit</strong> and anilox properly between jobs; segregate non-food and food runs</li><li><strong>Store rolls</strong> away from solvents and wrap them promptly</li></ol><div class="qc-check"><b>QC check:</b> Residual solvent (mg/m²) vs the customer limit; odour check on a sealed sample after 24 h.</div></td>
+</tr>
+<tr>
+<td><strong>Delamination and Peeling (Bond Failure)</strong><br><span class="badge bg-danger">CRITICAL FAILURE</span></td>
+<td><ul><li>Poor adhesion of coating to the film from low surface energy (insufficient treatment)</li><li>Coating not compatible with the ink or film beneath it</li><li>Insufficient curing/drying or wrong coating weight</li><li>Contamination on the surface (dust, slip bloom, oil)</li><li>Wrong coating chemistry for the structure</li><li>Aggressive conditions in use (heat, moisture, product contact) that were not tested</li></ul></td>
+<td><ol><li><strong>Verify dyne level</strong> of the substrate before coating</li><li><strong>Tape test</strong> (adhesion) on every roll at start, middle and end</li><li><strong>Check ink-to-coating compatibility</strong> with the supplier for new combinations</li><li><strong>Control coating weight</strong> and cure; keep a log of oven settings per job</li><li><strong>Check substrate cleanliness</strong> and film storage conditions</li><li><strong>Run end-use simulation tests</strong> (heat, moisture, product contact) on new structures</li></ol><div class="qc-check"><b>QC check:</b> Tape test per ASTM D3359 / internal method and peel strength vs spec.</div></td>
+</tr>
+<tr>
+<td><strong>&quot;Blocking&quot; and Tearing on the Filling Line</strong><br></td>
+<td><ul><li>Coating not fully dried or cured at rewind, so layers stick together</li><li>Rewind tension or temperature too high; rolls stored hot</li><li>Coating too soft or tacky for the storage/transport conditions</li><li>Insufficient anti-block in the coating or film</li><li>Hot, humid storage; rolls stacked or stored under load</li><li>Roll hardness too high, leading to blocking and ruptures when unwinding on the filling line</li><li>Tear initiation from edge damage or defects (e.g. die lines)</li></ul></td>
+<td><ol><li><strong>Allow full cooling and drying</strong> before rewind; check temperature at the rewinder</li><li><strong>Lower rewind tension</strong> and use a taper profile for coated rolls</li><li><strong>Test blocking</strong> (unwind force / ASTM D3354) on retained samples after storage conditioning</li><li><strong>Review anti-block level</strong> with the coating supplier</li><li><strong>Store rolls</strong> in cool, dry conditions and avoid stacking heavily</li><li><strong>Check roll hardness</strong> and edge quality before release</li><li><strong>Collect filling-line feedback</strong> (unwind force, tearing events) and link it to roll numbers</li></ol><div class="qc-check"><b>QC check:</b> Unwind retained roll samples after 24–48 h at warm storage conditions; force and surface damage on separation.</div></td>
+</tr>
+<tr>
+<td><strong>Sealing Failure Due to Poor Coating</strong><br><span class="badge bg-danger">CRITICAL FAILURE</span></td>
+<td><ul><li>Coating applied on or over the seal area, or incomplete masking/registration of the OPV window</li><li>Coating weight too high on the sealing side, so sealing temperature is not reached</li><li>Coating or slip additive migrating onto the sealant surface</li><li>Incompatible coating with the sealant layer (seals peel instead of fusing)</li><li>Coating not fully cured, so it smears into the seal</li><li>OPV pattern not balanced for the sealing jaws (see Slitting)</li></ul></td>
+<td><ol><li><strong>Check the coating pattern</strong> against the job card (seal areas must remain uncoated or use a heat-sealable lacquer)</li><li><strong>Control coating weight</strong> on the seal side</li><li><strong>Run seal strength and hot tack tests</strong> on coated samples across the web width</li><li><strong>Check cure and migration</strong> by testing seals after 24–48 h</li><li><strong>Confirm with the customer</strong> the sealing temperature, pressure and dwell for the structure</li><li><strong>Hold and segregate</strong> coated rolls that fail the seal test before slitting</li></ol><div class="qc-check"><b>QC check:</b> Seal strength (N/15 mm) at the customer's sealing parameters and across the web width.</div></td>
+</tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="tips-card">
                 <div class="tips-head">&#128203; Additional Tips for Printing Team</div>
-                <div class="tips-body">
-                    <ul class="mb-0">
-                        <li><strong>Standardized color library:</strong> Create approved color standards for repeat jobs</li>
-                        <li><strong>Anilox roll management:</strong> Implement tracking system for cell volume maintenance</li>
-                        <li><strong>Press-side organization:</strong> 5S implementation for plates, inks, and tools</li>
-                        <li><strong>Regular training:</strong> On color theory, press operation, and troubleshooting</li>
-                        <li><strong>Supplier collaboration:</strong> Work with ink suppliers on formulation improvements</li>
-                    </ul>
-                </div>
+                <div class="tips-body"><ul class="mb-0"><li><strong>Standardized color library:</strong> Create approved color standards for repeat jobs</li><li><strong>Anilox roll management:</strong> Implement tracking system for cell volume maintenance</li><li><strong>Press-side organization:</strong> 5S implementation for plates, inks, and tools</li><li><strong>Regular training:</strong> On color theory, press operation, and troubleshooting</li><li><strong>Supplier collaboration:</strong> Work with ink and coating suppliers on formulation improvements</li><li><strong>Coated orders:</strong> Keep a separate checklist (coating weight, COF, residual solvent, seal test) and sign it off before the roll goes to slitting</li><li><strong>Orientation discipline:</strong> Mark print side, treated side and unwind direction on every roll core</li></ul></div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Lamination Section -->
+<!-- Lamination Department Section -->
 <section id="lamination" class="department-section">
     <div class="panel-card accent-teal">
         <div class="panel-head head-teal">
@@ -560,109 +322,57 @@
         </div>
         <div class="panel-body">
             <div class="alert alert-info">
-                <strong>Key Takeaway for Lamination Team:</strong> Respect the curing time - 90% of delamination occurs
-                from premature conversion. Never shortcut the process.
+                <strong>Key Takeaway for Lamination Team:</strong> Respect the curing time - 90% of delamination occurs from premature conversion. Read the job card, verify every roll and never shortcut the process.
             </div>
 
             <div class="table-responsive">
                 <table class="table table-striped dept-table">
                     <thead class="table-dark">
-                        <tr>
-                            <th width="20%">Common Error</th>
-                            <th width="40%">Root Causes</th>
-                            <th width="40%">Troubleshooting Steps</th>
-                        </tr>
+                        <tr><th width="20%">Common Error</th><th width="40%">Root Causes</th><th width="40%">Troubleshooting Steps</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <strong>Delamination</strong><br>
-                                <span class="badge bg-danger">CRITICAL FAILURE</span>
-                            </td>
-                            <td>
-                                <ul>
-                                    <li>Incorrect adhesive mixing ratio</li>
-                                    <li>Insufficient adhesive application (low coating weight)</li>
-                                    <li>Inadequate curing time/temperature</li>
-                                    <li>Poor substrate surface energy (insufficient treatment)</li>
-                                    <li>Contamination on substrate surface</li>
-                                    <li>Incompatible materials being laminated</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Strict adhesive mixing SOPs:</strong> Weight-based, not volume</li>
-                                    <li><strong>Monitor coating weight</strong> regularly with gravimetric tests</li>
-                                    <li><strong>Respect curing schedule:</strong> Minimum time before conversion</li>
-                                    <li><strong>Audit substrate treatment</strong> before lamination</li>
-                                    <li><strong>Surface cleaning:</strong> Use web cleaners before lamination</li>
-                                    <li><strong>Material compatibility testing</strong> for new structures</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Bubbles in Laminate</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Trapped air/solvent in adhesive</li>
-                                    <li>Insufficient nip pressure</li>
-                                    <li>Contamination on the web</li>
-                                    <li>Improper unwind/rewind tension</li>
-                                    <li>Incorrect viscosity of adhesive</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Ensure proper drying</strong> of adhesive before nipping</li>
-                                    <li><strong>Adjust nip roll pressure and temperature</strong></li>
-                                    <li><strong>Keep webs clean</strong> with air knives and static eliminators</li>
-                                    <li><strong>Optimize tension profile</strong> throughout the process</li>
-                                    <li><strong>Check adhesive viscosity</strong> and adjust if necessary</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Wrinkles in Laminated Structure</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Misaligned rollers</li>
-                                    <li>Uneven tension across web width</li>
-                                    <li>Gauge variation in substrates</li>
-                                    <li>Improper web guiding</li>
-                                    <li>Differential stretch between materials</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Check roller alignment</strong> regularly</li>
-                                    <li><strong>Balance tension</strong> across entire web width</li>
-                                    <li><strong>Inspect incoming materials</strong> for gauge consistency</li>
-                                    <li><strong>Calibrate web guides</strong> and edge detection</li>
-                                    <li><strong>Match material properties</strong> when designing structures</li>
-                                </ol>
-                            </td>
-                        </tr>
+<tr>
+<td><strong>Delamination</strong><br><span class="badge bg-danger">CRITICAL FAILURE</span></td>
+<td><ul><li>Incorrect adhesive mixing ratio</li><li>Insufficient adhesive application (low coating weight)</li><li>Inadequate curing time/temperature</li><li>Poor substrate surface energy (insufficient treatment)</li><li>Contamination on substrate surface</li><li>Incompatible materials being laminated</li><li>Ink or coating not compatible with the adhesive (reverse-print or OPV over-ink)</li><li>Slip additive from the film blooming to the bond interface</li></ul></td>
+<td><ol><li><strong>Strict adhesive mixing SOPs</strong> Weight-based, not volume</li><li><strong>Monitor coating weight</strong> regularly with gravimetric tests</li><li><strong>Respect curing schedule</strong> Minimum time before conversion</li><li><strong>Audit substrate treatment</strong> before lamination</li><li><strong>Surface cleaning</strong> Use web cleaners before lamination</li><li><strong>Material compatibility testing</strong> for new structures</li><li><strong>Test bond strength</strong> at 24 h and at the end of cure, and record</li></ol></td>
+</tr>
+<tr>
+<td><strong>Laminating Wrong Products</strong><br></td>
+<td><ul><li><strong>Failure to interpret the job card</strong> (structure, layer order, print direction or adhesive type misread)</li><li><strong>Job card left unread</strong> operator relies on the previous job or verbal instructions</li><li><strong>Lack of film knowledge</strong> cannot tell treated from untreated side, PET from BOPP from nylon, or matt from gloss</li><li>Unlabelled or mislabelled rolls, or similar-looking films stored together</li><li>No roll-to-job-card verification at unwind</li><li>Wrong adhesive/hardener for the structure</li><li>Wrong layer sequence (e.g. print film and sealant film swapped)</li><li>Pressure to meet delivery without a pre-run check</li></ul></td>
+<td><ol><li><strong>Pre-run checklist</strong> read the job card with a second person; confirm structure, layer order, print direction, adhesive and gauge</li><li><strong>Verify every roll</strong> at unwind against the job card (label, material ID, gauge, treated side)</li><li><strong>Identification of films</strong> train operators with sample cards (burn test, dyne, feel, appearance) for the films in use</li><li><strong>Label and segregate</strong> similar films; use colour-coded roll tags</li><li><strong>First-metre inspection</strong> with QC sign-off before the full run; keep a retained sample of the laminate</li><li><strong>Structure confirmation</strong> test the first roll (thickness, burn/solvent test if needed) against the specification</li><li><strong>Escalate unclear job cards</strong> instead of running on assumptions</li></ol><div class="qc-check"><b>QC check:</b> Layer-by-layer check of the finished structure against the job card (thickness, orientation, print direction).</div></td>
+</tr>
+<tr>
+<td><strong>Bubbles in Laminate</strong></td>
+<td><ul><li>Trapped air/solvent in adhesive</li><li>Insufficient nip pressure</li><li>Contamination on the web</li><li>Improper unwind/rewind tension</li><li>Incorrect viscosity of adhesive</li></ul></td>
+<td><ol><li><strong>Ensure proper drying</strong> of adhesive before nipping</li><li>Adjust nip roll pressure and temperature</li><li><strong>Keep webs clean</strong> with air knives and static eliminators</li><li><strong>Optimize tension profile</strong> throughout the process</li><li><strong>Check adhesive viscosity</strong> and adjust if necessary</li></ol></td>
+</tr>
+<tr>
+<td><strong>Wrinkles in Laminated Structure</strong></td>
+<td><ul><li>Misaligned rollers</li><li>Uneven tension across web width</li><li>Gauge variation in substrates</li><li>Improper web guiding</li><li>Differential stretch between materials</li></ul></td>
+<td><ol><li><strong>Check roller alignment</strong> regularly</li><li><strong>Balance tension</strong> across entire web width</li><li><strong>Inspect incoming materials</strong> for gauge consistency</li><li><strong>Calibrate web guides</strong> and edge detection</li><li><strong>Match material properties</strong> when designing structures</li></ol></td>
+</tr>
+<tr>
+<td><strong>Tunneling &amp; Curl</strong><br></td>
+<td><ul><li>Different tension or shrinkage in the two webs</li><li>Uneven adhesive coating weight</li><li>Nip pressure not uniform across the width</li><li>Curing under tight or uneven roll tension</li></ul></td>
+<td><ol><li><strong>Match tension</strong> of both webs at the laminator</li><li><strong>Check adhesive coating uniformity</strong> across the width</li><li><strong>Re-set nip pressure</strong> and inspect nip roll condition</li><li><strong>Reduce rewind tension</strong> on freshly laminated rolls</li></ol></td>
+</tr>
+<tr>
+<td><strong>Residual Solvent / Odor in Laminate</strong><br></td>
+<td><ul><li>Adhesive not fully dried in the oven</li><li>Wrong oven temperature or airflow for the line speed</li><li>Solvent-based adhesive retained between layers (dense barrier films)</li><li>Insufficient curing time before use</li></ul></td>
+<td><ol><li><strong>Verify oven settings</strong> and exhaust for the line speed</li><li><strong>Measure residual solvent</strong> on food/pharma structures (GC)</li><li><strong>Allow adequate curing</strong> before release to slitting</li></ol></td>
+</tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="tips-card">
                 <div class="tips-head">&#128203; Additional Tips for Lamination Team</div>
-                <div class="tips-body">
-                    <ul class="mb-0">
-                        <li><strong>Batch records:</strong> Document every batch with parameters and results</li>
-                        <li><strong>Adhesive testing:</strong> Regular testing of pot life and performance</li>
-                        <li><strong>Curing monitoring:</strong> Implement system to track curing time for each roll</li>
-                        <li><strong>Cross-training:</strong> Ensure operators understand adhesive chemistry basics</li>
-                        <li><strong>Supplier partnership:</strong> Work with adhesive suppliers on optimization</li>
-                    </ul>
-                </div>
+                <div class="tips-body"><ul class="mb-0"><li><strong>Batch records:</strong> Document every batch with parameters and results</li><li><strong>Adhesive testing:</strong> Regular testing of pot life and performance</li><li><strong>Curing monitoring:</strong> Implement system to track curing time for each roll</li><li><strong>Cross-training:</strong> Ensure operators understand adhesive chemistry basics</li><li><strong>Supplier partnership:</strong> Work with adhesive suppliers on optimization</li><li><strong>Film knowledge:</strong> Run regular film-identification training and keep a sample board at the laminator</li><li><strong>Job card discipline:</strong> No run starts until the job card is read, signed and matched to the roll labels</li></ul></div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Slitting Section -->
+<!-- Slitting Department Section -->
 <section id="slitting" class="department-section">
     <div class="panel-card accent-amber">
         <div class="panel-head head-amber">
@@ -671,106 +381,52 @@
         </div>
         <div class="panel-body">
             <div class="alert alert-info">
-                <strong>Key Takeaway for Slitting Team:</strong> Blade maintenance is not optional -
-                Dull blades cost more in rejects than replacement blades.
+                <strong>Key Takeaway for Slitting Team:</strong> Blade maintenance is not optional - dull blades cost more in rejects than replacement blades. On coated orders, test every lane for sealing before release.
             </div>
 
             <div class="table-responsive">
                 <table class="table table-striped dept-table">
                     <thead class="table-dark">
-                        <tr>
-                            <th width="20%">Common Error</th>
-                            <th width="40%">Root Causes</th>
-                            <th width="40%">Troubleshooting Steps</th>
-                        </tr>
+                        <tr><th width="20%">Common Error</th><th width="40%">Root Causes</th><th width="40%">Troubleshooting Steps</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Poor Slitting (Burrs, Waves)</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Dull or damaged slitter blades</li>
-                                    <li>Incorrect blade overlap/penetration</li>
-                                    <li>Poor web tension control</li>
-                                    <li>Misaligned rollers</li>
-                                    <li>Incorrect blade type for material</li>
-                                    <li>Worn bearings or mechanical components</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Blade maintenance schedule:</strong> Replace based on meterage</li>
-                                    <li><strong>Precision setup:</strong> Use feeler gauges for blade setting</li>
-                                    <li><strong>Tension profiling:</strong> Optimize for different materials</li>
-                                    <li><strong>Roller alignment check</strong> during changeovers</li>
-                                    <li><strong>Blade selection guide</strong> for different materials</li>
-                                    <li><strong>Preventive maintenance</strong> on mechanical components</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Deformed / Dented Cores</strong></td>
-                            <td>
-                                <ul>
-                                    <li><strong>Human Error:</strong> Using damaged cores at startup</li>
-                                    <li>Excessive winding tension</li>
-                                    <li>Poor core support during handling/storage</li>
-                                    <li>Incorrect core size for application</li>
-                                    <li>Rough handling during transportation</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Inspect cores at unloading:</strong> Reject damaged cores from supplier</li>
-                                    <li><strong>Inspect cores at rewind:</strong> Do not mount damaged core</li>
-                                    <li><strong>Train staff</strong> on proper core handling techniques</li>
-                                    <li><strong>Optimize winding tension</strong> for core strength</li>
-                                    <li><strong>Core specification review</strong> for heavy materials</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Poor Roll Hardness</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Inconsistent tension during winding</li>
-                                    <li>Incorrect taper profile</li>
-                                    <li>Air entrapment during winding</li>
-                                    <li>Too much or too little nip pressure</li>
-                                    <li>Material too slippery or too tacky</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Standardize tension settings</strong> for each material type</li>
-                                    <li><strong>Optimize taper profile</strong> based on roll diameter</li>
-                                    <li><strong>Use spreader rolls</strong> to eliminate air entrapment</li>
-                                    <li><strong>Adjust nip pressure</strong> according to material characteristics</li>
-                                    <li><strong>Test roll hardness</strong> regularly with durometer</li>
-                                </ol>
-                            </td>
-                        </tr>
+<tr>
+<td><strong>Poor Slitting (Burrs, Waves)</strong></td>
+<td><ul><li>Dull or damaged slitter blades</li><li>Incorrect blade overlap/penetration</li><li>Poor web tension control</li><li>Misaligned rollers</li><li>Incorrect blade type for material</li><li>Worn bearings or mechanical components</li></ul></td>
+<td><ol><li><strong>Blade maintenance schedule</strong> Replace based on meterage</li><li><strong>Precision setup</strong> Use feeler gauges for blade setting</li><li><strong>Tension profiling</strong> Optimize for different materials</li><li><strong>Roller alignment check</strong> during changeovers</li><li><strong>Blade selection guide</strong> for different materials</li><li><strong>Preventive maintenance</strong> on mechanical components</li></ol></td>
+</tr>
+<tr>
+<td><strong>Sealing Failure of Coated Orders Due to Poor Balancing of OPV</strong><br></td>
+<td><ul><li><strong>OPV not balanced across the web width</strong> the slit rolls come from areas with different coating weights</li><li>Edge lanes carrying heavy or light OPV compared with the centre</li><li>Slit position placing OPV where the customer needs a seal (or cutting through the sealing area)</li><li>Slit lane layout not matched to the coating/OPV pattern on the printed web</li><li>Poor coating weight or cure records transferred from the printing department</li><li>No seal test on each slit lane before release</li><li>Coating migration onto the seal surface in rolls stored for long periods</li></ul></td>
+<td><ol><li><strong>Request the coating profile</strong> (weight and pattern) from printing before planning the slit layout</li><li><strong>Seal-test samples</strong> from each lane (edges and centre) on every coated order before the rolls are released</li><li><strong>Plan slit lanes</strong> so seal areas fall on correctly coated zones; avoid mixing heavy and light OPV in one set of rolls</li><li><strong>Hold and segregate</strong> lanes that fail the seal test; feed back results to printing to rebalance the coating</li><li><strong>Label slit rolls</strong> with lane position so failures can be traced to web position</li><li><strong>Share seal data</strong> with bag-making/the customer, including the sealing parameters used</li><li><strong>Review the coating balance</strong> at the next print run with the anilox/coating supplier</li></ol><div class="qc-check"><b>QC check:</b> Seal strength (N/15 mm) on samples from every lane versus the spec, at the customer's sealing conditions.</div></td>
+</tr>
+<tr>
+<td><strong>Deformed / Dented Cores</strong></td>
+<td><ul><li><strong>Human Error</strong> Using damaged cores at startup</li><li>Excessive winding tension</li><li>Poor core support during handling/storage</li><li>Incorrect core size for application</li><li>Rough handling during transportation</li></ul></td>
+<td><ol><li><strong>Inspect cores at unloading</strong> Reject damaged cores from supplier</li><li><strong>Inspect cores at rewind</strong> Do not mount damaged core</li><li><strong>Train staff</strong> on proper core handling techniques</li><li><strong>Optimize winding tension</strong> for core strength</li><li><strong>Core specification review</strong> for heavy materials</li></ol></td>
+</tr>
+<tr>
+<td><strong>Poor Roll Hardness</strong></td>
+<td><ul><li>Inconsistent tension during winding</li><li>Incorrect taper profile</li><li>Air entrapment during winding</li><li>Too much or too little nip pressure</li><li>Material too slippery or too tacky</li></ul></td>
+<td><ol><li><strong>Standardize tension settings</strong> for each material type</li><li><strong>Optimize taper profile</strong> based on roll diameter</li><li><strong>Use spreader rolls</strong> to eliminate air entrapment</li><li><strong>Adjust nip pressure</strong> according to material characteristics</li><li><strong>Test roll hardness</strong> regularly with durometer</li></ol></td>
+</tr>
+<tr>
+<td><strong>Wrong Width, Telescoping &amp; Wrong Unwind Direction</strong><br></td>
+<td><ul><li>Slit width set incorrectly or not checked after setup</li><li>Edge guiding or tension fault during winding</li><li>Rolls wound with the print or treated side in the wrong direction</li><li>Job card does not state the unwind direction</li></ul></td>
+<td><ol><li><strong>Measure width</strong> on first roll and each set</li><li><strong>Check unwind direction</strong> and print orientation against the job card</li><li><strong>Correct guiding and tension</strong> before running</li><li><strong>Label every roll</strong> with direction arrows</li></ol></td>
+</tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="tips-card">
                 <div class="tips-head">&#128203; Additional Tips for Slitting Team</div>
-                <div class="tips-body">
-                    <ul class="mb-0">
-                        <li><strong>Blade inventory management:</strong> Keep adequate stock of commonly used blades</li>
-                        <li><strong>Setup documentation:</strong> Record optimal settings for repeat jobs</li>
-                        <li><strong>Roll handling training:</strong> Proper techniques to prevent edge damage</li>
-                        <li><strong>Quality gates:</strong> Inspection points before rolls leave department</li>
-                        <li><strong>Communication with previous steps:</strong> Feedback loop on material issues</li>
-                    </ul>
-                </div>
+                <div class="tips-body"><ul class="mb-0"><li><strong>Blade inventory management:</strong> Keep adequate stock of commonly used blades</li><li><strong>Setup documentation:</strong> Record optimal settings for repeat jobs</li><li><strong>Roll handling training:</strong> Proper techniques to prevent edge damage</li><li><strong>Quality gates:</strong> Inspection points before rolls leave department; seal test on all coated orders</li><li><strong>Communication with previous steps:</strong> Feedback loop on material issues, especially coating balance</li><li><strong>Traceability:</strong> Record the slit lane position on every roll</li></ul></div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Bag Making Section -->
+<!-- Bag Making Department Section -->
 <section id="bag-making" class="department-section">
     <div class="panel-card accent-rose">
         <div class="panel-head head-rose">
@@ -779,256 +435,115 @@
         </div>
         <div class="panel-body">
             <div class="alert alert-info">
-                <strong>Key Takeaway for Bag Making Team:</strong> You are the last line of defense -
-                Reject faulty material rather than making faulty bags.
+                <strong>Key Takeaway for Bag Making Team:</strong> You are the last line of defense - Reject faulty material rather than making faulty bags.
             </div>
 
             <div class="table-responsive">
                 <table class="table table-striped dept-table">
                     <thead class="table-dark">
-                        <tr>
-                            <th width="20%">Common Error</th>
-                            <th width="40%">Root Causes</th>
-                            <th width="40%">Troubleshooting Steps</th>
-                        </tr>
+                        <tr><th width="20%">Common Error</th><th width="40%">Root Causes</th><th width="40%">Troubleshooting Steps</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <strong>Weak Seals / Leaking Bags</strong><br>
-                                <span class="badge bg-danger">HIGH FREQUENCY</span>
-                            </td>
-                            <td>
-                                <ul>
-                                    <li><strong>Extrusion Issue:</strong> Incorrect sealant layer or gauge variation</li>
-                                    <li><strong>Contamination:</strong> Ink or slip additive on seal area</li>
-                                    <li>Incorrect sealing parameters (temp, pressure, time)</li>
-                                    <li>Worn or dirty seal bars</li>
-                                    <li>Misaligned sealing jaws</li>
-                                    <li>Material not designed for application</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Verify film structure</strong> is correct for application</li>
-                                    <li><strong>Conduct seal strength tests</strong> regularly (burst test)</li>
-                                    <li><strong>Optimize and document</strong> sealer settings for each job</li>
-                                    <li><strong>Clean and maintain</strong> seal bars and Teflon coatings</li>
-                                    <li><strong>Check jaw alignment</strong> and parallelism</li>
-                                    <li><strong>Review material specification</strong> with technical team</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Bags Tearing (Gussets/Sides)</strong></td>
-                            <td>
-                                <ul>
-                                    <li><strong>Extrusion Issue:</strong> Low tensile/impact strength</li>
-                                    <li><strong>Design Flaw:</strong> Sharp corners on gussets/handles</li>
-                                    <li>Worn or misaligned cutting dies</li>
-                                    <li>Incorrect handling during production</li>
-                                    <li>Material too thin for application</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Root cause analysis:</strong> Material property or cutting issue?</li>
-                                    <li><strong>Review and modify</strong> die design if specific point fails</li>
-                                    <li><strong>Replace or sharpen</strong> cutting blades regularly</li>
-                                    <li><strong>Train operators</strong> on proper bag handling</li>
-                                    <li><strong>Gauge verification</strong> of incoming material</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Wrong Size / Poor Gusseting</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Machine misalignment</li>
-                                    <li>Incorrect machine settings (fold plate, guides)</li>
-                                    <li><strong>Human Error:</strong> Wrong job parameters entered</li>
-                                    <li>Worn mechanical components</li>
-                                    <li>Material stretching during processing</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>First-piece inspection:</strong> Measure first 10 bags completely</li>
-                                    <li><strong>Standard setup sheets:</strong> Checklist for each bag type</li>
-                                    <li><strong>Parameter verification:</strong> Two-person check for new jobs</li>
-                                    <li><strong>Preventive maintenance:</strong> Regular check of mechanical wear</li>
-                                    <li><strong>Tension control:</strong> Minimize stretching during conversion</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Incorrect Quantity</strong></td>
-                            <td>
-                                <ul>
-                                    <li><strong>Human Error:</strong> Poor counting or recording</li>
-                                    <li>Inaccurate bag counter on machine</li>
-                                    <li>Bags sticking together in count</li>
-                                    <li>Inconsistent bag length affecting count</li>
-                                    <li>No verification process</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Automate counting:</strong> Use and maintain photo-eye counters</li>
-                                    <li><strong>Weight verification:</strong> Correlate weight with bag count</li>
-                                    <li><strong>Double-check</strong> by second operator for final packing</li>
-                                    <li><strong>Standardize packaging</strong> with clear quantity labeling</li>
-                                    <li><strong>Regular calibration</strong> of counting equipment</li>
-                                </ol>
-                            </td>
-                        </tr>
+<tr>
+<td><strong>Weak Seals / Leaking Bags</strong><br><span class="badge bg-danger">HIGH FREQUENCY</span></td>
+<td><ul><li><strong>Extrusion Issue</strong> Incorrect sealant layer or gauge variation</li><li><strong>Contamination</strong> Ink or slip additive on seal area</li><li><strong>Coating</strong> OPV or coating on the seal area, or uneven coating balance</li><li>Incorrect sealing parameters (temp, pressure, time)</li><li>Worn or dirty seal bars</li><li>Misaligned sealing jaws</li><li>Material not designed for application</li></ul></td>
+<td><ol><li><strong>Verify film structure</strong> is correct for application</li><li><strong>Conduct seal strength tests</strong> regularly (burst test)</li><li><strong>Optimize and document</strong> sealer settings for each job</li><li><strong>Clean and maintain</strong> seal bars and Teflon coatings</li><li><strong>Check jaw alignment</strong> and parallelism</li><li><strong>Review material specification</strong> with technical team</li></ol></td>
+</tr>
+<tr>
+<td><strong>Bags Tearing (Gussets/Sides)</strong></td>
+<td><ul><li><strong>Extrusion Issue</strong> Low tensile/impact strength</li><li><strong>Design Flaw</strong> Sharp corners on gussets/handles</li><li>Worn or misaligned cutting dies</li><li>Incorrect handling during production</li><li>Material too thin for application</li></ul></td>
+<td><ol><li><strong>Root cause analysis</strong> Material property or cutting issue?</li><li><strong>Review and modify</strong> die design if specific point fails</li><li><strong>Replace or sharpen</strong> cutting blades regularly</li><li><strong>Train operators</strong> on proper bag handling</li><li><strong>Gauge verification</strong> of incoming material</li></ol></td>
+</tr>
+<tr>
+<td><strong>Wrong Size / Poor Gusseting</strong></td>
+<td><ul><li>Machine misalignment</li><li>Incorrect machine settings (fold plate, guides)</li><li><strong>Human Error</strong> Wrong job parameters entered</li><li>Worn mechanical components</li><li>Material stretching during processing</li></ul></td>
+<td><ol><li><strong>First-piece inspection</strong> Measure first 10 bags completely</li><li><strong>Standard setup sheets</strong> Checklist for each bag type</li><li><strong>Parameter verification</strong> Two-person check for new jobs</li><li><strong>Preventive maintenance</strong> Regular check of mechanical wear</li><li><strong>Tension control</strong> Minimize stretching during conversion</li></ol></td>
+</tr>
+<tr>
+<td><strong>Incorrect Quantity</strong></td>
+<td><ul><li><strong>Human Error</strong> Poor counting or recording</li><li>Inaccurate bag counter on machine</li><li>Bags sticking together in count</li><li>Inconsistent bag length affecting count</li><li>No verification process</li></ul></td>
+<td><ol><li><strong>Automate counting</strong> Use and maintain photo-eye counters</li><li><strong>Weight verification</strong> Correlate weight with bag count</li><li><strong>Double-check</strong> by second operator for final packing</li><li><strong>Standardize packaging</strong> with clear quantity labeling</li><li><strong>Regular calibration</strong> of counting equipment</li></ol></td>
+</tr>
+<tr>
+<td><strong>Bags Cut Off-Register / Print Misaligned to Seal</strong><br></td>
+<td><ul><li>Eye-mark sensor misread or dirty</li><li>Print repeat length variation from printing</li><li>Film stretching during conversion</li><li>Incorrect cut length set for the job</li></ul></td>
+<td><ol><li><strong>Check sensor setting</strong> and clean the eye mark</li><li><strong>Measure print repeat</strong> against the job card</li><li><strong>Reduce tension</strong> to avoid stretch</li><li><strong>Verify cut length</strong> on the first piece</li></ol></td>
+</tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="tips-card">
-                <div class="tips-head">&#128203; Additional Tips for Bag Making Team</div>
-                <div class="tips-body">
-                    <ul class="mb-0">
-                        <li><strong>First/last bag inspection:</strong> Check first and last bags of every run</li>
-                        <li><strong>Sample retention:</strong> Keep samples from each production run</li>
-                        <li><strong>Machine capability studies:</strong> Understand limitations of each machine</li>
-                        <li><strong>Cross-training:</strong> Operators should be able to run multiple machines</li>
-                        <li><strong>Feedback system:</strong> Formal process to report material issues upstream</li>
-                    </ul>
-                </div>
+                <div class="tips-head">&#128203; Additional Tips for Bag Team</div>
+                <div class="tips-body"><ul class="mb-0"><li><strong>First/last bag inspection:</strong> Check first and last bags of every run</li><li><strong>Sample retention:</strong> Keep samples from each production run</li><li><strong>Machine capability studies:</strong> Understand limitations of each machine</li><li><strong>Cross-training:</strong> Operators should be able to run multiple machines</li><li><strong>Feedback system:</strong> Formal process to report material issues upstream</li></ul></div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Sales Section -->
+<!-- Sales Department Section -->
 <section id="sales" class="department-section">
     <div class="panel-card accent-green">
         <div class="panel-head head-green">
-            <h2>Sales</h2>
+            <h2>Sales Department</h2>
             <p class="mb-0">The starting point - Errors here waste all production effort</p>
         </div>
         <div class="panel-body">
             <div class="alert alert-info">
-                <strong>Key Takeaway for Sales Team:</strong> A perfect sale has zero surprises -
-                Over-communication prevents 100% of specification errors.
+                <strong>Key Takeaway for Sales Team:</strong> A perfect sale has zero surprises - understand the end use and the customer's machine, treat any new material as a new product, and only accept what the plant can deliver.
             </div>
 
             <div class="table-responsive">
                 <table class="table table-striped dept-table">
                     <thead class="table-dark">
-                        <tr>
-                            <th width="20%">Common Error</th>
-                            <th width="40%">Root Causes</th>
-                            <th width="40%">Troubleshooting Steps</th>
-                        </tr>
+                        <tr><th width="20%">Common Error</th><th width="40%">Root Causes</th><th width="40%">Troubleshooting Steps</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <strong>Wrong Product Specs on Job Card</strong><br>
-                                <span class="badge bg-danger">CRITICAL ERROR</span>
-                            </td>
-                            <td>
-                                <ul>
-                                    <li><strong>Insufficient Information:</strong> From customer</li>
-                                    <li>Miscommunication or assumptions</li>
-                                    <li>Lack of technical knowledge in sales team</li>
-                                    <li>No system for verifying customer requirements</li>
-                                    <li>Rushing order entry process</li>
-                                    <li>Language barriers with international customers</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Standardized order form:</strong> Mandatory fields for all specs</li>
-                                    <li><strong>Technical review:</strong> All orders reviewed by production manager</li>
-                                    <li><strong>Customer approval:</strong> Signed approval of mock-up/proof</li>
-                                    <li><strong>Sales training:</strong> Technical aspects of products</li>
-                                    <li><strong>Checklist verification:</strong> Before order enters production</li>
-                                    <li><strong>Clarification process:</strong> For ambiguous requirements</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Wrong Material / Print Direction</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Salesperson selects wrong product from list</li>
-                                    <li>Ambiguous instructions (e.g., "mirror image")</li>
-                                    <li>Misinterpretation of customer needs</li>
-                                    <li>Inadequate product knowledge</li>
-                                    <li>Copying errors from previous orders</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Product code system:</strong> Unique, unambiguous codes</li>
-                                    <li><strong>Visual aids:</strong> Diagrams showing orientation on job card</li>
-                                    <li><strong>Standard terminology:</strong> Company-wide definitions</li>
-                                    <li><strong>Product training:</strong> Regular updates for sales team</li>
-                                    <li><strong>Order template library:</strong> For repeat customers</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Incorrect Delivery Timing</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Over-optimistic production time estimates</li>
-                                    <li>Failure to check production capacity</li>
-                                    <li>Not accounting for material lead times</li>
-                                    <li>Poor communication with production planning</li>
-                                    <li>Promise dates without verification</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Realistic lead times:</strong> Based on historical data</li>
-                                    <li><strong>Capacity checking:</strong> Verify before promising dates</li>
-                                    <li><strong>Material availability:</strong> Confirm with purchasing</li>
-                                    <li><strong>Regular production meetings:</strong> Sales and production alignment</li>
-                                    <li><strong>Customer communication:</strong> Proactive updates on delays</li>
-                                </ol>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Pricing Errors</strong></td>
-                            <td>
-                                <ul>
-                                    <li>Incorrect material cost calculations</li>
-                                    <li>Not accounting for production complexity</li>
-                                    <li>Outdated pricing information</li>
-                                    <li>Manual calculation errors</li>
-                                    <li>Not including all cost components</li>
-                                </ul>
-                            </td>
-                            <td>
-                                <ol>
-                                    <li><strong>Automated pricing tools:</strong> Reduce manual calculations</li>
-                                    <li><strong>Regular cost updates:</strong> From purchasing department</li>
-                                    <li><strong>Technical review:</strong> Complex jobs priced with production input</li>
-                                    <li><strong>Checklist pricing:</strong> Ensure all cost elements included</li>
-                                    <li><strong>Management approval:</strong> For non-standard pricing</li>
-                                </ol>
-                            </td>
-                        </tr>
+<tr>
+<td><strong>Wrong Product Specs on Job Card</strong><br><span class="badge bg-warning text-dark">CRITICAL ERROR</span></td>
+<td><ul><li><strong>Insufficient Information</strong> From customer</li><li>Miscommunication or assumptions</li><li>Lack of technical knowledge in sales team</li><li>No system for verifying customer requirements</li><li>Rushing order entry process</li><li>Language barriers with international customers</li></ul></td>
+<td><ol><li><strong>Standardized order form</strong> Mandatory fields for all specs</li><li><strong>Technical review</strong> All orders reviewed by production manager</li><li><strong>Customer approval</strong> Signed approval of mock-up/proof</li><li><strong>Sales training</strong> Technical aspects of products</li><li><strong>Checklist verification</strong> Before order enters production</li><li><strong>Clarification process</strong> For ambiguous requirements</li></ol></td>
+</tr>
+<tr>
+<td><strong>Wrong Material / Print Direction</strong></td>
+<td><ul><li>Salesperson selects wrong product from list</li><li>Ambiguous instructions (e.g., &quot;mirror image&quot;)</li><li>Misinterpretation of customer needs</li><li>Inadequate product knowledge</li><li>Copying errors from previous orders</li></ul></td>
+<td><ol><li><strong>Product code system</strong> Unique, unambiguous codes</li><li><strong>Visual aids</strong> Diagrams showing orientation on job card</li><li><strong>Standard terminology</strong> Company-wide definitions</li><li><strong>Product training</strong> Regular updates for sales team</li><li><strong>Order template library</strong> For repeat customers</li></ol></td>
+</tr>
+<tr>
+<td><strong>Failure to Identify the End-Use Environment (Critical for Food/Pharma)</strong><br></td>
+<td><ul><li>Order taken without asking what the product will contain or where it will be used</li><li>Not asking about hot-fill, retort, freezing, humidity or product-contact conditions</li><li>Barrier, migration or food-contact compliance requirements not captured</li><li>Shelf-life expectations not discussed</li><li>Sales team assuming the same film suits all products</li><li>Odor, taint and residual solvent limits not specified</li></ul></td>
+<td><ol><li><strong>End-use questionnaire</strong> mandatory on the order form: product, fill temperature, storage, shelf life, sterilisation, regulatory market</li><li><strong>Technical review</strong> of end-use by QC/R&amp;D before quoting</li><li><strong>Food/pharma flag</strong> on the job card triggers extra tests (residual solvent, odour, migration)</li><li><strong>Obtain compliance declarations</strong> from suppliers for the structure</li><li><strong>Document the agreed end use</strong> in the signed customer approval</li></ol><div class="qc-check"><b>QC check:</b> Customer-signed end-use declaration attached to the job card.</div></td>
+</tr>
+<tr>
+<td><strong>Ignoring the Customer's Machinery Specs (COF Mismatch)</strong><br></span></td>
+<td><ul><li>Customer's filling or bag-making machine type and speed not recorded</li><li>COF requirement not asked for or not on the job card</li><li>Sealing temperature, pressure and dwell of the customer not captured</li><li>Core size, roll diameter, unwind direction or tension limits ignored</li><li>Assuming the film that worked before will run on a new machine</li></ul></td>
+<td><ol><li><strong>Machine data sheet</strong> in the order form: machine make, speed, jaw type, sealing parameters, COF range, core and roll specs</li><li><strong>Pass the specs</strong> to extrusion, printing and slitting through the job card</li><li><strong>Offer pilot rolls</strong> or trials for new machines before the full order</li><li><strong>Record the COF window</strong> and test against it at QC</li><li><strong>Keep a customer machine profile</strong> for repeat orders</li></ol><div class="qc-check"><b>QC check:</b> COF (static/kinetic), seal curve and roll dimensions checked against the customer's machine data sheet.</div></td>
+</tr>
+<tr>
+<td><strong>Treating &quot;New Film/Resin&quot; as a Repeat Order</strong><br></td>
+<td><ul><li>Resin, masterbatch, ink, adhesive or coating supplier changed but the order is processed as a repeat</li><li>Spec changes (gauge, structure, colour) not reflected on a new job card</li><li>Assuming the previous approval still applies</li><li>Lack of a change-control process</li><li>Sales or planning copying the old job card without confirmation</li></ul></td>
+<td><ol><li><strong>Change-control rule</strong> any change in material, supplier, structure or machine makes the order a new product</li><li><strong>Trial run and QC approval</strong> before the full order is processed</li><li><strong>Revalidate</strong> key properties (seal, COF, bond, optical) on the new material</li><li><strong>Obtain the customer's sign-off</strong> on the sample</li><li><strong>Update the product master</strong> and job card version after approval</li></ol><div class="qc-check"><b>QC check:</b> First-run test report compared with the previous approved product for all critical properties.</div></td>
+</tr>
+<tr>
+<td><strong>Accepting Orders Beyond the Plant's Technical Capabilities</strong><br></span></td>
+<td><ul><li>Structure, gauge, width or print specification outside machine limits</li><li>Tolerances tighter than the plant can hold</li><li>Quantity or lead time that cannot be met without compromising quality</li><li>Orders needing equipment or tests the plant does not have</li><li>Pressure to win business without technical feasibility review</li></ul></td>
+<td><ol><li><strong>Feasibility check</strong> by production/QC for every new or unusual order, signed before acceptance</li><li><strong>Capability matrix</strong> of machines (min/max gauge, width, colours, structures) available to sales</li><li><strong>Say no or propose alternatives</strong> when a requirement cannot be met</li><li><strong>Pilot batch</strong> before accepting large orders on new capabilities</li><li><strong>Review tolerances</strong> against process capability data</li></ol><div class="qc-check"><b>QC check:</b> Signed feasibility sheet from production/QC before the order is released.</div></td>
+</tr>
+<tr>
+<td><strong>Incorrect Delivery Timing</strong></td>
+<td><ul><li>Over-optimistic production time estimates</li><li>Failure to check production capacity</li><li>Not accounting for material lead times</li><li>Poor communication with production planning</li><li>Promise dates without verification</li><li>Curing/cooling or testing time ignored</li></ul></td>
+<td><ol><li><strong>Realistic lead times</strong> Based on historical data</li><li><strong>Capacity checking</strong> Verify before promising dates</li><li><strong>Material availability</strong> Confirm with purchasing</li><li><strong>Regular production meetings</strong> Sales and production alignment</li><li><strong>Customer communication</strong> Proactive updates on delays</li></ol></td>
+</tr>
+<tr>
+<td><strong>Pricing Errors</strong></td>
+<td><ul><li>Incorrect material cost calculations</li><li>Not accounting for production complexity</li><li>Outdated pricing information</li><li>Manual calculation errors</li><li>Not including all cost components</li></ul></td>
+<td><ol><li><strong>Automated pricing tools</strong> Reduce manual calculations</li><li><strong>Regular cost updates</strong> From purchasing department</li><li><strong>Technical review</strong> Complex jobs priced with production input</li><li><strong>Checklist pricing</strong> Ensure all cost elements included</li><li><strong>Management approval</strong> For non-standard pricing</li></ol></td>
+</tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="tips-card">
                 <div class="tips-head">&#128203; Additional Tips for Sales Team</div>
-                <div class="tips-body">
-                    <ul class="mb-0">
-                        <li><strong>Factory visits:</strong> Sales team should regularly tour production facility</li>
-                        <li><strong>Technical glossary:</strong> Company-wide definitions of all terms</li>
-                        <li><strong>Sample library:</strong> Physical samples of all standard products</li>
-                        <li><strong>Customer education:</strong> Help customers understand specifications</li>
-                        <li><strong>Feedback loop:</strong> Regular meetings with production about order issues</li>
-                    </ul>
-                </div>
+                <div class="tips-body"><ul class="mb-0"><li><strong>Factory visits:</strong> Sales team should regularly tour production facility</li><li><strong>Technical glossary:</strong> Company-wide definitions of all terms</li><li><strong>Sample library:</strong> Physical samples of all standard products</li><li><strong>Customer education:</strong> Help customers understand specifications</li><li><strong>Feedback loop:</strong> Regular meetings with production about order issues</li><li><strong>Customer visits:</strong> See the customer's filling line and sealing conditions before agreeing specifications</li><li><strong>Order review gate:</strong> No order is released without end-use, machine specs, change-control and feasibility sign-offs</li></ul></div>
             </div>
         </div>
     </div>
@@ -1036,9 +551,7 @@
 
 <!-- Overall Recommendations -->
 <div class="panel-card accent-dim">
-    <div class="panel-head">
-        <h2>&#127942; Overall Recommendations &amp; Action Plan</h2>
-    </div>
+    <div class="panel-head"><h2>&#127942; Overall Recommendations &amp; Action Plan</h2></div>
     <div class="panel-body">
         <div class="row">
             <div class="col-md-6">
@@ -1046,10 +559,12 @@
                     <h5>Immediate Actions (30 Days)</h5>
                     <ul class="mb-0">
                         <li>Implement <strong>First-Piece Approval</strong> process across all departments</li>
-                        <li>Create <strong>Standardized Job Card</strong> with mandatory technical review</li>
+                        <li>Create <strong>Standardized Job Card</strong> with mandatory technical review, end-use and customer machine fields</li>
                         <li>Establish <strong>Daily Quality Meeting</strong> between department heads</li>
-                        <li>Launch <strong>Gauge Control SPC Program</strong> in extrusion</li>
+                        <li>Launch <strong>Gauge and Size Control SPC Program</strong> in extrusion</li>
                         <li>Implement <strong>Color Standards Library</strong> for printing</li>
+                        <li>Start a <strong>coated-order checklist</strong>: coating weight, COF, residual solvent and seal test per lane</li>
+                        <li>Introduce <strong>roll-to-job-card verification</strong> at lamination and slitting</li>
                     </ul>
                 </div>
             </div>
@@ -1057,16 +572,17 @@
                 <div class="sub-card">
                     <h5>Medium-Term Actions (90 Days)</h5>
                     <ul class="mb-0">
-                        <li>Develop <strong>Cross-Training Program</strong> between departments</li>
+                        <li>Develop <strong>Cross-Training Program</strong> between departments, including film identification</li>
                         <li>Implement <strong>Digital Workflow System</strong> from sales to production</li>
-                        <li>Establish <strong>Supplier Quality Program</strong> for raw materials</li>
+                        <li>Establish <strong>Supplier Quality Program</strong> for resins, inks, coatings and adhesives</li>
                         <li>Create <strong>Preventive Maintenance Schedule</strong> for all equipment</li>
                         <li>Develop <strong>Standard Operating Procedures</strong> for all major processes</li>
+                        <li>Set up a <strong>change-control and feasibility review</strong> gate for new materials and orders</li>
+                        <li>Build a <strong>customer machine profile</strong> database (COF, seal parameters, core and roll specs)</li>
                     </ul>
                 </div>
             </div>
         </div>
-
         <div class="sub-card mt-1">
             <h5>Long-Term Culture Changes</h5>
             <ul class="mb-0">
@@ -1075,6 +591,7 @@
                 <li>Establish <strong>continuous improvement teams</strong> for each department</li>
                 <li>Create <strong>quality metrics</strong> tied to performance reviews</li>
                 <li>Develop <strong>technical career path</strong> for operators</li>
+                <li>Build a <strong>complaint-to-root-cause feedback loop</strong> that traces customer failures back to roll, lane and process step</li>
             </ul>
         </div>
     </div>
