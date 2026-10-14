@@ -38,7 +38,14 @@
 #lcwCalendarPopover {
     min-width: 290px;
     padding: 12px;
+    /* Anchor under the clock. Bootstrap's Popper isn't managing this menu, and
+       the parent <li> is a flex container, so without an explicit top the menu
+       was vertically centred on the clock and its top got cut off. */
+    position: absolute;
+    top: 100%; bottom: auto;
     right: 0; left: auto;
+    margin-top: .9rem;
+    max-height: calc(100vh - 100px);
 }
 .lcw-cal-header {
     display: flex; align-items: center; justify-content: space-between; gap: 4px;
