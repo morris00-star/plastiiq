@@ -1,19 +1,21 @@
 <style>
+/* ===================== Calculator widget ===================== */
 #calculatorWidget {
     position: fixed;
     top: 80px;
     right: 30px;
-    width: 340px;
-    max-width: 95vw;
+    width: 372px;
+    max-width: calc(100vw - 16px);
     background: var(--bg-panel, #fff);
     color: var(--text-main, #171b21);
-    border: 1px solid var(--line, transparent);
-    border-radius: 10px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    border: 1px solid var(--line, #ddd);
+    border-radius: 14px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.35);
     z-index: 2000;
     display: none;
     flex-direction: column;
     overflow: hidden;
+    outline: none;
     transition: width .18s ease, height .18s ease, top .18s ease, left .18s ease,
                 right .18s ease, bottom .18s ease, border-radius .18s ease;
 }
@@ -21,279 +23,663 @@
 
 #calculatorWidget.maximized {
     top: 20px !important; left: 20px !important; right: auto !important; bottom: auto !important;
-    width: min(520px, calc(100vw - 40px)) !important;
+    width: min(460px, calc(100vw - 40px)) !important;
     height: calc(100vh - 40px) !important;
+    height: calc(100dvh - 40px) !important;
 }
-#calculatorWidget.maximized .calc-body { max-height: calc(100vh - 100px); }
+#calculatorWidget.maximized .calc-body { flex: 1; overflow-y: auto; }
 
 #calculatorWidget.docked-left,
 #calculatorWidget.docked-right {
     top: 0 !important; bottom: 0 !important;
-    height: 100vh !important;
-    width: min(360px, 95vw) !important;
+    height: 100vh !important; height: 100dvh !important;
+    width: min(380px, 95vw) !important;
     border-radius: 0;
 }
-#calculatorWidget.docked-left { left: 0 !important; right: auto !important; border-right: 1px solid var(--line, #ddd); }
+#calculatorWidget.docked-left  { left: 0 !important; right: auto !important; border-right: 1px solid var(--line, #ddd); }
 #calculatorWidget.docked-right { right: 0 !important; left: auto !important; border-left: 1px solid var(--line, #ddd); }
 #calculatorWidget.docked-left .calc-body,
-#calculatorWidget.docked-right .calc-body { max-height: calc(100vh - 56px); }
+#calculatorWidget.docked-right .calc-body { flex: 1; overflow-y: auto; }
 
 #calculatorWidget.minimized {
     top: auto !important; left: auto !important;
     bottom: 20px !important; right: 20px !important;
     width: auto !important; height: auto !important;
+    border-radius: 999px;
 }
 #calculatorWidget.minimized .calc-body { display: none; }
-#calculatorWidget.minimized .calc-titlebar { cursor: pointer; border-radius: 10px; }
-#calculatorWidget.minimized .calc-titlebar span span { display: none; }
-#calculatorWidget.minimized .calc-window-btn[data-action="dockLeft"],
-#calculatorWidget.minimized .calc-window-btn[data-action="dockRight"],
-#calculatorWidget.minimized .calc-window-btn[data-action="maximize"] { display: none; }
+#calculatorWidget.minimized .calc-titlebar { cursor: pointer; border-radius: 999px; padding: 8px 10px 8px 16px; }
+#calculatorWidget.minimized .calc-window-btn:not([data-action="minimize"]):not([data-action="close"]) { display: none; }
+.calc-mini { display: none; font-family: var(--font-mono, monospace); font-weight: 700; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+#calculatorWidget.minimized .calc-mini { display: inline; }
+#calculatorWidget.minimized .calc-title-text { display: none; }
 
+/* ---- Title bar ---- */
 .calc-titlebar {
-    background: var(--violet, #8f7cf7);
+    background: linear-gradient(135deg, var(--violet, #8f7cf7), #6f5ce0);
     color: #fff;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    cursor: move;
-    user-select: none;
-    flex-shrink: 0;
-    touch-action: none;
+    padding: 9px 12px 9px 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    cursor: move; user-select: none; flex-shrink: 0; touch-action: none;
 }
-.calc-titlebar > span {
-    display: flex; align-items: center; gap: 8px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    font-size: .92rem; font-weight: 600;
-}
+.calc-title { display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; font-size: .92rem; font-weight: 600; }
 .calc-titlebar-controls { display: flex; align-items: center; flex-shrink: 0; }
 .calc-titlebar-controls button {
-    background: rgba(255,255,255,0.2);
-    border: none; color: #fff;
-    width: 30px; height: 30px;
-    border-radius: 4px; margin-left: 4px;
+    background: rgba(255,255,255,.18); border: none; color: #fff;
+    width: 30px; height: 30px; min-height: 0;
+    border-radius: 8px; margin-left: 4px;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: .8rem; flex-shrink: 0;
+    font-size: .78rem; flex-shrink: 0; cursor: pointer;
 }
-.calc-titlebar-controls button:hover { background: rgba(255,255,255,0.35); }
-.calc-titlebar-controls button.active { background: rgba(255,255,255,0.5); }
+.calc-titlebar-controls button:hover { background: rgba(255,255,255,.34); }
+.calc-titlebar-controls button.active { background: rgba(255,255,255,.5); }
 
-.calc-body { padding: 14px; overflow-y: auto; max-height: 75vh; background: var(--bg-panel, #fff); }
+/* ---- Body ---- */
+.calc-body { padding: 12px; overflow-y: auto; max-height: calc(100vh - 120px); max-height: calc(100dvh - 120px); }
 
-#calcMemoryFlag {
+.calc-screen {
+    background: var(--bg-void, #10141a);
+    border: 1px solid var(--line, #ddd);
+    border-radius: 12px;
+    padding: 8px 12px 10px;
+}
+.calc-screen-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 2px; min-height: 28px; }
+.calc-chips { display: flex; align-items: center; gap: 6px; }
+.calc-chip {
+    background: transparent; border: 1px solid var(--line, #ddd); color: var(--text-dim, #8b97a6);
+    font-family: var(--font-mono, monospace); font-size: .66rem; font-weight: 600; letter-spacing: .04em;
+    border-radius: 6px; padding: 3px 8px; min-height: 0; cursor: pointer; line-height: 1.2;
+}
+.calc-chip:hover { color: var(--violet, #8f7cf7); border-color: var(--violet, #8f7cf7); }
+.calc-chip.on { background: rgba(143,124,247,.18); color: var(--violet, #8f7cf7); border-color: var(--violet, #8f7cf7); }
+#calcMemoryFlag { font-family: var(--font-mono, monospace); font-size: .68rem; color: var(--molten, #ff7a45); white-space: nowrap; }
+
+.calc-main {
     font-family: var(--font-mono, 'Courier New', monospace);
-    font-size: .7rem;
-    color: var(--molten, #ff6b35);
-    min-height: 1rem;
-    margin-bottom: 2px;
+    font-size: 2rem; font-weight: 600; line-height: 1.2;
+    text-align: right; min-height: 2.4rem;
+    overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+    scrollbar-width: none; color: var(--text-main, #171b21);
 }
-#calcDisplay {
-    font-family: 'Courier New', monospace;
-    font-size: 1.7rem;
-    letter-spacing: .5px;
-    text-align: right;
+.calc-main::-webkit-scrollbar { display: none; }
+.calc-main.sz-m { font-size: 1.5rem; }
+.calc-main.sz-s { font-size: 1.15rem; }
+.calc-main.calc-error { font-size: 1.05rem; color: #f2578f; animation: calcShake .3s; }
+.calc-sub {
+    font-family: var(--font-mono, monospace); font-size: .82rem; color: var(--text-dim, #8b97a6);
+    text-align: right; min-height: 1.2rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; direction: rtl;
 }
-#calcGrid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-top: 10px;
-}
-.calc-btn {
-    padding: .6rem 0;
-    font-size: .88rem;
-    font-weight: 600;
-    border-radius: 7px;
-    border: 1px solid var(--line, #ced4da);
-    background: var(--bg-panel, #f5f5f5);
-    color: var(--text-main, #171b21);
-    transition: background .12s ease, transform .08s ease;
-    white-space: nowrap;
-}
-.calc-btn:active { transform: scale(0.94); }
-.calc-btn.calc-op { background: #eef1f5; color: var(--molten, #ff6b35); }
-.calc-btn.calc-fn { background: rgba(143, 124, 247, .12); color: var(--violet, #8f7cf7); }
-.calc-btn.calc-mem { background: rgba(47, 214, 198, .12); color: var(--teal, #2fd6c6); }
-.calc-btn.calc-clear { color: #dc3545; border-color: #dc3545; }
-.calc-btn.calc-equals {
-    grid-column: span 6;
-    background: var(--violet, #8f7cf7);
-    border-color: var(--violet, #8f7cf7);
-    color: #fff;
-    padding: .8rem 0;
-    font-size: 1.15rem;
-    margin-top: 2px;
-}
-.calc-btn.calc-equals:hover { filter: brightness(1.08); }
+.calc-sub > span { direction: ltr; unicode-bidi: plaintext; }
+@keyframes calcShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-@media (max-width: 768px) {
+/* ---- History ---- */
+.calc-history {
+    margin-top: 10px; border: 1px solid var(--line, #ddd); border-radius: 10px;
+    background: var(--bg-panel-raised, #f5f5f5); max-height: 170px; overflow-y: auto;
+}
+.calc-history[hidden] { display: none; }
+.calc-history-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: .72rem; color: var(--text-dim, #8b97a6); border-bottom: 1px solid var(--line, #ddd); position: sticky; top: 0; background: var(--bg-panel-raised, #f5f5f5); }
+.calc-history-head button { background: none; border: none; color: var(--molten, #ff7a45); font-size: .72rem; padding: 0; min-height: 0; cursor: pointer; }
+.calc-history-item { display: block; width: 100%; text-align: right; background: none; border: none; border-bottom: 1px solid var(--line, #ddd); padding: 6px 10px; color: var(--text-main, #171b21); min-height: 0; cursor: pointer; }
+.calc-history-item:last-child { border-bottom: none; }
+.calc-history-item:hover { background: rgba(143,124,247,.12); }
+.calc-history-item .h-expr { display: block; font-family: var(--font-mono, monospace); font-size: .7rem; color: var(--text-dim, #8b97a6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calc-history-item .h-res { display: block; font-family: var(--font-mono, monospace); font-size: .95rem; font-weight: 600; }
+.calc-history-empty { padding: 14px; text-align: center; color: var(--text-dim, #8b97a6); font-size: .8rem; }
+
+/* ---- Button grids ---- */
+.calc-grid { display: grid; gap: 6px; margin-top: 8px; }
+#calcMem  { grid-template-columns: repeat(4, 1fr); }
+#calcSci  { grid-template-columns: repeat(5, 1fr); display: none; }
+#calculatorWidget.calc-sci-open #calcSci { display: grid; }
+#calcGrid { grid-template-columns: repeat(4, 1fr); }
+
+.calc-btn {
+    height: 46px; min-height: 0; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 600;
+    border-radius: 10px; border: 1px solid var(--line, #ced4da);
+    background: var(--bg-panel-raised, #f5f5f5); color: var(--text-main, #171b21);
+    transition: background .12s ease, transform .08s ease, border-color .12s ease;
+    white-space: nowrap; cursor: pointer; touch-action: manipulation; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.calc-btn:hover { border-color: var(--violet, #8f7cf7); }
+.calc-btn:active { transform: scale(.94); }
+.calc-btn.calc-op    { color: var(--molten, #ff7a45); background: rgba(255,122,69,.10); }
+.calc-btn.calc-fn    { height: 38px; font-size: .84rem; color: var(--violet, #8f7cf7); background: rgba(143,124,247,.12); }
+#calcGrid .calc-btn.calc-fn { height: 46px; font-size: 1rem; }
+.calc-btn.calc-mem   { height: 30px; font-size: .74rem; color: var(--teal, #2fd6c6); background: rgba(47,214,198,.10); }
+.calc-btn.calc-clear { color: #f2578f; border-color: rgba(242,87,143,.55); background: rgba(242,87,143,.08); }
+.calc-btn.calc-equals { background: var(--violet, #8f7cf7); border-color: var(--violet, #8f7cf7); color: #fff; font-size: 1.25rem; }
+.calc-btn.calc-equals:hover { filter: brightness(1.1); }
+.calc-hint { margin: 8px 2px 0; font-size: .7rem; color: var(--text-dim, #8b97a6); }
+
+/* ---- Phones: bottom sheet ---- */
+@media (max-width: 640px) {
     #calculatorWidget:not(.minimized) {
-        top: 10px !important; left: 10px !important; right: 10px !important; bottom: 10px !important;
-        width: auto !important; height: auto !important;
-        max-width: none;
+        top: auto !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+        width: 100% !important; max-width: none; height: auto !important;
+        border-radius: 18px 18px 0 0; border-bottom: none;
+        max-height: 94vh; max-height: 94dvh;
+        padding-bottom: env(safe-area-inset-bottom);
     }
-    #calculatorWidget:not(.minimized) .calc-body { max-height: calc(100vh - 90px); }
+    #calculatorWidget:not(.minimized) .calc-body { max-height: none; flex: 1; padding: 10px 12px 14px; }
+    #calculatorWidget.minimized { bottom: calc(16px + env(safe-area-inset-bottom)) !important; right: 14px !important; }
     .calc-window-btn[data-action="dockLeft"],
-    .calc-window-btn[data-action="dockRight"] { display: none; }
-    .calc-titlebar-controls button { width: 36px; height: 36px; }
-    .calc-btn { font-size: .78rem; padding: .5rem 0; }
+    .calc-window-btn[data-action="dockRight"],
+    .calc-window-btn[data-action="maximize"] { display: none; }
+    .calc-titlebar { cursor: default; }
+    .calc-titlebar-controls button { width: 38px; height: 38px; font-size: .9rem; }
+    .calc-btn { height: 52px; font-size: 1.1rem; }
+    .calc-btn.calc-fn { height: 42px; }
+    #calcGrid .calc-btn.calc-fn { height: 52px; }
+    .calc-btn.calc-mem { height: 34px; }
+    .calc-main { font-size: 2.2rem; }
+    .calc-hint { display: none; }
+}
+@media (max-height: 560px) and (max-width: 640px) {
+    .calc-btn { height: 42px; }
+    #calcGrid .calc-btn.calc-fn { height: 42px; }
 }
 </style>
 
-<div id="calculatorWidget" role="dialog" aria-label="Calculator">
+<div id="calculatorWidget" role="dialog" aria-label="Calculator" tabindex="-1">
     <div class="calc-titlebar" id="calcTitlebar">
-        <span><i class="fas fa-calculator"></i> <span>Calculator</span></span>
+        <span class="calc-title"><i class="fas fa-calculator"></i><span class="calc-title-text">Calculator</span><span class="calc-mini" id="calcMini">0</span></span>
         <div class="calc-titlebar-controls">
-            <button type="button" class="calc-window-btn" data-action="dockLeft" title="Dock left"><i class="fas fa-caret-left"></i></button>
-            <button type="button" class="calc-window-btn" data-action="dockRight" title="Dock right"><i class="fas fa-caret-right"></i></button>
-            <button type="button" class="calc-window-btn" data-action="minimize" title="Minimize"><i class="fas fa-window-minimize"></i></button>
-            <button type="button" class="calc-window-btn" data-action="maximize" title="Maximize"><i class="fas fa-expand"></i></button>
-            <button type="button" class="calc-window-btn" data-action="close" title="Close"><i class="fas fa-times"></i></button>
+            <button type="button" class="calc-window-btn" data-action="dockLeft" title="Dock left" aria-label="Dock left"><i class="fas fa-caret-left"></i></button>
+            <button type="button" class="calc-window-btn" data-action="dockRight" title="Dock right" aria-label="Dock right"><i class="fas fa-caret-right"></i></button>
+            <button type="button" class="calc-window-btn" data-action="minimize" title="Minimize" aria-label="Minimize"><i class="fas fa-window-minimize"></i></button>
+            <button type="button" class="calc-window-btn" data-action="maximize" title="Maximize" aria-label="Maximize"><i class="fas fa-expand"></i></button>
+            <button type="button" class="calc-window-btn" data-action="close" title="Close" aria-label="Close calculator"><i class="fas fa-times"></i></button>
         </div>
     </div>
+
     <div class="calc-body">
-        <div id="calcMemoryFlag"></div>
-        <input type="text" class="form-control form-control-lg" id="calcDisplay" readonly value="0">
-        <div id="calcGrid"></div>
-        <div class="form-text mt-2">Trig functions use degrees. MC/MR/M+/M- store a running memory value.</div>
+        <div class="calc-screen">
+            <div class="calc-screen-top">
+                <span id="calcMemoryFlag"></span>
+                <span class="calc-chips">
+                    <button type="button" class="calc-chip" id="calcAngleBtn" title="Switch between degrees and radians">DEG</button>
+                    <button type="button" class="calc-chip" id="calcSciBtn" title="Scientific functions">SCI</button>
+                    <button type="button" class="calc-chip" id="calcHistBtn" title="History"><i class="fas fa-history"></i></button>
+                    <button type="button" class="calc-chip" id="calcCopyBtn" title="Copy result"><i class="far fa-copy"></i></button>
+                </span>
+            </div>
+            <div class="calc-main" id="calcMain" aria-live="polite">0</div>
+            <div class="calc-sub" id="calcSub"><span></span></div>
+        </div>
+
+        <div class="calc-history" id="calcHistory" hidden>
+            <div class="calc-history-head"><span>History</span><button type="button" id="calcHistClear">Clear</button></div>
+            <div id="calcHistList"></div>
+        </div>
+
+        <div class="calc-grid" id="calcMem"></div>
+        <div class="calc-grid" id="calcSci"></div>
+        <div class="calc-grid" id="calcGrid"></div>
+        <div class="calc-hint">Keyboard works while the calculator is focused. Trig uses degrees unless set to RAD.</div>
     </div>
 </div>
 
 <script>
 (function() {
-    // --- Scientific calculator ---
-    // Basic ops + parentheses are typed straight into the expression (with
-    // %, ^ and implicit multiplication preprocessed before eval). Unary
-    // functions (√, x², 1/x, ±, sin/cos/tan, log/ln) act immediately on the
-    // current expression's evaluated value, keeping the button grid simple
-    // while still supporting full scientific use.
-    let calcExpression = '';
-    let calcMemory = 0;
+    /* PARSER-START */
+    // Safe recursive-descent evaluator (no eval / Function).
+    // Supports + - × ÷ ^ % ! ( ), unary minus, implicit multiplication,
+    // sin cos tan log ln √, constants π e and Ans.
+    // "200 + 10%" behaves like a handheld calculator (= 220).
+    function calcTokenize(src) {
+        const s = src.replace(/\s+/g, '').toLowerCase()
+            .replace(/×/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-')
+            .replace(/π/g, 'pi').replace(/√/g, 'sqrt');
+        const tokens = [];
+        let i = 0, m;
+        while (i < s.length) {
+            const rest = s.slice(i);
+            if ((m = /^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/.exec(rest))) {
+                tokens.push({ t: 'num', v: parseFloat(m[0]) }); i += m[0].length;
+            } else if ((m = /^[a-z]+/.exec(rest))) {
+                tokens.push({ t: 'name', v: m[0] }); i += m[0].length;
+            } else if ('+-*/^()%!'.includes(s[i])) {
+                tokens.push({ t: 'op', v: s[i] }); i++;
+            } else {
+                throw new Error('Unexpected "' + s[i] + '"');
+            }
+        }
+        return tokens;
+    }
 
-    const CALC_BUTTONS = [
-        { v: 'MC', cls: 'calc-mem', act: 'mc' }, { v: 'MR', cls: 'calc-mem', act: 'mr' }, { v: 'M+', cls: 'calc-mem', act: 'mplus' }, { v: 'M-', cls: 'calc-mem', act: 'mminus' }, { v: 'C', cls: 'calc-clear' }, { v: '\u232B', cls: 'calc-op', act: 'back' },
-        { v: '\u221A', cls: 'calc-fn', act: 'sqrt' }, { v: 'x\u00B2', cls: 'calc-fn', act: 'sq' }, { v: '1/x', cls: 'calc-fn', act: 'inv' }, { v: '\u00B1', cls: 'calc-fn', act: 'neg' }, { v: '\u03C0', cls: 'calc-fn', act: 'pi' }, { v: 'e', cls: 'calc-fn', act: 'euler' },
-        { v: 'sin', cls: 'calc-fn', act: 'sin' }, { v: 'cos', cls: 'calc-fn', act: 'cos' }, { v: 'tan', cls: 'calc-fn', act: 'tan' }, { v: 'log', cls: 'calc-fn', act: 'log' }, { v: 'ln', cls: 'calc-fn', act: 'ln' }, { v: '^', cls: 'calc-op' },
-        { v: '7' }, { v: '8' }, { v: '9' }, { v: '(' }, { v: ')' }, { v: '%', cls: 'calc-op' },
-        { v: '4' }, { v: '5' }, { v: '6' }, { v: '*', cls: 'calc-op' }, { v: '/', cls: 'calc-op' }, { v: '-', cls: 'calc-op' },
-        { v: '1' }, { v: '2' }, { v: '3' }, { v: '0' }, { v: '.' }, { v: '+', cls: 'calc-op' },
+    function calcEvaluate(src, opts) {
+        opts = opts || {};
+        const deg = opts.deg !== false;
+        const ans = opts.ans || 0;
+        const tokens = calcTokenize(src);
+        let p = 0;
+        const peek = () => tokens[p];
+        const isOp = (t, v) => t && t.t === 'op' && t.v === v;
+        const clean = x => (Math.abs(x) < 1e-12 ? 0 : x);
+        const rad = x => (deg ? x * Math.PI / 180 : x);
+        const FUNCS = {
+            sin: x => clean(Math.sin(rad(x))),
+            cos: x => clean(Math.cos(rad(x))),
+            tan: x => {
+                if (deg ? Math.abs(x % 180) === 90 : Math.abs(Math.cos(x)) < 1e-12) throw new Error('Tan undefined');
+                return clean(Math.tan(rad(x)));
+            },
+            log: x => { if (x <= 0) throw new Error('Invalid input'); return Math.log10(x); },
+            ln:  x => { if (x <= 0) throw new Error('Invalid input'); return Math.log(x); },
+            sqrt: x => { if (x < 0) throw new Error('Invalid input'); return Math.sqrt(x); },
+        };
+        const CONSTS = { pi: Math.PI, e: Math.E, ans: ans };
+
+        function parseExpr() {
+            let left = parseTerm();
+            while (isOp(peek(), '+') || isOp(peek(), '-')) {
+                const op = tokens[p++].v;
+                const right = parseTerm();
+                const r = right.pct ? left.value * right.value : right.value; // 200+10% -> 200+20
+                left = { value: op === '+' ? left.value + r : left.value - r, pct: false };
+            }
+            return left;
+        }
+        function parseTerm() {
+            let left = parseUnary();
+            for (;;) {
+                const t = peek();
+                if (!t) break;
+                if (isOp(t, '*') || isOp(t, '/')) {
+                    p++;
+                    const right = parseUnary();
+                    if (t.v === '/') {
+                        if (right.value === 0) throw new Error('Cannot divide by zero');
+                        left = { value: left.value / right.value, pct: false };
+                    } else {
+                        left = { value: left.value * right.value, pct: false };
+                    }
+                } else if (t.t === 'num' || t.t === 'name' || isOp(t, '(')) {
+                    const right = parseUnary();   // implicit multiplication
+                    left = { value: left.value * right.value, pct: false };
+                } else break;
+            }
+            return left;
+        }
+        function parseUnary() {
+            if (isOp(peek(), '-')) { p++; return { value: -parseUnary().value, pct: false }; }
+            if (isOp(peek(), '+')) { p++; return parseUnary(); }
+            return parsePower();
+        }
+        function parsePower() {
+            const base = parsePostfix();
+            if (isOp(peek(), '^')) {
+                p++;
+                const exp = parseUnary();           // right-associative, allows 2^-1
+                const v = Math.pow(base.value, exp.value);
+                if (!isFinite(v)) throw new Error('Math error');
+                return { value: v, pct: false };
+            }
+            return base;
+        }
+        function parsePostfix() {
+            let node = parsePrimary();
+            for (;;) {
+                if (isOp(peek(), '%')) { p++; node = { value: node.value / 100, pct: true }; }
+                else if (isOp(peek(), '!')) {
+                    p++;
+                    const n = node.value;
+                    if (n < 0 || n !== Math.floor(n) || n > 170) throw new Error('Factorial needs 0-170');
+                    let f = 1; for (let k = 2; k <= n; k++) f *= k;
+                    node = { value: f, pct: false };
+                } else break;
+            }
+            return node;
+        }
+        function parsePrimary() {
+            const tok = tokens[p++];
+            if (!tok) throw new Error('Incomplete expression');
+            if (tok.t === 'num') return { value: tok.v, pct: false };
+            if (tok.t === 'op' && tok.v === '(') {
+                const inner = parseExpr();
+                if (!isOp(tokens[p], ')')) throw new Error('Missing )');
+                p++;
+                return { value: inner.value, pct: false };
+            }
+            if (tok.t === 'name') {
+                if (Object.prototype.hasOwnProperty.call(CONSTS, tok.v)) return { value: CONSTS[tok.v], pct: false };
+                if (Object.prototype.hasOwnProperty.call(FUNCS, tok.v)) {
+                    if (!isOp(tokens[p], '(')) throw new Error('Missing ( after ' + tok.v);
+                    p++;
+                    const arg = parseExpr();
+                    if (!isOp(tokens[p], ')')) throw new Error('Missing )');
+                    p++;
+                    return { value: FUNCS[tok.v](arg.value), pct: false };
+                }
+                throw new Error('Unknown "' + tok.v + '"');
+            }
+            throw new Error('Unexpected "' + tok.v + '"');
+        }
+
+        const result = parseExpr();
+        if (p < tokens.length) throw new Error('Unexpected "' + tokens[p].v + '"');
+        if (!isFinite(result.value)) throw new Error('Math error');
+        return result.value;
+    }
+
+    function calcFormat(n) {
+        if (!isFinite(n)) return 'Error';
+        if (n === 0) return '0';
+        const a = Math.abs(n);
+        if (Number.isInteger(n) && a < 1e15) return String(n);
+        if (a >= 1e15 || a < 1e-9) return n.toExponential(9).replace(/\.?0+e/, 'e');
+        return String(parseFloat(n.toPrecision(12)));
+    }
+    /* PARSER-END */
+
+    // ---------- helpers ----------
+    const store = {
+        get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+        set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    };
+    const $ = id => document.getElementById(id);
+    const widget = $('calculatorWidget');
+    const titlebar = $('calcTitlebar');
+    const mainEl = $('calcMain');
+    const subEl = $('calcSub').firstElementChild;
+    const memFlag = $('calcMemoryFlag');
+    const miniEl = $('calcMini');
+    const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
+
+    function pretty(str) {            // add thousands separators to a plain number string
+        if (/e/i.test(str)) return str;
+        const parts = str.replace(/−/g, '-').split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.join('.').replace(/^-/, '−');
+    }
+
+    // ---------- state ----------
+    const OPS = '+−×÷^';
+    let expr = '';
+    let topLine = null;               // "expr =" shown after evaluating
+    let justEvaluated = false;
+    let errorMsg = null;
+    let lastAnswer = 0;
+    let memory = 0;
+    let degMode = store.get('calc-deg', '1') !== '0';
+    let history = [];
+    try { history = JSON.parse(store.get('calc-history', '[]')) || []; } catch (e) { history = []; }
+    if (!Array.isArray(history)) history = [];
+
+    // ---------- buttons ----------
+    const B = (l, k, v, c, a) => ({ l, k, v, c: c || '', a: a || l });
+    const MEM = [B('MC','act','mc','calc-mem','Memory clear'), B('MR','act','mr','calc-mem','Memory recall'), B('M+','act','mplus','calc-mem','Memory add'), B('M−','act','mminus','calc-mem','Memory subtract')];
+    const SCI = [
+        B('sin','ins','sin(','calc-fn'), B('cos','ins','cos(','calc-fn'), B('tan','ins','tan(','calc-fn'), B('log','ins','log(','calc-fn','Log base 10'), B('ln','ins','ln(','calc-fn','Natural log'),
+        B('√','ins','√(','calc-fn','Square root'), B('x²','ins','^2','calc-fn','Square'), B('xʸ','ins','^','calc-fn','Power'), B('1/x','act','inv','calc-fn','Reciprocal'), B('n!','ins','!','calc-fn','Factorial'),
+        B('π','ins','π','calc-fn','Pi'), B('e','ins','e','calc-fn','Euler number'), B('(','ins','(','calc-fn','Open bracket'), B(')','ins',')','calc-fn','Close bracket'), B('Ans','ins','Ans','calc-fn','Previous answer'),
+    ];
+    const MAIN = [
+        B('C','act','clear','calc-clear','Clear'), B('⌫','act','back','calc-op','Backspace'), B('%','ins','%','calc-op','Percent'), B('÷','ins','÷','calc-op','Divide'),
+        B('7','ins','7'), B('8','ins','8'), B('9','ins','9'), B('×','ins','×','calc-op','Multiply'),
+        B('4','ins','4'), B('5','ins','5'), B('6','ins','6'), B('−','ins','−','calc-op','Subtract'),
+        B('1','ins','1'), B('2','ins','2'), B('3','ins','3'), B('+','ins','+','calc-op','Add'),
+        B('±','act','neg','calc-fn','Change sign'), B('0','ins','0'), B('.','ins','.','','Decimal point'), B('=','act','equals','calc-equals','Equals'),
     ];
 
-    function renderCalcButtons() {
-        const grid = document.getElementById('calcGrid');
-        let html = '';
-        CALC_BUTTONS.forEach(btn => {
-            html += `<button type="button" class="calc-btn ${btn.cls || ''}" data-val="${btn.v}" data-act="${btn.act || ''}">${btn.v}</button>`;
+    function renderButtons(el, list) {
+        el.innerHTML = '';
+        list.forEach(b => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'calc-btn ' + b.c;
+            btn.textContent = b.l;
+            btn.setAttribute('aria-label', b.a);
+            btn.dataset.kind = b.k;
+            btn.dataset.val = b.v;
+            el.appendChild(btn);
         });
-        html += `<button type="button" class="calc-btn calc-equals" data-val="=" data-act="equals">=</button>`;
-        grid.innerHTML = html;
-        grid.querySelectorAll('.calc-btn').forEach(btn => {
-            btn.addEventListener('click', function() { handleCalcInput(this.dataset.val, this.dataset.act); });
+        // keep keyboard focus where it is when clicking with a pointer
+        el.addEventListener('mousedown', e => e.preventDefault());
+        el.addEventListener('click', e => {
+            const btn = e.target.closest('.calc-btn');
+            if (!btn) return;
+            if (navigator.vibrate && isMobile()) { try { navigator.vibrate(6); } catch (err) {} }
+            if (btn.dataset.kind === 'ins') insert(btn.dataset.val); else action(btn.dataset.val);
         });
     }
 
-    function updateDisplay() {
-        document.getElementById('calcDisplay').value = calcExpression || '0';
-        document.getElementById('calcMemoryFlag').textContent = calcMemory !== 0 ? 'M = ' + formatNum(calcMemory) : '';
+    // ---------- evaluation ----------
+    function prepare(s) {
+        let out = s;
+        while (out && (OPS.includes(out.slice(-1)))) out = out.slice(0, -1);
+        const open = (out.match(/\(/g) || []).length - (out.match(/\)/g) || []).length;
+        if (open > 0) out += ')'.repeat(open);
+        return out;
     }
-
-    function preprocessExpression(expr) {
-        // "%" means "/100" applied to the preceding number; "^" is JS power.
-        expr = expr.replace(/%/g, '/100').replace(/\^/g, '**');
-        // Implicit multiplication: "5(3)" -> "5*(3)", ")(  " -> ")*(", "(3)5" -> "(3)*5"
-        expr = expr.replace(/(\d)(\()/g, '$1*$2')
-                    .replace(/(\))(\d)/g, '$1*$2')
-                    .replace(/(\))(\()/g, '$1*$2');
-        return expr;
+    function compute(s) {
+        try { return { ok: true, value: calcEvaluate(prepare(s), { deg: degMode, ans: lastAnswer }) }; }
+        catch (e) { return { ok: false, err: e.message || 'Error' }; }
     }
-
-    function formatNum(n) {
-        if (!isFinite(n)) return 'Error';
-        return String(Math.round(n * 1e10) / 1e10);
+    function currentValue() {
+        if (justEvaluated) return lastAnswer;
+        if (!expr) return 0;
+        const r = compute(expr);
+        return r.ok ? r.value : NaN;
     }
+    const isTrivial = s => !/[^0-9.]/.test(s.replace(/^−/, ''));
 
-    function evaluateNumeric(rawExpr) {
-        if (!rawExpr) return 0;
-        if (!/^[0-9+\-*/().%^\s]*$/.test(rawExpr)) return NaN;
-        const expr = preprocessExpression(rawExpr);
-        try {
-            const result = Function('"use strict"; return (' + expr + ')')();
-            return (typeof result === 'number' && isFinite(result)) ? result : NaN;
-        } catch (e) { return NaN; }
-    }
-
-    function evaluateExpression(rawExpr) {
-        const value = evaluateNumeric(rawExpr);
-        if (isNaN(value)) return 'Error';
-        return formatNum(value);
-    }
-
-    function toRad(deg) { return deg * Math.PI / 180; }
-
-    function applyUnary(fn) {
-        const val = evaluateNumeric(calcExpression);
-        if (isNaN(val)) { calcExpression = 'Error'; return; }
-        calcExpression = formatNum(fn(val));
-    }
-
-    function handleCalcInput(val, act) {
-        switch (act) {
-            case 'back': calcExpression = calcExpression.slice(0, -1); break;
-            case 'equals': calcExpression = evaluateExpression(calcExpression); break;
-            case 'mc': calcMemory = 0; break;
-            case 'mr': calcExpression += formatNum(calcMemory); break;
-            case 'mplus': { const v = evaluateNumeric(calcExpression); if (!isNaN(v)) calcMemory += v; break; }
-            case 'mminus': { const v = evaluateNumeric(calcExpression); if (!isNaN(v)) calcMemory -= v; break; }
-            case 'sqrt': applyUnary(v => Math.sqrt(v)); break;
-            case 'sq': applyUnary(v => v * v); break;
-            case 'inv': applyUnary(v => 1 / v); break;
-            case 'neg': applyUnary(v => -v); break;
-            case 'sin': applyUnary(v => Math.sin(toRad(v))); break;
-            case 'cos': applyUnary(v => Math.cos(toRad(v))); break;
-            case 'tan': applyUnary(v => Math.tan(toRad(v))); break;
-            case 'log': applyUnary(v => Math.log10(v)); break;
-            case 'ln': applyUnary(v => Math.log(v)); break;
-            case 'pi': calcExpression += formatNum(Math.PI); break;
-            case 'euler': calcExpression += formatNum(Math.E); break;
-            default:
-                if (val === 'C') calcExpression = '';
-                else calcExpression += val; // digits, ( ) . + - * / % ^
+    // ---------- rendering ----------
+    function render() {
+        let main, sub = '';
+        mainEl.classList.remove('calc-error');
+        if (errorMsg) {
+            main = errorMsg; mainEl.classList.add('calc-error');
+            sub = expr;
+        } else if (justEvaluated) {
+            main = pretty(expr); sub = topLine || '';
+        } else {
+            main = expr || '0';
+            if (expr && !isTrivial(expr)) {
+                const r = compute(expr);
+                if (r.ok) sub = '= ' + pretty(calcFormat(r.value).replace(/-/g, '−'));
+            }
         }
-        updateDisplay();
+        mainEl.textContent = main;
+        subEl.textContent = sub;
+        const len = main.length;
+        mainEl.classList.toggle('sz-m', !errorMsg && len > 11 && len <= 16);
+        mainEl.classList.toggle('sz-s', !errorMsg && len > 16);
+        mainEl.scrollLeft = mainEl.scrollWidth;
+        miniEl.textContent = errorMsg ? 'Error' : (justEvaluated ? pretty(expr) : (expr || '0'));
+        memFlag.textContent = memory !== 0 ? 'M = ' + pretty(calcFormat(memory).replace(/-/g, '−')) : '';
+        $('calcAngleBtn').textContent = degMode ? 'DEG' : 'RAD';
     }
 
-    renderCalcButtons();
-    updateDisplay();
+    function flash(msg) {
+        const old = memFlag.textContent;
+        memFlag.textContent = msg;
+        setTimeout(render, 900);
+    }
 
-    // Keyboard support while the calculator is open
-    document.addEventListener('keydown', function(e) {
-        if (widgetHidden()) return;
-        if ('0123456789+-*/().%^'.includes(e.key)) { handleCalcInput(e.key); e.preventDefault(); }
-        else if (e.key === 'Enter' || e.key === '=') { handleCalcInput('=', 'equals'); e.preventDefault(); }
-        else if (e.key === 'Backspace') { handleCalcInput('', 'back'); e.preventDefault(); }
-        else if (e.key === 'Escape') { handleCalcInput('C'); e.preventDefault(); }
+    // ---------- input ----------
+    const isPostfix = t => t === '%' || t === '!' || t === '^2';
+    function insert(t) {
+        errorMsg = null;
+        if (justEvaluated) {
+            if (/^[+−×÷^%!]/.test(t)) expr = calcFormat(lastAnswer).replace(/-/g, '−');
+            else expr = '';
+            justEvaluated = false;
+        }
+        topLine = null;
+        if (expr.length > 120) return render();
+
+        if (t === '.') {
+            const seg = (/[\d.]*$/.exec(expr) || [''])[0];
+            if (seg.includes('.')) return render();
+            if (seg === '') t = '0.';
+        } else if (isPostfix(t)) {
+            if (!expr || OPS.includes(expr.slice(-1)) || expr.slice(-1) === '(') return render();
+        } else if (t.length === 1 && OPS.includes(t)) {
+            const last = expr.slice(-1);
+            if (expr === '') {
+                t = (t === '−') ? '−' : (lastAnswer !== 0 ? calcFormat(lastAnswer).replace(/-/g, '−') + t : '0' + t);
+            } else if (last === '(') {
+                if (t !== '−') return render();
+            } else if (OPS.includes(last)) {
+                if (t === '−' && '×÷^'.includes(last)) { /* allow 5×−3 */ }
+                else {
+                    while (OPS.includes(expr.slice(-1))) expr = expr.slice(0, -1);
+                    if (expr === '') t = (t === '−') ? '−' : '0' + t;
+                }
+            }
+        } else if (t === ')') {
+            const open = (expr.match(/\(/g) || []).length - (expr.match(/\)/g) || []).length;
+            if (open <= 0 || OPS.includes(expr.slice(-1)) || expr.slice(-1) === '(') return render();
+        }
+        expr += t;
+        render();
+    }
+
+    function equals() {
+        if (!expr) return;
+        const r = compute(expr);
+        if (!r.ok) { errorMsg = r.err; render(); return; }
+        const shown = prepare(expr);
+        const raw = calcFormat(r.value);
+        history.unshift({ expr: shown, res: raw, v: r.value });
+        history = history.slice(0, 30);
+        store.set('calc-history', JSON.stringify(history));
+        lastAnswer = r.value;
+        topLine = shown + ' =';
+        expr = raw.replace(/-/g, '−');
+        justEvaluated = true;
+        errorMsg = null;
+        render();
+        renderHistory();
+    }
+
+    function action(name) {
+        errorMsg = null;
+        switch (name) {
+            case 'clear': expr = ''; topLine = null; justEvaluated = false; break;
+            case 'back':
+                if (justEvaluated) { expr = ''; justEvaluated = false; topLine = null; }
+                else expr = expr.replace(/(?:sin\(|cos\(|tan\(|log\(|ln\(|√\(|Ans)$/, '').length !== expr.length
+                    ? expr.replace(/(?:sin\(|cos\(|tan\(|log\(|ln\(|√\(|Ans)$/, '')
+                    : expr.slice(0, -1);
+                break;
+            case 'equals': return equals();
+            case 'mc': memory = 0; break;
+            case 'mr': {
+                const t = memory < 0 ? '(' + calcFormat(memory).replace(/-/g, '−') + ')' : calcFormat(memory);
+                if (justEvaluated) { expr = ''; justEvaluated = false; }
+                topLine = null;
+                expr += t; break;
+            }
+            case 'mplus': { const v = currentValue(); if (!isNaN(v)) { memory += v; flash('M stored'); } break; }
+            case 'mminus': { const v = currentValue(); if (!isNaN(v)) { memory -= v; flash('M stored'); } break; }
+            case 'inv':
+                if (!expr) break;
+                expr = '1÷(' + prepare(expr) + ')'; justEvaluated = false; topLine = null; break;
+            case 'neg':
+                if (!expr) break;
+                if (/^−?[\d.]+(e[+−]?\d+)?$/i.test(expr)) expr = expr.startsWith('−') ? expr.slice(1) : '−' + expr;
+                else if (/^−\(.*\)$/.test(expr)) expr = expr.slice(2, -1);
+                else expr = '−(' + prepare(expr) + ')';
+                if (justEvaluated) { lastAnswer = -lastAnswer; topLine = null; }
+                break;
+        }
+        render();
+    }
+
+    // ---------- history ----------
+    function renderHistory() {
+        const list = $('calcHistList');
+        list.innerHTML = '';
+        if (!history.length) {
+            const d = document.createElement('div');
+            d.className = 'calc-history-empty';
+            d.textContent = 'No calculations yet';
+            list.appendChild(d);
+            return;
+        }
+        history.forEach(h => {
+            const b = document.createElement('button');
+            b.type = 'button'; b.className = 'calc-history-item';
+            const e = document.createElement('span'); e.className = 'h-expr'; e.textContent = String(h.expr);
+            const r = document.createElement('span'); r.className = 'h-res'; r.textContent = '= ' + pretty(String(h.res).replace(/-/g, '−'));
+            b.appendChild(e); b.appendChild(r);
+            b.addEventListener('click', () => {
+                const v = typeof h.v === 'number' ? h.v : parseFloat(h.res);
+                if (isNaN(v)) return;
+                lastAnswer = v; expr = calcFormat(v).replace(/-/g, '−');
+                topLine = String(h.expr) + ' ='; justEvaluated = true; errorMsg = null;
+                render();
+            });
+            list.appendChild(b);
+        });
+    }
+
+    // ---------- toolbar chips ----------
+    $('calcAngleBtn').addEventListener('click', () => { degMode = !degMode; store.set('calc-deg', degMode ? '1' : '0'); render(); });
+    function setSci(on) {
+        widget.classList.toggle('calc-sci-open', on);
+        $('calcSciBtn').classList.toggle('on', on);
+        store.set('calc-sci', on ? '1' : '0');
+    }
+    $('calcSciBtn').addEventListener('click', () => setSci(!widget.classList.contains('calc-sci-open')));
+    $('calcHistBtn').addEventListener('click', function() {
+        const panel = $('calcHistory');
+        panel.hidden = !panel.hidden;
+        this.classList.toggle('on', !panel.hidden);
+        if (!panel.hidden) renderHistory();
     });
-    function widgetHidden() {
-        const w = document.getElementById('calculatorWidget');
-        return !w || w.style.display === 'none' || w.style.display === '';
-    }
+    $('calcHistClear').addEventListener('click', () => { history = []; store.set('calc-history', '[]'); renderHistory(); });
+    $('calcCopyBtn').addEventListener('click', function() {
+        const v = currentValue();
+        if (isNaN(v)) return;
+        const text = calcFormat(v);
+        const done = () => flash('Copied');
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
+        else {
+            const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); done();
+        }
+    });
 
-    // --- Floating window: open/close, minimize, maximize, dock, drag (mouse + touch) ---
-    const widget = document.getElementById('calculatorWidget');
-    const titlebar = document.getElementById('calcTitlebar');
+    // ---------- keyboard / paste ----------
+    const KEYMAP = { '*': '×', 'x': '×', 'X': '×', '/': '÷', '-': '−', ',': '.' };
+    document.addEventListener('keydown', function(e) {
+        if (widget.style.display !== 'flex' || widget.classList.contains('minimized')) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const t = e.target;
+        const inside = widget.contains(t) || t === document.body || t === document.documentElement;
+        if (!inside) return;
+        if (t.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;   // let focused buttons activate normally
+        const k = e.key;
+        if (/^[0-9.]$/.test(k) || '+-*/xX^()%!,'.includes(k) && k.length === 1) { insert(KEYMAP[k] || k); e.preventDefault(); }
+        else if (k === 'Enter' || k === '=') { equals(); e.preventDefault(); }
+        else if (k === 'Backspace') { action('back'); e.preventDefault(); }
+        else if (k === 'Delete') { action('clear'); e.preventDefault(); }
+        else if (k === 'Escape') { if (expr || justEvaluated) action('clear'); else closeCalc(); e.preventDefault(); }
+    });
+    widget.addEventListener('paste', function(e) {
+        const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+        const clean = text.replace(/\s+/g, '').replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
+        if (!clean) return;
+        e.preventDefault();
+        for (const ch of clean) if (/[0-9.+−×÷^()%!]/.test(ch)) insert(ch);
+    });
+
+    // ---------- floating window ----------
     const STATE_KEY = 'calc-window-state';
+    const POS_KEY = 'calc-window-pos';
     const STATE_CLASSES = ['minimized', 'maximized', 'docked-left', 'docked-right'];
 
-    function clearStateClasses() { STATE_CLASSES.forEach(c => widget.classList.remove(c)); }
     function setWindowState(state) {
-        clearStateClasses();
+        STATE_CLASSES.forEach(c => widget.classList.remove(c));
         if (state && state !== 'normal') widget.classList.add(state);
-        try { localStorage.setItem(STATE_KEY, state || 'normal'); } catch (e) {}
-        updateActiveButtons(state);
-    }
-    function updateActiveButtons(state) {
+        store.set(STATE_KEY, state || 'normal');
         document.querySelectorAll('.calc-window-btn').forEach(b => b.classList.remove('active'));
         const map = { minimized: 'minimize', maximized: 'maximize', 'docked-left': 'dockLeft', 'docked-right': 'dockRight' };
         if (map[state]) {
@@ -301,102 +687,107 @@
             if (btn) btn.classList.add('active');
         }
     }
+    const currentState = () => STATE_CLASSES.find(c => widget.classList.contains(c)) || 'normal';
+    const isFreeFloating = () => currentState() === 'normal' && !isMobile();
 
+    function applySavedPosition() {
+        if (!isFreeFloating()) return;
+        try {
+            const pos = JSON.parse(store.get(POS_KEY, 'null'));
+            if (pos && typeof pos.left === 'number') {
+                const r = widget.getBoundingClientRect();
+                widget.style.right = 'auto'; widget.style.bottom = 'auto';
+                widget.style.left = Math.min(Math.max(4, pos.left), Math.max(4, window.innerWidth - r.width - 4)) + 'px';
+                widget.style.top = Math.min(Math.max(4, pos.top), Math.max(4, window.innerHeight - 60)) + 'px';
+            }
+        } catch (e) {}
+    }
+
+    function closeCalc() { widget.style.display = 'none'; }
+    function openCalc() {
+        widget.style.display = 'flex';
+        const saved = store.get(STATE_KEY, 'normal');
+        setWindowState(saved === 'normal' ? null : saved);
+        applySavedPosition();
+        render();
+        try { widget.focus({ preventScroll: true }); } catch (e) {}
+    }
     window.toggleCalculator = function() {
-        const isOpen = widget.style.display === 'flex';
-        widget.style.display = isOpen ? 'none' : 'flex';
-        if (!isOpen) {
-            try {
-                const savedState = localStorage.getItem(STATE_KEY);
-                if (savedState) setWindowState(savedState === 'normal' ? null : savedState);
-            } catch (e) {}
-        }
+        if (widget.style.display === 'flex') closeCalc(); else openCalc();
     };
 
     document.querySelectorAll('.calc-window-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const action = this.dataset.action;
-            const current = STATE_CLASSES.find(c => widget.classList.contains(c)) || 'normal';
-            if (action === 'close') { widget.style.display = 'none'; return; }
-            if (action === 'minimize') { setWindowState(current === 'minimized' ? null : 'minimized'); return; }
-            if (action === 'maximize') { setWindowState(current === 'maximized' ? null : 'maximized'); return; }
-            if (action === 'dockLeft') { setWindowState(current === 'docked-left' ? null : 'docked-left'); return; }
-            if (action === 'dockRight') { setWindowState(current === 'docked-right' ? null : 'docked-right'); return; }
+            const a = this.dataset.action, cur = currentState();
+            if (a === 'close') return closeCalc();
+            if (a === 'minimize') return setWindowState(cur === 'minimized' ? null : 'minimized');
+            if (a === 'maximize') return setWindowState(cur === 'maximized' ? null : 'maximized');
+            if (a === 'dockLeft') return setWindowState(cur === 'docked-left' ? null : 'docked-left');
+            if (a === 'dockRight') return setWindowState(cur === 'docked-right' ? null : 'docked-right');
         });
     });
-
-    titlebar.addEventListener('click', function() {
-        if (widget.classList.contains('minimized')) setWindowState(null);
-    });
+    titlebar.addEventListener('click', function() { if (widget.classList.contains('minimized')) setWindowState(null); });
     titlebar.addEventListener('dblclick', function() {
-        if (widget.classList.contains('minimized')) return;
+        if (widget.classList.contains('minimized') || isMobile()) return;
         setWindowState(widget.classList.contains('maximized') ? null : 'maximized');
     });
 
-    function isFreeFloating() {
-        return !widget.classList.contains('maximized') &&
-               !widget.classList.contains('minimized') &&
-               !widget.classList.contains('docked-left') &&
-               !widget.classList.contains('docked-right');
-    }
-
-    let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
-
-    function dragStart(clientX, clientY, target) {
+    // drag (mouse + touch)
+    let isDragging = false, offX = 0, offY = 0;
+    function dragStart(x, y, target) {
         if (!isFreeFloating()) return;
         if (target.closest && target.closest('.calc-window-btn')) return;
         isDragging = true;
         widget.classList.add('calc-dragging');
-        const rect = widget.getBoundingClientRect();
-        dragOffsetX = clientX - rect.left;
-        dragOffsetY = clientY - rect.top;
-        widget.style.right = 'auto';
-        widget.style.bottom = 'auto';
+        const r = widget.getBoundingClientRect();
+        offX = x - r.left; offY = y - r.top;
+        widget.style.right = 'auto'; widget.style.bottom = 'auto';
     }
-    function dragMove(clientX, clientY) {
+    function dragMove(x, y) {
         if (!isDragging) return;
-        const rect = widget.getBoundingClientRect();
-        const maxLeft = window.innerWidth - rect.width - 4;
-        const maxTop = window.innerHeight - rect.height - 4;
-        const left = Math.min(Math.max(4, clientX - dragOffsetX), Math.max(4, maxLeft));
-        const top = Math.min(Math.max(4, clientY - dragOffsetY), Math.max(4, maxTop));
-        widget.style.left = left + 'px';
-        widget.style.top = top + 'px';
+        const r = widget.getBoundingClientRect();
+        const left = Math.min(Math.max(4, x - offX), Math.max(4, window.innerWidth - r.width - 4));
+        const top = Math.min(Math.max(4, y - offY), Math.max(4, window.innerHeight - 60));
+        widget.style.left = left + 'px'; widget.style.top = top + 'px';
     }
     function dragEnd() {
+        if (!isDragging) return;
         isDragging = false;
         widget.classList.remove('calc-dragging');
+        const r = widget.getBoundingClientRect();
+        store.set(POS_KEY, JSON.stringify({ left: r.left, top: r.top }));
     }
-
-    // Mouse
-    titlebar.addEventListener('mousedown', function(e) { dragStart(e.clientX, e.clientY, e.target); });
-    document.addEventListener('mousemove', function(e) { dragMove(e.clientX, e.clientY); });
+    titlebar.addEventListener('mousedown', e => dragStart(e.clientX, e.clientY, e.target));
+    document.addEventListener('mousemove', e => dragMove(e.clientX, e.clientY));
     document.addEventListener('mouseup', dragEnd);
-
-    // Touch (mobile drag)
     titlebar.addEventListener('touchstart', function(e) {
-        if (!isFreeFloating()) return;
-        const touch = e.touches[0];
-        dragStart(touch.clientX, touch.clientY, e.target);
+        const t = e.touches[0];
+        dragStart(t.clientX, t.clientY, e.target);
         if (isDragging) e.preventDefault();
     }, { passive: false });
     document.addEventListener('touchmove', function(e) {
         if (!isDragging) return;
-        const touch = e.touches[0];
-        dragMove(touch.clientX, touch.clientY);
+        dragMove(e.touches[0].clientX, e.touches[0].clientY);
         e.preventDefault();
     }, { passive: false });
     document.addEventListener('touchend', dragEnd);
     document.addEventListener('touchcancel', dragEnd);
 
     window.addEventListener('resize', function() {
-        if (!isFreeFloating()) return;
-        const rect = widget.getBoundingClientRect();
-        const maxLeft = window.innerWidth - rect.width - 4;
-        const maxTop = window.innerHeight - rect.height - 4;
-        if (rect.left > maxLeft) widget.style.left = Math.max(4, maxLeft) + 'px';
-        if (rect.top > maxTop) widget.style.top = Math.max(4, maxTop) + 'px';
+        if (!isFreeFloating() || widget.style.display !== 'flex') return;
+        const r = widget.getBoundingClientRect();
+        if (r.right > window.innerWidth) widget.style.left = Math.max(4, window.innerWidth - r.width - 4) + 'px';
+        if (r.bottom > window.innerHeight) widget.style.top = Math.max(4, window.innerHeight - r.height - 4) + 'px';
     });
+
+    // ---------- init ----------
+    renderButtons($('calcMem'), MEM);
+    renderButtons($('calcSci'), SCI);
+    renderButtons($('calcGrid'), MAIN);
+    const sciPref = store.get('calc-sci', null);
+    setSci(sciPref === null ? !isMobile() : sciPref === '1');
+    renderHistory();
+    render();
 })();
 </script>

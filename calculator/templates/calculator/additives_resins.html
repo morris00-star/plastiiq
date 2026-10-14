@@ -3,12 +3,14 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
+
+        <!-- Hero -->
         <div class="card material-card text-white mb-4">
             <div class="card-body">
                 <h2 class="card-title text-center">
                     <i class="fas fa-flask"></i> Additives, Resins & Ink Components in Blown Film Extrusion
                 </h2>
-                <p class="text-center mb-0">Complete guide to additives, barrier resins, ink components, their functions, substitutes, and optimal usage</p>
+                <p class="text-center mb-0">Complete guide to additives, base and blend resins, barrier resins, inks, overprint varnishes, their functions, substitutes, optimal usage &mdash; and the shift to PFAS-free formulations</p>
             </div>
         </div>
 
@@ -54,12 +56,12 @@
         <div class="card shadow mb-4">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-info-circle"></i> Understanding Additives, Barrier Resins & Ink Components
+                    <i class="fas fa-info-circle"></i> Understanding Additives, Resins, Barrier Layers, Inks & Varnishes
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
+                <div class="row g-3">
+                    <div class="col-md-2">
                         <div class="card bg-success text-white h-100">
                             <div class="card-body text-center">
                                 <i class="fas fa-tachometer-alt fa-2x mb-2"></i>
@@ -68,16 +70,25 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="card bg-info text-white h-100">
                             <div class="card-body text-center">
                                 <i class="fas fa-sliders-h fa-2x mb-2"></i>
                                 <h6>Surface Modifiers</h6>
-                                <p class="small mb-0">Control friction, blocking, and surface properties</p>
+                                <p class="small mb-0">Slip, anti-block, anti-fog, antistatic</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <div class="card bg-secondary text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-cubes fa-2x mb-2"></i>
+                                <h6>Blend Resins</h6>
+                                <p class="small mb-0">HDPE, LLDPE, mLLDPE for stiffness, toughness, sealing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
                         <div class="card bg-warning text-dark h-100">
                             <div class="card-body text-center">
                                 <i class="fas fa-shield-alt fa-2x mb-2"></i>
@@ -86,24 +97,49 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="card bg-danger text-white h-100">
                             <div class="card-body text-center">
                                 <i class="fas fa-paint-brush fa-2x mb-2"></i>
-                                <h6>Ink Components</h6>
-                                <p class="small mb-0">Adhesion promoters, solvents, extenders</p>
+                                <h6>Inks & OPV</h6>
+                                <p class="small mb-0">Ink systems, solvents and protective varnishes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card bg-dark text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-leaf fa-2x mb-2"></i>
+                                <h6>PFAS-Free</h6>
+                                <p class="small mb-0">Why fluorine-free chemistry is now a necessity</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <p class="text-muted mt-3 mb-0">
-                    <small>Comprehensive guide to additives, barrier resins, and ink components that modify polymer properties and printing performance.</small>
+                    <small>Comprehensive guide to additives, resins, and ink components that modify polymer properties and printing performance. Concentrations are typical industry ranges &mdash; always confirm against the supplier technical data sheet (TDS) and run trials.</small>
                 </p>
+
+                <!-- Jump links -->
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <a href="#ppa" class="btn btn-sm btn-outline-success">A) PPA</a>
+                    <a href="#slip" class="btn btn-sm btn-outline-info">B) Slip</a>
+                    <a href="#antiblock" class="btn btn-sm btn-outline-warning">C) Anti-Block</a>
+                    <a href="#antifog" class="btn btn-sm btn-outline-primary">D) Anti-Fog</a>
+                    <a href="#blend-resins" class="btn btn-sm btn-outline-secondary">E) HDPE / LLDPE / mLLDPE</a>
+                    <a href="#barrier" class="btn btn-sm btn-outline-dark">F) Barrier Resins</a>
+                    <a href="#tie" class="btn btn-sm btn-outline-danger">G) Tie Layers</a>
+                    <a href="#inks" class="btn btn-sm btn-outline-danger">H) Inks & Solvents</a>
+                    <a href="#opv" class="btn btn-sm btn-outline-danger">I) OPV</a>
+                    <a href="#others" class="btn btn-sm btn-outline-secondary">J&ndash;M) Other Additives</a>
+                    <a href="#pfas" class="btn btn-sm btn-dark">PFAS</a>
+                    <a href="#takeaways" class="btn btn-sm btn-light border">Takeaways</a>
+                </div>
             </div>
         </div>
 
-        <!-- Processing Aids Section -->
-        <div class="card shadow mb-4">
+        <!-- ===================== A) PPA ===================== -->
+        <div class="card shadow mb-4" id="ppa">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-tachometer-alt"></i> A) Polymer Processing Aid (PPA)
@@ -122,6 +158,7 @@
                                     <li>Higher output rates</li>
                                     <li>Lower extrusion temperatures/pressures</li>
                                     <li>Improved film clarity and gloss</li>
+                                    <li>Longer run times between die cleaning</li>
                                 </ul>
                             </div>
                         </div>
@@ -132,10 +169,12 @@
                                 <strong>Mechanism & Substitutes</strong>
                             </div>
                             <div class="card-body">
-                                <p><strong>Primary:</strong> Fluoropolymer-based PPA (Dynamar, Viton)</p>
-                                <p><strong>Substitute 1:</strong> Silicone-based processing aids</p>
-                                <p><strong>Substitute 2:</strong> Metallic stearates (Zinc stearate)</p>
-                                <p class="mt-2"><small>Fluoropolymer migrates to die surface, creating lubricating layer that lowers shear stress.</small></p>
+                                <p><strong>Conventional:</strong> Fluoropolymer-based PPA (Dynamar, Viton) <span class="badge bg-danger">PFAS</span></p>
+                                <p><strong>PFAS-free 1:</strong> Silicone / siloxane-based processing aids <span class="badge bg-success">PFAS-free</span></p>
+                                <p><strong>PFAS-free 2:</strong> Polyethylene glycol (PEG) / polyester-based PPAs <span class="badge bg-success">PFAS-free</span></p>
+                                <p><strong>PFAS-free 3:</strong> Boron nitride-based PPAs <span class="badge bg-success">PFAS-free</span></p>
+                                <p><strong>Basic option:</strong> Metallic stearates (Zinc stearate) &ndash; weaker effect</p>
+                                <p class="mt-2"><small>Fluoropolymer migrates to the die surface, creating a low-energy lubricating layer that lowers shear stress. PFAS-free chemistries work by similar die-coating or slip-layer mechanisms but usually need longer conditioning and more optimisation.</small></p>
                             </div>
                         </div>
                     </div>
@@ -152,7 +191,10 @@
                                     <strong>Low Rate (500-800 ppm):</strong> Requires "conditioning" time but ultimately eliminates defects
                                 </div>
                                 <div class="alert alert-danger">
-                                    <strong>High Rate (>1500 ppm):</strong> May increase film haze due to light scattering
+                                    <strong>High Rate (&gt;1500 ppm):</strong> May increase film haze due to light scattering
+                                </div>
+                                <div class="alert alert-info mb-0">
+                                    <strong>Interaction:</strong> Silica/talc anti-block and acidic HALS can adsorb PPA and slow conditioning &mdash; add extra PPA or pre-condition the die.
                                 </div>
                             </div>
                         </div>
@@ -167,7 +209,10 @@
                                 <span class="badge bg-primary">HDPE</span>
                                 <span class="badge bg-primary">PP</span>
                                 <span class="badge bg-primary">mLLDPE</span>
-                                <p class="mt-2 mb-0">Essential for high-molecular-weight resins with high shear sensitivity</p>
+                                <p class="mt-2 mb-0">Essential for high-molecular-weight resins with high shear sensitivity. mLLDPE and HDPE film grades gain the most.</p>
+                                <div class="alert alert-danger mt-3 mb-0">
+                                    <i class="fas fa-exclamation-triangle"></i> Fluoropolymer PPAs are PFAS. See the <a href="#pfas" class="alert-link">PFAS section</a> for why the move away is a necessity.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -175,8 +220,8 @@
             </div>
         </div>
 
-        <!-- Slip Additive Section -->
-        <div class="card shadow mb-4">
+        <!-- ===================== B) SLIP ===================== -->
+        <div class="card shadow mb-4" id="slip">
             <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-sliders-h"></i> B) Slip Additive
@@ -208,7 +253,7 @@
                                 <p><strong>Primary:</strong> Erucamide (C22 unsaturated)</p>
                                 <p><strong>Substitute 1:</strong> Oleamide (C18 unsaturated)</p>
                                 <p><strong>Substitute 2:</strong> Stearamide (C18 saturated)</p>
-                                <p class="mt-2"><small>Fatty acid amides bloom to film surface over time, forming thin lubricating layer. Erucamide provides longer-lasting effect.</small></p>
+                                <p class="mt-2"><small>Fatty acid amides bloom to film surface over time, forming thin lubricating layer. Erucamide provides longer-lasting effect; oleamide acts faster but migrates more and is less heat-stable.</small></p>
                             </div>
                         </div>
                     </div>
@@ -222,10 +267,10 @@
                             </div>
                             <div class="card-body">
                                 <div class="alert alert-warning">
-                                    <strong>Low Rate (<800 ppm):</strong> High COF, severe blocking issues
+                                    <strong>Low Rate (&lt;800 ppm):</strong> High COF, severe blocking issues
                                 </div>
                                 <div class="alert alert-danger">
-                                    <strong>High Rate (>2000 ppm):</strong> Too slippery, reduced heat seal strength, weak boundary layer
+                                    <strong>High Rate (&gt;2000 ppm):</strong> Too slippery, reduced heat seal strength, weak boundary layer, poor ink adhesion and lamination bond
                                 </div>
                             </div>
                         </div>
@@ -240,7 +285,7 @@
                                 <span class="badge bg-primary">LLDPE</span>
                                 <span class="badge bg-primary">PP</span>
                                 <span class="badge bg-primary">HDPE</span>
-                                <p class="mt-2 mb-0">Essential for packaging film handling and conversion processes</p>
+                                <p class="mt-2 mb-0">Essential for packaging film handling and conversion processes. For printed or laminated film, keep slip low on the print/lamination side.</p>
                             </div>
                         </div>
                     </div>
@@ -248,8 +293,8 @@
             </div>
         </div>
 
-        <!-- Anti-Block Additive Section -->
-        <div class="card shadow mb-4">
+        <!-- ===================== C) ANTI-BLOCK ===================== -->
+        <div class="card shadow mb-4" id="antiblock">
             <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">
                     <i class="fas fa-layer-group"></i> C) Anti-Block Additive
@@ -295,10 +340,10 @@
                             </div>
                             <div class="card-body">
                                 <div class="alert alert-warning">
-                                    <strong>Low Rate (<2000 ppm):</strong> Poor anti-blocking, film adhesion issues
+                                    <strong>Low Rate (&lt;2000 ppm):</strong> Poor anti-blocking, film adhesion issues
                                 </div>
                                 <div class="alert alert-danger">
-                                    <strong>High Rate (>10000 ppm):</strong> Drastic haze increase, reduced clarity, potential tear strength reduction
+                                    <strong>High Rate (&gt;10000 ppm):</strong> Drastic haze increase, reduced clarity, potential tear strength reduction
                                 </div>
                             </div>
                         </div>
@@ -313,7 +358,7 @@
                                 <span class="badge bg-primary">LLDPE</span>
                                 <span class="badge bg-primary">HDPE</span>
                                 <span class="badge bg-primary">PP</span>
-                                <p class="mt-2 mb-0">Critical for high-clarity and thin-gauge packaging applications</p>
+                                <p class="mt-2 mb-0">Critical for high-clarity and thin-gauge packaging applications. Slip + anti-block are normally used together: anti-block creates the spacing, slip lowers friction.</p>
                             </div>
                         </div>
                     </div>
@@ -321,11 +366,219 @@
             </div>
         </div>
 
-        <!-- Barrier Resins Section -->
-        <div class="card shadow mb-4">
+        <!-- ===================== D) ANTI-FOG ===================== -->
+        <div class="card shadow mb-4" id="antifog">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-cloud-rain"></i> D) Anti-Fog Masterbatch
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Function & Properties</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Stops condensation from forming as tiny light-scattering droplets, keeping the film transparent:</p>
+                                <ul>
+                                    <li>Clear view of fresh produce, meat, and dairy</li>
+                                    <li>Less water droplet damage to packed product</li>
+                                    <li>Better light transmission in greenhouse/agricultural film</li>
+                                    <li>Reduced mould/bacterial growth from droplets falling on product</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Mechanism & Substitutes</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Primary:</strong> Glycerol esters (e.g. glycerol monooleate, GMO)</p>
+                                <p><strong>Substitute 1:</strong> Polyglycerol esters</p>
+                                <p><strong>Substitute 2:</strong> Sorbitan esters (Span) and ethoxylated sorbitan esters</p>
+                                <p><strong>Substitute 3:</strong> Ethoxylated amines/alcohols (long-term outdoor films)</p>
+                                <p class="mt-2"><small>These hydrophilic additives migrate to the surface and raise surface energy, so condensate spreads into a continuous transparent water film instead of beading. Delivered as a masterbatch for accurate, dust-free dosing.</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Concentration Effects</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <strong>Low Rate:</strong> Droplets reappear, short anti-fog lifetime
+                                </div>
+                                <div class="alert alert-danger">
+                                    <strong>High Rate:</strong> Surface becomes greasy/wet, reduced heat-seal and print adhesion, additive wash-off, possible odour and migration concerns
+                                </div>
+                                <div class="alert alert-info mb-0">
+                                    <strong>Typical masterbatch dosing:</strong> about 1&ndash;3% (let-down) depending on masterbatch loading and application.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Focus Applications & Cautions</strong>
+                            </div>
+                            <div class="card-body">
+                                <span class="badge bg-primary">Fresh Produce</span>
+                                <span class="badge bg-primary">Meat/Poultry Trays</span>
+                                <span class="badge bg-primary">Dairy Lids</span>
+                                <span class="badge bg-primary">Greenhouse Film</span>
+                                <ul class="mt-2 mb-0">
+                                    <li>Place in the layer facing the humid side (usually inner/sealant layer in coex)</li>
+                                    <li>Competes with slip and antistat for surface &mdash; test combinations; amide slip may need to be reduced</li>
+                                    <li>Corona treatment and ink adhesion can drop &mdash; print the non-fog side</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== E) BLEND RESINS ===================== -->
+        <div class="card shadow mb-4" id="blend-resins">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-cubes"></i> E) Base & Blend Resins: HDPE (HTA 108 / HD 6207FL), LLDPE and mLLDPE
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">These are not "additives" in the strict sense, but they are added to a film recipe in significant percentages to tune stiffness, toughness, sealing and barrier. Each one solves a different problem.</p>
+
+                <!-- HDPE -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>HDPE Film Grades &ndash; ExxonMobil HTA 108 / HD 6207FL</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>HTA 108:</strong> HDPE film grade designed to improve stiffness and barrier in coextrusion or in PE blends.</p>
+                                <p><strong>HD 6207FL:</strong> HDPE homopolymer film grade designed to improve stiffness, barrier properties and processability when coextruded or blended with LLDPE or mLLDPE.</p>
+                                <p><strong>Why they are added:</strong></p>
+                                <ul>
+                                    <li><strong>Stiffness (modulus):</strong> allows downgauging while keeping film rigidity for form-fill-seal and bag handling</li>
+                                    <li><strong>Moisture barrier:</strong> crystalline HDPE has a lower water vapour transmission rate than LDPE/LLDPE &mdash; a key layer for dry foods and to shield EVOH/Nylon</li>
+                                    <li><strong>Processability:</strong> high-density grades support strong bubble stability (high-stalk) and good output when blended with softer LLDPE/mLLDPE</li>
+                                    <li><strong>Heat resistance:</strong> higher melting point improves sealing window and hot-fill resistance</li>
+                                </ul>
+                                <div class="alert alert-warning mb-0">
+                                    <strong>Typical use:</strong> 10&ndash;30% in LLDPE/mLLDPE blends, or as a core/skin layer in coextrusion. Higher levels increase stiffness and barrier but reduce clarity, tear and dart impact, and make the film crinkly.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>Substitutes & Related Options</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Substitute 1:</strong> Other HDPE film grades (hexene/butene copolymer or homopolymer, different melt index)</p>
+                                <p><strong>Substitute 2:</strong> Medium-density PE (MDPE) &ndash; softer, better tear/clarity, less barrier</p>
+                                <p><strong>Substitute 3:</strong> PP layers (stiffness/heat resistance, but different sealing and recycling stream)</p>
+                                <div class="alert alert-info mt-2">
+                                    <i class="fas fa-info-circle"></i> HDPE is not an oxygen barrier. It improves <em>moisture</em> barrier and stiffness only; use EVOH/Nylon for oxygen barrier.
+                                </div>
+                                <p class="mb-1"><strong>Focus applications:</strong></p>
+                                <span class="badge bg-primary">Bread/Bakery Bags</span>
+                                <span class="badge bg-primary">Dry Food Liners</span>
+                                <span class="badge bg-primary">Shopping Bags</span>
+                                <span class="badge bg-primary">Heavy-Duty Sacks</span>
+                                <span class="badge bg-primary">Coex Core Layers</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLDPE & mLLDPE -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>LLDPE (Linear Low-Density PE)</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Why it is added:</strong></p>
+                                <ul>
+                                    <li><strong>Toughness:</strong> high tensile, puncture and tear resistance vs LDPE, allowing downgauging</li>
+                                    <li><strong>Impact strength:</strong> improves dart drop in HDPE and LDPE blends</li>
+                                    <li><strong>Sealing:</strong> lower seal initiation temperature than HDPE, good seal strength</li>
+                                    <li><strong>Cost-effective backbone:</strong> base of most stretch, shrink, liner and sack films</li>
+                                </ul>
+                                <p><strong>Substitutes:</strong> mLLDPE (higher performance), LDPE (easier processing, better clarity, lower strength), plastomers/POE.</p>
+                                <div class="alert alert-warning mb-0">
+                                    <strong>Typical use:</strong> 20&ndash;80% in LDPE/LLDPE blends; up to 100% in many films. Higher melt strength sensitivity &mdash; blend 10&ndash;30% LDPE for bubble stability and/or use PPA.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>mLLDPE (Metallocene LLDPE)</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Why it is added:</strong></p>
+                                <ul>
+                                    <li><strong>Superior dart impact and puncture:</strong> narrow molecular weight distribution and uniform comonomer give best toughness at thin gauge</li>
+                                    <li><strong>Lower seal initiation temp and strong hot tack:</strong> faster packaging line speeds, strong seals through contamination</li>
+                                    <li><strong>Better optics:</strong> low haze and high gloss</li>
+                                    <li><strong>Low extractables/odour:</strong> useful for food and medical film</li>
+                                </ul>
+                                <p><strong>Substitutes:</strong> Conventional Ziegler-Natta LLDPE (cheaper, lower toughness), plastomers (more seal performance, softer).</p>
+                                <div class="alert alert-warning mb-0">
+                                    <strong>Typical use:</strong> 10&ndash;40% blended into LLDPE/LDPE, or 100% in sealant and high-performance layers. Harder to process (high pressure, lower melt strength) &mdash; blend 10&ndash;20% LDPE and use PPA (preferably PFAS-free).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- comparison table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-3">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Property</th>
+                                <th>HDPE (HTA 108 / HD 6207FL)</th>
+                                <th>LLDPE</th>
+                                <th>mLLDPE</th>
+                                <th>LDPE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Stiffness</strong></td><td>Very high</td><td>Medium</td><td>Medium-low</td><td>Low</td></tr>
+                            <tr><td><strong>Dart / puncture</strong></td><td>Low-medium</td><td>High</td><td>Very high</td><td>Low-medium</td></tr>
+                            <tr><td><strong>Moisture barrier</strong></td><td>Best</td><td>Fair</td><td>Fair</td><td>Fair-low</td></tr>
+                            <tr><td><strong>Seal initiation temp</strong></td><td>High</td><td>Medium</td><td>Low</td><td>Medium-low</td></tr>
+                            <tr><td><strong>Clarity</strong></td><td>Low-medium</td><td>Medium</td><td>High</td><td>High</td></tr>
+                            <tr><td><strong>Processability</strong></td><td>Good (strong bubble)</td><td>Fair</td><td>Hardest</td><td>Easiest</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted mb-0"><small>Qualitative comparison. Exact values depend on grade, melt index and density &mdash; check each TDS.</small></p>
+            </div>
+        </div>
+
+        <!-- ===================== F) BARRIER ===================== -->
+        <div class="card shadow mb-4" id="barrier">
             <div class="card-header bg-purple text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-shield-alt"></i> D) Barrier Resins - EVOH & Nylon
+                    <i class="fas fa-shield-alt"></i> F) Barrier Resins - EVOH & Nylon
                 </h5>
             </div>
             <div class="card-body">
@@ -348,6 +601,7 @@
                                     <li>EVOH 38% - High barrier</li>
                                     <li>EVOH 44% - Ultra high barrier</li>
                                 </ul>
+                                <p class="small text-muted mb-0">Note: the % figure is ethylene content. Lower ethylene gives a stronger oxygen barrier but is stiffer, more moisture sensitive and harder to process.</p>
                             </div>
                         </div>
                     </div>
@@ -375,10 +629,10 @@
                             </div>
                             <div class="card-body">
                                 <div class="alert alert-warning">
-                                    <strong>EVOH:</strong> Highly hygroscopic - must be dried to <0.3% moisture
+                                    <strong>EVOH:</strong> Highly hygroscopic - must be dried to &lt;0.3% moisture; barrier drops sharply when wet, so protect with PE/HDPE layers
                                 </div>
                                 <div class="alert alert-info">
-                                    <strong>Nylon:</strong> Requires drying to <0.1% moisture to prevent degradation
+                                    <strong>Nylon:</strong> Requires drying to &lt;0.1% moisture to prevent degradation
                                 </div>
                                 <div class="alert alert-danger">
                                     <strong>Both:</strong> Sensitive to thermal degradation - control melt temperature
@@ -404,11 +658,11 @@
             </div>
         </div>
 
-        <!-- Tie Layers Section -->
-        <div class="card shadow mb-4">
+        <!-- ===================== G) TIE LAYERS ===================== -->
+        <div class="card shadow mb-4" id="tie">
             <div class="card-header bg-danger text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-link"></i> E) Tie Layers/Adhesives for Barrier Coextrusion
+                    <i class="fas fa-link"></i> G) Tie Layers/Adhesives for Barrier Coextrusion
                 </h5>
             </div>
             <div class="card-body">
@@ -484,14 +738,161 @@
             </div>
         </div>
 
-        <!-- Ink Components Section -->
-        <div class="card shadow mb-4">
+        <!-- ===================== H) INKS ===================== -->
+        <div class="card shadow mb-4" id="inks">
             <div class="card-header bg-dark text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-paint-brush"></i> F) Ink Components for Flexible Packaging
+                    <i class="fas fa-paint-brush"></i> H) Inks, Solvents & Ink Components for Flexible Packaging
                 </h5>
             </div>
             <div class="card-body">
+
+                <h6 class="mb-3"><i class="fas fa-fill-drip text-danger"></i> Ink Product Range, Resin Systems and Associated Solvents</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Product</th>
+                                <th>Resin</th>
+                                <th>Application / Notes</th>
+                                <th>Typical Solvents</th>
+                                <th>Why These Solvents</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Top Film</strong></td>
+                                <td><span class="badge bg-primary">NC</span> Nitrocellulose</td>
+                                <td>General surface printing</td>
+                                <td>Ethyl acetate, ethanol, IPA / n-propanol</td>
+                                <td>Ester is the active solvent that dissolves NC; alcohols act as diluents, control speed and cost, and keep odour low.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Alcolam</strong></td>
+                                <td><span class="badge bg-primary">NC-PU</span></td>
+                                <td>Lamination</td>
+                                <td>Ethyl acetate, IPA/ethanol (kept low), small n-propanol</td>
+                                <td>Esters dissolve the PU/NC blend. Residual alcohol must be minimised because free OH groups react with isocyanate lamination adhesives, so solvent release and drying are critical.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Topflex</strong></td>
+                                <td><span class="badge bg-primary">NC-PA</span></td>
+                                <td>Surface flexo. NC-maleic variant discontinued &mdash; bread bag adhesion failures</td>
+                                <td>Ethanol, n-propanol, ethyl acetate</td>
+                                <td>PA part is alcohol-soluble, NC part needs ester; the balanced alcohol/ester blend gives flow, adhesion on treated PE and good lay-down in flexo cells.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Petlam</strong></td>
+                                <td><span class="badge bg-info text-dark">Vinyl</span></td>
+                                <td>PET lamination</td>
+                                <td>Ethyl acetate, MEK (ketone), small alcohol fraction</td>
+                                <td>Vinyl copolymer resins need stronger ester/ketone solvency; ketones also give fast drying on non-absorbent PET.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Extrusion</strong></td>
+                                <td><span class="badge bg-warning text-dark">CPP / MPP</span></td>
+                                <td>Extrusion coating/lamination</td>
+                                <td>Ethyl acetate with ketone or aliphatic co-solvent (per supplier)</td>
+                                <td>Chlorinated/modified polypropylene resins need stronger or non-polar co-solvents to stay dissolved; ink must survive molten PE contact in extrusion lamination.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Lamflex</strong></td>
+                                <td><span class="badge bg-primary">NC-PU</span></td>
+                                <td>Reverse lamination (print trapped between films)</td>
+                                <td>Ethyl acetate, IPA/ethanol, n-propanol</td>
+                                <td>Strong ester solvency for PU bond strength; alcohol blend sets drying speed; low retained solvent protects lamination bond and taste/odour.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Polyrez</strong></td>
+                                <td><span class="badge bg-success">PA</span> Polyamide</td>
+                                <td>Surface printing</td>
+                                <td>n-Propanol, ethanol, IPA (with ethyl acetate helper)</td>
+                                <td>Polyamide resin dissolves in alcohols; n-propanol slows drying so the ink does not dry in the cells and gives high gloss, good adhesion on PE/PP.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Polyfreeze</strong></td>
+                                <td><span class="badge bg-success">PA</span> (alcohol-based)</td>
+                                <td>Surface printing, frozen / cold-chain packs</td>
+                                <td>n-Propanol, ethanol, IPA (ester-free or low ester)</td>
+                                <td>Alcohol-based polyamide stays flexible and keeps adhesion at freezer temperatures and condensation; low odour for food packs.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dairyflex</strong></td>
+                                <td><span class="badge bg-primary">NC-PU</span></td>
+                                <td>Dairy packaging</td>
+                                <td>Ethyl acetate, ethanol, n-propanol</td>
+                                <td>NC-PU gives good adhesion and flexibility in cold/wet conditions; ester/alcohol blend with low retained solvent protects dairy taste and odour.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted"><small>Solvent systems shown are typical industry practice and illustrate why each resin family needs a different solvent balance. Always follow the ink supplier's TDS and run print/adhesion trials. NC = nitrocellulose, PU = polyurethane, PA = polyamide, CPP = chlorinated polypropylene, MPP = modified polypropylene.</small></p>
+
+                <div class="alert alert-danger">
+                    <strong><i class="fas fa-exclamation-circle"></i> Lesson learned:</strong> The NC-maleic variant of Topflex was discontinued because of bread bag adhesion failures. Surface-printed bread bags see handling, condensation and slip additive bloom &mdash; always validate ink adhesion with tape tests after film ageing.
+                </div>
+
+                <!-- Solvent guide -->
+                <h6 class="mt-4 mb-3"><i class="fas fa-vial text-primary"></i> Solvent Guide &ndash; Why Each Solvent Is Used</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>Ethyl Acetate</strong></div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Role:</strong> Main active solvent</p>
+                                <p class="small mb-0">Strong solvency for NC, PU and vinyl; fast-medium evaporation; low odour compared to ketones. Works with alcohols as a diluent blend.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>Ethanol / IPA</strong></div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Role:</strong> Diluent / co-solvent</p>
+                                <p class="small mb-0">Fast-medium drying, cost-effective, dissolves PA. IPA is less aggressive; alcohols in laminating inks must stay low because of isocyanate reaction.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>n-Propanol</strong></div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Role:</strong> Retarder / PA solvent</p>
+                                <p class="small mb-0">Slower evaporation prevents cell drying and improves lay-down and gloss; key solvent for polyamide inks. Alcohol retention must still be controlled.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>MEK (Ketones)</strong></div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Role:</strong> Strong, fast solvent</p>
+                                <p class="small mb-0">Used for vinyl and some CPP systems on non-absorbent films. Strong odour and retention risks &mdash; limit in food packaging.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>Glycol Ether Retarders</strong></div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Role:</strong> Slow-evaporating retarder</p>
+                                <p class="small mb-0">Small amounts for long press runs, fine detail or heavy coverage to avoid dry-in. Overuse increases retained solvent and odour.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-danger">
+                            <div class="card-header bg-light"><strong>Retained Solvent Control</strong></div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Why it matters</strong></p>
+                                <p class="small mb-0">Residual solvent causes odour, taint, poor lamination bond and blocking. Match solvent blend to drying capacity, speed and film.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ink additives -->
+                <h6 class="mb-3"><i class="fas fa-puzzle-piece text-warning"></i> Ink Additives & Components</h6>
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <div class="card h-100">
@@ -551,10 +952,10 @@
                             </div>
                             <div class="card-body">
                                 <p><strong>Function:</strong> Improve rub resistance and surface slip</p>
-                                <p><strong>Primary:</strong> Polyethylene wax dispersions</p>
-                                <p><strong>Substitute 1:</strong> PTFE wax compounds</p>
-                                <p><strong>Substitute 2:</strong> Paraffin wax emulsions</p>
-                                <p class="mt-2"><small>Used at 1-3% to prevent blocking and improve surface properties</small></p>
+                                <p><strong>Primary:</strong> Polyethylene wax dispersions <span class="badge bg-success">PFAS-free</span></p>
+                                <p><strong>Substitute 1:</strong> Paraffin / carnauba wax emulsions <span class="badge bg-success">PFAS-free</span></p>
+                                <p><strong>Avoid:</strong> PTFE wax compounds <span class="badge bg-danger">PFAS</span></p>
+                                <p class="mt-2"><small>Used at 1-3% to prevent blocking and improve surface properties. PTFE wax is a fluoropolymer &mdash; prefer PE or natural wax.</small></p>
                             </div>
                         </div>
                     </div>
@@ -568,7 +969,7 @@
                                 <p><strong>Primary:</strong> Silicone-based defoamers</p>
                                 <p><strong>Substitute 1:</strong> Mineral oil defoamers</p>
                                 <p><strong>Substitute 2:</strong> Acetylenic diol wetting agents</p>
-                                <p class="mt-2"><small>Critical for high-speed printing and uniform ink laydown</small></p>
+                                <p class="mt-2"><small>Critical for high-speed printing and uniform ink laydown. Avoid fluorosurfactant wetting agents &mdash; they are PFAS.</small></p>
                             </div>
                         </div>
                     </div>
@@ -576,13 +977,95 @@
             </div>
         </div>
 
-        <!-- Additional Additives Section -->
-        <div class="row">
+        <!-- ===================== I) OPV ===================== -->
+        <div class="card shadow mb-4" id="opv">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-spray-can"></i> I) Overprint Varnish (OPV)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Function & Properties</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>A clear protective coating applied over the printed ink layer to:</p>
+                                <ul>
+                                    <li>Protect print from rub, scuff and scratch during converting and handling</li>
+                                    <li>Provide gloss, satin or matte finish</li>
+                                    <li>Control COF/slip on the printed face</li>
+                                    <li>Improve heat resistance so print does not stick to sealing jaws</li>
+                                    <li>Improve resistance to moisture, grease and chemicals</li>
+                                    <li>Help prevent blocking in the roll</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Types & Substitutes</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Primary:</strong> Solvent-based NC / NC-PU varnish &ndash; same solvent family as the ink (ethyl acetate, ethanol, IPA)</p>
+                                <p><strong>Substitute 1:</strong> Polyamide-based OPV (alcohol-based) &ndash; for PA ink systems</p>
+                                <p><strong>Substitute 2:</strong> Water-based acrylic OPV &ndash; low VOC, water with small alcohol fraction</p>
+                                <p><strong>Substitute 3:</strong> UV-curing OPV &ndash; very high gloss and resistance, needs UV curing equipment</p>
+                                <p class="mt-2"><small>Choose OPV chemistry to match the ink system (NC, PA, PU) so it adheres and does not lift or attack the print.</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Common OPV Additives & Effects</strong>
+                            </div>
+                            <div class="card-body">
+                                <ul class="mb-0">
+                                    <li><strong>Wax (PE, carnauba):</strong> rub resistance and slip. Too much hurts heat sealing and lamination</li>
+                                    <li><strong>Silica matting agents:</strong> matte/satin finish (reduces gloss, can reduce clarity)</li>
+                                    <li><strong>Defoamer/wetting agents:</strong> avoid pinholes and cratering</li>
+                                    <li><strong>Crosslinker:</strong> chemical resistance for water-based acrylic grades</li>
+                                    <li><strong>PTFE wax:</strong> avoid &mdash; fluoropolymer (PFAS)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <strong>Cautions</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <strong>Over-slip OPV:</strong> bags slide off stacks, lose heat-seal strength and may cause label/adhesive failure.
+                                </div>
+                                <div class="alert alert-danger">
+                                    <strong>Seal area:</strong> use heat-resistant OPV, or leave the seal area unvarnished, so jaws do not stick to the print.
+                                </div>
+                                <div class="alert alert-info mb-0">
+                                    <strong>Interaction:</strong> film slip additive blooming through thin ink/OPV can cause adhesion loss &mdash; test after ageing.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== J-M OTHER ADDITIVES ===================== -->
+        <div class="row" id="others">
             <!-- Antioxidants -->
             <div class="col-md-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-secondary text-white">
-                        <h6 class="mb-0"><i class="fas fa-fire-extinguisher"></i> G) Antioxidants</h6>
+                        <h6 class="mb-0"><i class="fas fa-fire-extinguisher"></i> J) Antioxidants</h6>
                     </div>
                     <div class="card-body">
                         <p><strong>Function:</strong> Prevent polymer degradation during processing and service life</p>
@@ -604,7 +1087,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-info text-white">
-                        <h6 class="mb-0"><i class="fas fa-sun"></i> H) UV Stabilizers</h6>
+                        <h6 class="mb-0"><i class="fas fa-sun"></i> K) UV Stabilizers</h6>
                     </div>
                     <div class="card-body">
                         <p><strong>Function:</strong> Protect against UV degradation and color fading</p>
@@ -627,7 +1110,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-success text-white">
-                        <h6 class="mb-0"><i class="fas fa-bolt"></i> I) Antistatic Agents</h6>
+                        <h6 class="mb-0"><i class="fas fa-bolt"></i> L) Antistatic Agents</h6>
                     </div>
                     <div class="card-body">
                         <p><strong>Function:</strong> Reduce static electricity buildup</p>
@@ -650,7 +1133,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-warning text-dark">
-                        <h6 class="mb-0"><i class="fas fa-snowflake"></i> J) Nucleating Agents</h6>
+                        <h6 class="mb-0"><i class="fas fa-snowflake"></i> M) Nucleating Agents</h6>
                     </div>
                     <div class="card-body">
                         <p><strong>Function:</strong> Control crystallization for improved clarity and stiffness</p>
@@ -669,8 +1152,128 @@
             </div>
         </div>
 
-        <!-- Summary Card -->
-        <div class="card shadow">
+        <!-- ===================== PFAS CONCLUSION ===================== -->
+        <div class="card shadow mb-4 border-dark" id="pfas">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-leaf"></i> Conclusion: PFAS and Why the Shift to PFAS-Free Resins & Additives Is a Necessity
+                </h5>
+            </div>
+            <div class="card-body">
+
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> What are PFAS?</h6>
+                    <p class="mb-0">PFAS (per- and polyfluoroalkyl substances) are a large family of fluorinated chemicals built on the extremely strong carbon&ndash;fluorine bond. That bond makes them heat- and chemical-resistant and highly slippery &mdash; and also makes them <strong>persistent</strong> ("forever chemicals"): they barely degrade in the environment, spread through water and soil and can accumulate in living organisms. Some PFAS are linked to adverse health effects, and several (PFOS, PFOA, PFHxS) are already restricted under the Stockholm Convention.</p>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>Where PFAS Appear in This Guide</strong></div>
+                            <div class="card-body">
+                                <ul class="mb-0">
+                                    <li><strong>Fluoropolymer PPAs</strong> (Dynamar, Viton type) in film extrusion</li>
+                                    <li><strong>PTFE wax</strong> in inks and OPV</li>
+                                    <li><strong>Fluorosurfactant wetting agents</strong> in inks/varnishes</li>
+                                    <li><strong>Masterbatch carriers</strong> and recycled content that may carry fluorinated residues</li>
+                                </ul>
+                                <p class="small text-muted mt-2 mb-0">Fluoropolymers are used at very low ppm, but they still count as PFAS in regulatory definitions and traces end up in the film, die deposits, scrap and wastewater.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>Why the Shift Is a Necessity</strong></div>
+                            <div class="card-body">
+                                <ul class="mb-0">
+                                    <li><strong>Regulation:</strong> The EU is restricting PFAS &mdash; a broad restriction proposal is under evaluation, and the EU Packaging and Packaging Waste Regulation sets limits on PFAS in food-contact packaging. US states have also introduced PFAS bans in packaging.</li>
+                                    <li><strong>Market access:</strong> Exporters and brand owners supplying EU/US markets increasingly require PFAS-free declarations and total-fluorine testing.</li>
+                                    <li><strong>Supply security:</strong> Major fluoropolymer producers have announced exits from PFAS manufacturing, so supply and pricing of fluoropolymer PPAs are uncertain.</li>
+                                    <li><strong>Brand and retailer policy:</strong> Many food and consumer brands have PFAS-free packaging commitments.</li>
+                                    <li><strong>Health and environment:</strong> Persistence, bioaccumulation and contamination of water sources make precaution the responsible choice.</li>
+                                    <li><strong>Recycling:</strong> PFAS in film complicates circular economy and recycled-content claims.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white"><strong>PFAS-Free Replacement Map</strong></div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Application</th>
+                                                <th>PFAS Product</th>
+                                                <th>PFAS-Free Options</th>
+                                                <th>Trade-offs</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Film extrusion PPA</td>
+                                                <td>Fluoropolymer PPA</td>
+                                                <td>Siloxane, PEG/polyester, boron nitride PPAs; better resin selection (LDPE blend, optimised melt index)</td>
+                                                <td>Longer conditioning, narrower processing window, may need higher dosage or die-lip tuning</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Ink / OPV wax</td>
+                                                <td>PTFE wax</td>
+                                                <td>PE wax, carnauba, paraffin, polypropylene wax</td>
+                                                <td>Slightly lower rub/slip performance &mdash; tune dosage</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Ink wetting agents</td>
+                                                <td>Fluorosurfactants</td>
+                                                <td>Acetylenic diol, silicone wetting agents</td>
+                                                <td>May need more optimisation on low-energy films</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>Practical Transition Steps</strong></div>
+                            <div class="card-body">
+                                <ol class="mb-0">
+                                    <li>Audit every masterbatch, ink, varnish and additive for fluorinated components using supplier declarations and SDS.</li>
+                                    <li>Request written PFAS-free statements from suppliers (including carriers and recycled content).</li>
+                                    <li>Trial PFAS-free PPA; purge the die and screens of fluoropolymer residues beforehand.</li>
+                                    <li>Re-optimise dosage, melt temperature, die gap and cooling to compensate for different performance.</li>
+                                    <li>Test film: haze, gloss, seal strength, slip/COF and print adhesion after ageing.</li>
+                                    <li>Verify with laboratory total-fluorine or PFAS analysis where required by customers.</li>
+                                    <li>Document formulation changes and keep records for regulatory and customer audits.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light"><strong>Bottom Line</strong></div>
+                            <div class="card-body">
+                                <div class="alert alert-success mb-3">
+                                    PFAS-free film production is now achievable with commercial alternatives, and the cost of waiting &mdash; lost market access, supply risk and regulatory exposure &mdash; is higher than the cost of re-qualifying a formulation.
+                                </div>
+                                <p class="small text-muted mb-0">Regulations and supplier positions are changing quickly. Confirm the current status of EU, US-state and customer requirements for your target markets before finalising formulations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== SUMMARY / TAKEAWAYS ===================== -->
+        <div class="card shadow" id="takeaways">
             <div class="card-header bg-light">
                 <h5 class="mb-0 text-dark">
                     <i class="fas fa-graduation-cap text-primary"></i> Key Takeaways & Selection Guidelines
@@ -679,11 +1282,15 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6><i class="fas fa-balance-scale text-success"></i> Additive Selection Principles</h6>
+                        <h6><i class="fas fa-balance-scale text-success"></i> Additive & Resin Selection Principles</h6>
                         <ul>
+                            <li><strong>HDPE (HTA 108 / HD 6207FL):</strong> add for stiffness, moisture barrier and bubble stability &mdash; typically 10&ndash;30%; accept some loss of clarity and tear</li>
+                            <li><strong>LLDPE / mLLDPE:</strong> add for toughness and sealing; mLLDPE gives best dart, hot tack and optics but needs LDPE and PPA help in processing</li>
+                            <li><strong>Anti-fog:</strong> put it in the humid-side layer, test with slip/antistat and print adhesion</li>
                             <li><strong>EVOH:</strong> Choose ethylene content based on barrier requirements and flexibility needs</li>
                             <li><strong>Tie Layers:</strong> Match chemistry to specific barrier resin (EVOH vs Nylon)</li>
-                            <li><strong>Ink Components:</strong> Consider substrate, printing method, and end-use requirements</li>
+                            <li><strong>Inks:</strong> Match ink resin (NC, NC-PU, NC-PA, PA, vinyl, CPP/MPP) to substrate, print method (surface vs lamination) and end-use</li>
+                            <li><strong>OPV:</strong> Match varnish chemistry to ink and keep slip/wax in balance with sealing and lamination needs</li>
                             <li><strong>Substitutes:</strong> Always test compatibility and performance before full implementation</li>
                         </ul>
                     </div>
@@ -693,13 +1300,41 @@
                             <li><strong>EVOH/Nylon:</strong> MUST be properly dried to prevent degradation</li>
                             <li><strong>Tie Layers:</strong> Require adequate layer distribution and contact time</li>
                             <li><strong>Ink Additives:</strong> Balance components to avoid conflicts (wax vs adhesion)</li>
+                            <li><strong>Laminating inks:</strong> Keep residual alcohol and solvent low to protect isocyanate adhesive bonds</li>
                             <li><strong>Barrier Films:</strong> Protect EVOH with hydrophobic layers from moisture</li>
+                            <li><strong>PFAS:</strong> Avoid fluoropolymer PPA, PTFE wax and fluorosurfactants; get written supplier declarations</li>
                         </ul>
                     </div>
                 </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-link text-warning"></i> Additive Interaction Checklist</h6>
+                        <ul>
+                            <li><strong>Slip + anti-block:</strong> use together &mdash; spacing from anti-block, low friction from slip</li>
+                            <li><strong>Slip/antistat/anti-fog:</strong> all migrate to the surface and compete &mdash; over-dosing hurts seal strength, ink and lamination adhesion</li>
+                            <li><strong>PPA + silica/talc/HALS:</strong> may adsorb PPA &mdash; allow longer conditioning or higher PPA level</li>
+                            <li><strong>Slip bloom + ink:</strong> amides migrating through ink/OPV can cause adhesion failure (bread bag issue)</li>
+                            <li><strong>Recycled content:</strong> add antioxidant and check for contaminants including fluorinated residues</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-clipboard-check text-info"></i> Quality Control Tests to Run</h6>
+                        <ul>
+                            <li><strong>COF:</strong> static/kinetic after ageing (slip and anti-block)</li>
+                            <li><strong>Haze/gloss/clarity:</strong> after changing anti-block, PPA or HDPE level</li>
+                            <li><strong>Dart impact and tear:</strong> after HDPE/mLLDPE changes</li>
+                            <li><strong>Seal strength and hot tack:</strong> after slip, antifog, OPV or resin changes</li>
+                            <li><strong>Ink adhesion (tape test), rub test and retained solvent:</strong> fresh and aged samples</li>
+                            <li><strong>Moisture content:</strong> EVOH/Nylon before extrusion</li>
+                            <li><strong>Anti-fog test:</strong> cold-fog test at storage temperature</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <div class="alert alert-primary mt-3">
                     <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> Professional Formulation Insight</h6>
-                    <p class="mb-0">Successful additive formulation requires understanding both chemical interactions and practical processing constraints. Always conduct trials to optimize additive levels for your specific equipment, materials, and product requirements. Maintain detailed records of formulations and their performance for future reference and troubleshooting.</p>
+                    <p class="mb-0">Successful additive formulation requires understanding both chemical interactions and practical processing constraints. Always conduct trials to optimize additive levels for your specific equipment, materials, and product requirements. Maintain detailed records of formulations and their performance for future reference and troubleshooting. Design new formulations PFAS-free from the start rather than retrofitting later.</p>
                 </div>
             </div>
         </div>
@@ -752,6 +1387,19 @@
 
 .alert-success {
     border-left-color: #198754;
+}
+
+/* Smooth scrolling for in-page jump links */
+html {
+    scroll-behavior: smooth;
+}
+
+[id] {
+    scroll-margin-top: 80px;
+}
+
+.table td, .table th {
+    font-size: 0.9rem;
 }
 </style>
 {% endblock %}

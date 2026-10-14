@@ -1,8 +1,8 @@
 <style>
-/* Lives inside .navbar-nav as a real nav-item, so it inherits the same
-   spacing/hover rules as every other nav link instead of floating over
-   the page. The popover reuses the app's existing .dropdown-menu styling
-   (same border, shadow, radius, mobile static-position behavior). */
+/* Live clock + calendar. Lives in .navbar-nav as a normal nav-item and reuses
+   the app's .dropdown-menu look. Desktop: compact two-line clock with a
+   calendar popover. Mobile: single row inside the collapsed menu, with the
+   calendar opening inline (full width) instead of floating. */
 #lcwNavItem { position: relative; }
 
 #lcwNavItem .nav-link {
@@ -12,155 +12,247 @@
     gap: 0 !important;
     padding-top: .45rem;
     padding-bottom: .45rem;
+    min-width: 128px;
 }
-
-#lcwNavItem .lcw-top {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-}
+#lcwNavItem .lcw-top { display: flex; align-items: center; gap: .5rem; }
+#lcwNavItem .lcw-top i { width: 18px; text-align: center; }
 
 .lcw-time {
     font-weight: 700;
     font-family: var(--font-mono);
-    font-size: .85rem;
+    font-size: .9rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
 }
-
+.lcw-ampm { font-size: .62rem; margin-left: 2px; color: var(--text-dim); font-weight: 600; }
 .lcw-date {
     font-family: var(--font-mono);
     font-size: .62rem;
     color: var(--text-dim);
     letter-spacing: .03em;
     margin-left: 26px;
+    white-space: nowrap;
 }
 
+/* ---------- Calendar popover ---------- */
 #lcwCalendarPopover {
-    min-width: 260px;
+    min-width: 290px;
     padding: 12px;
+    right: 0; left: auto;
 }
-
-#lcwCalendarPopover .lcw-cal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--text-main);
+.lcw-cal-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 4px;
+    margin-bottom: 8px; font-weight: 600; color: var(--text-main);
 }
-
-#lcwCalendarPopover .lcw-cal-header button {
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-size: 1rem;
-    padding: 2px 8px;
-    border-radius: 6px;
+.lcw-cal-header .lcw-month-label { flex: 1; text-align: center; font-family: var(--font-display); font-size: .95rem; }
+.lcw-cal-header button {
+    background: transparent; border: 1px solid transparent; color: var(--text-dim);
+    width: 34px; height: 34px; min-height: 0; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer;
 }
-#lcwCalendarPopover .lcw-cal-header button:hover { color: var(--molten); }
+.lcw-cal-header button:hover { color: var(--molten); border-color: var(--line); background: rgba(255,122,69,.08); }
 
-#lcwCalendarPopover table { width: 100%; border-collapse: collapse; font-size: .8rem; }
-#lcwCalendarPopover th { color: var(--text-dim); font-weight: 500; padding: 4px 0; }
-#lcwCalendarPopover td { text-align: center; padding: 5px 0; border-radius: 4px; color: var(--text-main); }
-#lcwCalendarPopover td.lcw-today { background: var(--molten); color: #fff; font-weight: 700; }
-#lcwCalendarPopover td.lcw-empty { color: transparent; }
+#lcwCalendarPopover table { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; }
+#lcwCalendarPopover th {
+    color: var(--text-dim); font-weight: 600; font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .06em; text-align: center; padding: 4px 0;
+}
+#lcwCalendarPopover td {
+    text-align: center; padding: 0; height: 36px; border-radius: 8px;
+    color: var(--text-main); font-size: .85rem; font-variant-numeric: tabular-nums;
+    cursor: default; vertical-align: middle;
+}
+#lcwCalendarPopover td.lcw-day:hover { background: rgba(255,122,69,.12); }
+#lcwCalendarPopover td.lcw-weekend { color: var(--text-dim); }
+#lcwCalendarPopover td.lcw-other { color: var(--text-dim); opacity: .35; }
+#lcwCalendarPopover td.lcw-today { background: var(--molten); color: #10141a; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,69,.35); }
 
-@media (max-width: 768px) {
-    #lcwNavItem .nav-link { flex-direction: row; align-items: center !important; }
+.lcw-cal-footer {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line);
+    font-size: .75rem; color: var(--text-dim);
+}
+.lcw-cal-footer button {
+    background: transparent; border: 1px solid var(--line); color: var(--text-main);
+    border-radius: 8px; padding: 4px 10px; font-size: .75rem; min-height: 0; cursor: pointer;
+}
+.lcw-cal-footer button:hover { border-color: var(--molten); color: var(--molten); }
+.lcw-week { font-family: var(--font-mono); }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 991.98px) {
+    #lcwNavItem { display: block; width: 100%; }
+    #lcwNavItem .nav-link {
+        flex-direction: row; align-items: center !important; justify-content: space-between;
+        width: 100%; min-width: 0; gap: .5rem !important;
+    }
+    .lcw-date { display: inline; margin-left: 0; font-size: .72rem; }
+    .lcw-time { font-size: .95rem; }
+    #lcwCalendarPopover {
+        position: static !important; transform: none !important;
+        width: 100% !important; min-width: 0; margin: .4rem 0 .4rem 0 !important;
+        float: none !important;
+    }
+    #lcwCalendarPopover td { height: 42px; font-size: .95rem; }
+    .lcw-cal-header button { width: 40px; height: 40px; }
+}
+@media (max-width: 380px) {
     .lcw-date { display: none; }
 }
 </style>
 
 <li class="nav-item dropdown" id="lcwNavItem">
-    <a class="nav-link" href="#" id="liveClockWidget" role="button" title="Click for calendar">
-        <span class="lcw-top"><i class="far fa-clock"></i><span class="lcw-time" id="lcwTime">--:--:--</span></span>
+    <a class="nav-link" href="#" id="liveClockWidget" role="button" aria-haspopup="true" aria-expanded="false" title="Click for calendar (double-click for 12/24h)">
+        <span class="lcw-top"><i class="far fa-clock"></i><span><span class="lcw-time" id="lcwTime">--:--:--</span><span class="lcw-ampm" id="lcwAmpm"></span></span></span>
         <span class="lcw-date" id="lcwDate">--</span>
     </a>
-    <div id="lcwCalendarPopover" class="dropdown-menu dropdown-menu-end">
+    <div id="lcwCalendarPopover" class="dropdown-menu dropdown-menu-end" role="dialog" aria-label="Calendar">
         <div class="lcw-cal-header">
-            <button type="button" id="lcwPrevMonth"><i class="fas fa-chevron-left"></i></button>
-            <span id="lcwMonthLabel"></span>
-            <button type="button" id="lcwNextMonth"><i class="fas fa-chevron-right"></i></button>
+            <button type="button" id="lcwPrevYear" title="Previous year" aria-label="Previous year"><i class="fas fa-angles-left"></i></button>
+            <button type="button" id="lcwPrevMonth" title="Previous month" aria-label="Previous month"><i class="fas fa-chevron-left"></i></button>
+            <span class="lcw-month-label" id="lcwMonthLabel"></span>
+            <button type="button" id="lcwNextMonth" title="Next month" aria-label="Next month"><i class="fas fa-chevron-right"></i></button>
+            <button type="button" id="lcwNextYear" title="Next year" aria-label="Next year"><i class="fas fa-angles-right"></i></button>
         </div>
         <table>
-            <thead><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr></thead>
+            <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
             <tbody id="lcwCalendarBody"></tbody>
         </table>
+        <div class="lcw-cal-footer">
+            <span class="lcw-week" id="lcwWeek"></span>
+            <span>
+                <button type="button" id="lcwFmtBtn" title="Switch 12/24 hour clock">24h</button>
+                <button type="button" id="lcwTodayBtn">Today</button>
+            </span>
+        </div>
     </div>
 </li>
 
 <script>
 (function() {
     const timeEl = document.getElementById('lcwTime');
+    const ampmEl = document.getElementById('lcwAmpm');
     const dateEl = document.getElementById('lcwDate');
     const link = document.getElementById('liveClockWidget');
     const popover = document.getElementById('lcwCalendarPopover');
     const monthLabel = document.getElementById('lcwMonthLabel');
     const calBody = document.getElementById('lcwCalendarBody');
+    const weekEl = document.getElementById('lcwWeek');
+    const fmtBtn = document.getElementById('lcwFmtBtn');
 
     function pad(n) { return String(n).padStart(2, '0'); }
+    function store(k, v) {
+        try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {}
+        return null;
+    }
+
+    let use12h = store('plastiq-clock12') === '1';
+    let lastDay = -1;
 
     function updateClock() {
         const now = new Date();
-        timeEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
-        dateEl.textContent = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        let h = now.getHours();
+        let suffix = '';
+        if (use12h) { suffix = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; }
+        timeEl.textContent = pad(h) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+        ampmEl.textContent = suffix ? ' ' + suffix : '';
+        fmtBtn.textContent = use12h ? '24h' : '12h';
+        if (now.getDate() !== lastDay) {          // refresh date + "today" highlight at midnight
+            lastDay = now.getDate();
+            dateEl.textContent = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            if (popover.classList.contains('show')) renderCalendar();
+        }
     }
     updateClock();
-    setInterval(updateClock, 1000);
+    // Align ticks to real seconds and pause work when the tab is hidden
+    setInterval(function() { if (!document.hidden) updateClock(); }, 1000);
+    document.addEventListener('visibilitychange', function() { if (!document.hidden) updateClock(); });
+
+    function isoWeek(d) {
+        const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const day = t.getUTCDay() || 7;
+        t.setUTCDate(t.getUTCDate() + 4 - day);
+        const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+        return Math.ceil(((t - yearStart) / 86400000 + 1) / 7);
+    }
 
     let calYear, calMonth;
-    const today = new Date();
 
     function renderCalendar() {
+        const today = new Date();
         monthLabel.textContent = new Date(calYear, calMonth, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
         const firstDay = new Date(calYear, calMonth, 1).getDay();
         const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const prevDays = new Date(calYear, calMonth, 0).getDate();
 
+        // Always render 6 rows so the popover never jumps in height
         let html = '<tr>';
-        for (let i = 0; i < firstDay; i++) html += '<td class="lcw-empty">-</td>';
-
-        let cellCount = firstDay;
-        for (let day = 1; day <= daysInMonth; day++) {
-            const isToday = calYear === today.getFullYear() && calMonth === today.getMonth() && day === today.getDate();
-            html += `<td class="${isToday ? 'lcw-today' : ''}">${day}</td>`;
-            cellCount++;
-            if (cellCount % 7 === 0 && day !== daysInMonth) html += '</tr><tr>';
+        for (let i = 0; i < 42; i++) {
+            const col = i % 7;
+            let cls = 'lcw-day', label;
+            if (i < firstDay) { label = prevDays - firstDay + 1 + i; cls = 'lcw-other'; }
+            else if (i >= firstDay + daysInMonth) { label = i - firstDay - daysInMonth + 1; cls = 'lcw-other'; }
+            else {
+                label = i - firstDay + 1;
+                if (calYear === today.getFullYear() && calMonth === today.getMonth() && label === today.getDate()) cls += ' lcw-today';
+            }
+            if (col === 0 || col === 6) cls += ' lcw-weekend';
+            html += '<td class="' + cls + '">' + label + '</td>';
+            if (col === 6 && i < 41) html += '</tr><tr>';
         }
         html += '</tr>';
         calBody.innerHTML = html;
+        weekEl.textContent = 'Week ' + isoWeek(today);
     }
 
     function resetToToday() {
-        calYear = today.getFullYear();
-        calMonth = today.getMonth();
+        const t = new Date();
+        calYear = t.getFullYear();
+        calMonth = t.getMonth();
         renderCalendar();
     }
     resetToToday();
 
-    document.getElementById('lcwPrevMonth').addEventListener('click', function(e) {
-        e.stopPropagation();
-        calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+    function shiftMonth(delta) {
+        calMonth += delta;
+        while (calMonth < 0) { calMonth += 12; calYear--; }
+        while (calMonth > 11) { calMonth -= 12; calYear++; }
         renderCalendar();
-    });
-    document.getElementById('lcwNextMonth').addEventListener('click', function(e) {
-        e.stopPropagation();
-        calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
-        renderCalendar();
-    });
+    }
+    function bind(id, fn) {
+        document.getElementById(id).addEventListener('click', function(e) { e.stopPropagation(); fn(); });
+    }
+    bind('lcwPrevMonth', function() { shiftMonth(-1); });
+    bind('lcwNextMonth', function() { shiftMonth(1); });
+    bind('lcwPrevYear', function() { calYear--; renderCalendar(); });
+    bind('lcwNextYear', function() { calYear++; renderCalendar(); });
+    bind('lcwTodayBtn', resetToToday);
+    bind('lcwFmtBtn', function() { use12h = !use12h; store('plastiq-clock12', use12h ? '1' : '0'); updateClock(); });
 
-    // Same open/close pattern as the app's other navbar dropdowns
-    // (toggle the Bootstrap ".show" class), so behavior and mobile
-    // layout stay consistent across every dropdown in the navbar.
+    function closePopover() {
+        popover.classList.remove('show');
+        link.setAttribute('aria-expanded', 'false');
+    }
+
+    // Same open/close pattern as the other navbar dropdowns (toggle .show)
     link.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         const isOpen = popover.classList.contains('show');
         document.querySelectorAll('.navbar .dropdown-menu.show').forEach(function(m) { m.classList.remove('show'); });
-        if (!isOpen) { popover.classList.add('show'); resetToToday(); }
+        if (!isOpen) { popover.classList.add('show'); link.setAttribute('aria-expanded', 'true'); resetToToday(); }
+        else closePopover();
+    });
+    link.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        use12h = !use12h; store('plastiq-clock12', use12h ? '1' : '0'); updateClock();
     });
     document.addEventListener('click', function(e) {
-        if (!popover.contains(e.target) && e.target !== link && !link.contains(e.target)) {
-            popover.classList.remove('show');
-        }
+        if (!popover.contains(e.target) && !link.contains(e.target)) closePopover();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && popover.classList.contains('show')) { closePopover(); link.focus(); }
     });
     popover.addEventListener('click', function(e) { e.stopPropagation(); });
 })();
