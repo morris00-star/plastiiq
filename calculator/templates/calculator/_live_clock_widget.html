@@ -36,7 +36,8 @@
 
 /* ---------- Calendar popover ---------- */
 #lcwCalendarPopover {
-    min-width: 290px;
+    width: 340px;
+    max-width: calc(100vw - 20px);
     padding: 12px;
     /* Anchor under the clock. Bootstrap's Popper isn't managing this menu, and
        the parent <li> is a flex container, so without an explicit top the menu
@@ -46,7 +47,10 @@
     right: 0; left: auto;
     margin-top: .9rem;
     max-height: calc(100vh - 100px);
+    overflow-y: auto;
 }
+#lcwCalendarPopover [hidden] { display: none !important; }
+
 .lcw-cal-header {
     display: flex; align-items: center; justify-content: space-between; gap: 4px;
     margin-bottom: 8px; font-weight: 600; color: var(--text-main);
@@ -60,23 +64,81 @@
 }
 .lcw-cal-header button:hover { color: var(--molten); border-color: var(--line); background: rgba(255,122,69,.08); }
 
-#lcwCalendarPopover table { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; }
+#lcwCalendarPopover table { width: 100%; border-collapse: separate; border-spacing: 0 3px; table-layout: fixed; }
 #lcwCalendarPopover th {
     color: var(--text-dim); font-weight: 600; font-size: .68rem; text-transform: uppercase;
     letter-spacing: .06em; text-align: center; padding: 4px 0;
 }
 #lcwCalendarPopover td {
-    text-align: center; padding: 0; height: 36px; border-radius: 8px;
+    position: relative;
+    text-align: center; padding: 6px 0 0; height: 42px; border-radius: 8px;
     color: var(--text-main); font-size: .85rem; font-variant-numeric: tabular-nums;
-    cursor: default; vertical-align: middle;
+    cursor: pointer; vertical-align: top;
 }
 #lcwCalendarPopover td.lcw-day:hover { background: rgba(255,122,69,.12); }
 #lcwCalendarPopover td.lcw-weekend { color: var(--text-dim); }
-#lcwCalendarPopover td.lcw-other { color: var(--text-dim); opacity: .35; }
-#lcwCalendarPopover td.lcw-today { background: var(--molten); color: #10141a; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,69,.35); }
+#lcwCalendarPopover td.lcw-other { color: var(--text-dim); opacity: .4; }
+#lcwCalendarPopover td.lcw-today { background: var(--molten); color: #10141a; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,69,.35); opacity: 1; }
+#lcwCalendarPopover td.lcw-sel { outline: 2px solid var(--molten); outline-offset: -2px; }
+
+/* range highlight shapes (squared in the middle, rounded at the ends) */
+#lcwCalendarPopover td.lcw-hl.lcw-r-mid { border-radius: 0; }
+#lcwCalendarPopover td.lcw-hl.lcw-r-start { border-radius: 8px 0 0 8px; }
+#lcwCalendarPopover td.lcw-hl.lcw-r-end { border-radius: 0 8px 8px 0; }
+
+/* markers: dots, labels */
+.lcw-dots { position: absolute; left: 0; right: 0; bottom: 5px; display: flex; justify-content: center; gap: 3px; }
+.lcw-dots i { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(16,20,26,.55); }
+.lcw-mk-lbl {
+    position: absolute; left: 2px; right: 2px; bottom: 3px;
+    font-size: .5rem; font-weight: 800; text-transform: uppercase; letter-spacing: .02em;
+    line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lcw-has-lbl .lcw-dots { bottom: auto; top: 3px; left: auto; right: 3px; }
+#lcwCalendarPopover td.lcw-today .lcw-mk-lbl { color: #10141a !important; }
+
+/* agenda for the selected day */
+.lcw-agenda { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.lcw-ag-head { font-size: .78rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+.lcw-ag-empty { font-size: .76rem; color: var(--text-dim); padding: 2px 0 4px; }
+.lcw-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-radius: 8px;
+}
+#lcwList .lcw-item { cursor: pointer; }
+#lcwList .lcw-item:hover { background: rgba(255,122,69,.08); }
+.lcw-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(16,20,26,.5); }
+.lcw-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.lcw-item-title { font-size: .82rem; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcw-item-meta { font-size: .68rem; color: var(--text-dim); }
+.lcw-item-del {
+    background: transparent; border: none; color: var(--text-dim); opacity: .7;
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+}
+.lcw-item-del:hover { color: #dc3545; opacity: 1; background: rgba(220,53,69,.1); }
+
+/* editor + list panels */
+.lcw-panel { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.lcw-ed-title { font-size: .78rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main); text-transform: uppercase; letter-spacing: .05em; }
+.lcw-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lcw-fl { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-dim); margin-bottom: 2px; }
+.lcw-hint { font-size: .7rem; color: var(--text-dim); margin: -2px 0 8px; }
+.lcw-wd { display: flex; gap: 4px; }
+.lcw-wd button {
+    flex: 1; height: 32px; border: 1px solid var(--line); background: transparent; color: var(--text-main);
+    border-radius: 8px; font-size: .75rem; font-weight: 600; padding: 0; min-height: 0;
+}
+.lcw-wd button.on { background: var(--molten); border-color: var(--molten); color: #10141a; }
+.lcw-colors { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.lcw-sw {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; padding: 0; min-height: 0;
+    box-shadow: 0 0 0 1px rgba(16,20,26,.4);
+}
+.lcw-sw.on { border-color: var(--text-main); transform: scale(1.12); }
+.lcw-sw-custom { width: 30px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: transparent; }
+.lcw-ed-err { color: #dc3545; font-size: .75rem; min-height: 1em; margin-bottom: 6px; }
 
 .lcw-cal-footer {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
     margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line);
     font-size: .75rem; color: var(--text-dim);
 }
@@ -98,14 +160,17 @@
     .lcw-time { font-size: .95rem; }
     #lcwCalendarPopover {
         position: static !important; transform: none !important;
-        width: 100% !important; min-width: 0; margin: .4rem 0 .4rem 0 !important;
-        float: none !important;
+        width: 100% !important; max-width: none; min-width: 0; margin: .4rem 0 .4rem 0 !important;
+        float: none !important; max-height: none; overflow: visible;
     }
-    #lcwCalendarPopover td { height: 42px; font-size: .95rem; }
+    #lcwCalendarPopover td { height: 46px; font-size: .95rem; }
     .lcw-cal-header button { width: 40px; height: 40px; }
+    .lcw-item-del { width: 38px; height: 38px; }
+    .lcw-cal-footer button { padding: 8px 12px; }
 }
 @media (max-width: 380px) {
     .lcw-date { display: none; }
+    .lcw-grid2 { grid-template-columns: 1fr; }
 }
 </style>
 
@@ -126,9 +191,79 @@
             <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
             <tbody id="lcwCalendarBody"></tbody>
         </table>
+
+        <div class="lcw-agenda" id="lcwAgenda" aria-live="polite"></div>
+
+        <div class="lcw-panel" id="lcwEditor" hidden>
+            <div class="lcw-ed-title">New marker</div>
+            <input type="text" id="lcwEdTitle" class="form-control form-control-sm mb-2" placeholder="Title (e.g. Machine service)" maxlength="60">
+            <div class="lcw-grid2 mb-2">
+                <div>
+                    <label class="lcw-fl" for="lcwEdType">When</label>
+                    <select id="lcwEdType" class="form-select form-select-sm">
+                        <option value="date">Single date</option>
+                        <option value="range">Date range</option>
+                        <option value="repeat">Repeats</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="lcw-fl" for="lcwEdStyle">Show as</label>
+                    <select id="lcwEdStyle" class="form-select form-select-sm">
+                        <option value="dot">Coloured dot</option>
+                        <option value="highlight">Highlight</option>
+                        <option value="label">Label</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="lcwEdDateRow" class="mb-2">
+                <label class="lcw-fl" for="lcwEdDate">Date</label>
+                <input type="date" id="lcwEdDate" class="form-control form-control-sm">
+            </div>
+            <div id="lcwEdRangeRow" class="lcw-grid2 mb-2" hidden>
+                <div><label class="lcw-fl" for="lcwEdStart">From</label><input type="date" id="lcwEdStart" class="form-control form-control-sm"></div>
+                <div><label class="lcw-fl" for="lcwEdEnd">To</label><input type="date" id="lcwEdEnd" class="form-control form-control-sm"></div>
+            </div>
+            <div id="lcwEdRepeatRow" hidden>
+                <div class="lcw-grid2 mb-2">
+                    <div>
+                        <label class="lcw-fl" for="lcwEdFreq">Repeat</label>
+                        <select id="lcwEdFreq" class="form-select form-select-sm">
+                            <option value="daily">Daily</option>
+                            <option value="weekly" selected>Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="lcw-fl" for="lcwEdInterval">Every N</label>
+                        <input type="number" id="lcwEdInterval" class="form-control form-control-sm" min="1" max="999" value="1">
+                    </div>
+                </div>
+                <div class="lcw-wd mb-2" id="lcwEdWeekdays" hidden></div>
+                <div class="lcw-hint" id="lcwEdFreqHint"></div>
+                <div class="lcw-grid2 mb-2">
+                    <div><label class="lcw-fl" for="lcwEdRStart">Starts</label><input type="date" id="lcwEdRStart" class="form-control form-control-sm"></div>
+                    <div><label class="lcw-fl" for="lcwEdUntil">Ends (optional)</label><input type="date" id="lcwEdUntil" class="form-control form-control-sm"></div>
+                </div>
+            </div>
+
+            <label class="lcw-fl">Colour</label>
+            <div class="lcw-colors mb-2" id="lcwEdColors"></div>
+            <div class="lcw-ed-err" id="lcwEdErr"></div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-primary" id="lcwEdSave">Save marker</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="lcwEdCancel">Cancel</button>
+            </div>
+        </div>
+
+        <div class="lcw-panel" id="lcwList" hidden></div>
+
         <div class="lcw-cal-footer">
             <span class="lcw-week" id="lcwWeek"></span>
             <span>
+                <button type="button" id="lcwAddBtn" title="Add a marker to the selected day"><i class="fas fa-plus"></i> Mark</button>
+                <button type="button" id="lcwListBtn" title="All markers"><i class="fas fa-list"></i></button>
                 <button type="button" id="lcwFmtBtn" title="Switch 12/24 hour clock">24h</button>
                 <button type="button" id="lcwTodayBtn">Today</button>
             </span>
@@ -147,13 +282,22 @@
     const calBody = document.getElementById('lcwCalendarBody');
     const weekEl = document.getElementById('lcwWeek');
     const fmtBtn = document.getElementById('lcwFmtBtn');
+    const agendaEl = document.getElementById('lcwAgenda');
+    const editor = document.getElementById('lcwEditor');
+    const listEl = document.getElementById('lcwList');
 
     function pad(n) { return String(n).padStart(2, '0'); }
     function store(k, v) {
         try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {}
         return null;
     }
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
 
+    /* ------------------------------ clock ------------------------------ */
     let use12h = store('plastiq-clock12') === '1';
     let lastDay = -1;
 
@@ -171,8 +315,6 @@
             if (popover.classList.contains('show')) renderCalendar();
         }
     }
-    updateClock();
-    // Align ticks to real seconds and pause work when the tab is hidden
     setInterval(function() { if (!document.hidden) updateClock(); }, 1000);
     document.addEventListener('visibilitychange', function() { if (!document.hidden) updateClock(); });
 
@@ -184,28 +326,165 @@
         return Math.ceil(((t - yearStart) / 86400000 + 1) / 7);
     }
 
+    /* ------------------------- date helpers ------------------------- */
+    // Months are zero-based throughout. Dates are 'YYYY-MM-DD' strings, which sort
+    // chronologically as plain strings and match <input type="date"> values.
+    function iso(y, m, d) { return y + '-' + pad(m + 1) + '-' + pad(d); }
+    function isoOf(date) { return iso(date.getFullYear(), date.getMonth(), date.getDate()); }
+    function parseIso(s) { const p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+    function dayNum(y, m, d) { return Math.round(Date.UTC(y, m, d) / 86400000); }   // DST-safe day count
+    function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+    function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+    function niceDate(s) { return parseIso(s).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+    /* --------------------------- markers ---------------------------
+       marker = { id, title, color:'#rrggbb', style:'dot'|'highlight'|'label',
+                  type:'date',   date
+                       'range',  start, end
+                       'repeat', start, freq:'daily|weekly|monthly|yearly',
+                                 interval, weekdays:[0-6] (weekly), until }       */
+    const STORE_KEY = 'plastiq-calendar-markers';
+    const PALETTE = ['#ff7a45', '#2dd4bf', '#a78bfa', '#fbbf24', '#fb7185', '#34d399', '#60a5fa', '#f472b6'];
+    const WD_SHORT = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+    function hexOk(c) { return /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '#ff7a45'; }
+    function rgba(hex, a) {
+        const n = parseInt(hex.slice(1), 16);
+        return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+    }
+
+    function loadMarkers() {
+        try {
+            const raw = localStorage.getItem(STORE_KEY);
+            const arr = raw ? JSON.parse(raw) : [];
+            return Array.isArray(arr) ? arr : [];
+        } catch (e) { return []; }
+    }
+    function saveMarkers(arr) { try { localStorage.setItem(STORE_KEY, JSON.stringify(arr)); } catch (e) {} }
+
+    let userMarkers = loadMarkers();
+    // Optional read-only markers a page/template can provide:
+    //   window.PLASTIQ_CALENDAR_MARKERS = [{ title:'Plant shutdown', type:'range', start:'2026-12-24', end:'2027-01-02', color:'#fb7185', style:'highlight' }]
+    function sharedMarkers() {
+        const src = Array.isArray(window.PLASTIQ_CALENDAR_MARKERS) ? window.PLASTIQ_CALENDAR_MARKERS : [];
+        return src.map(function(m, i) { return Object.assign({ style: 'dot', type: 'date' }, m, { id: 'shared-' + i, shared: true }); });
+    }
+    function allMarkers() { return userMarkers.concat(sharedMarkers()); }
+
+    function appliesOn(mk, y, m, d) {
+        const key = iso(y, m, d);
+        if (mk.type === 'date') return mk.date === key;
+        if (mk.type === 'range') return !!mk.start && mk.start <= key && key <= (mk.end || mk.start);
+        if (mk.type !== 'repeat' || !mk.start || key < mk.start) return false;
+        if (mk.until && key > mk.until) return false;
+
+        const s = parseIso(mk.start), sy = s.getFullYear(), sm = s.getMonth(), sd = s.getDate();
+        const n = Math.max(1, parseInt(mk.interval, 10) || 1);
+        switch (mk.freq) {
+            case 'daily':
+                return (dayNum(y, m, d) - dayNum(sy, sm, sd)) % n === 0;
+            case 'weekly': {
+                const wd = new Date(y, m, d).getDay();
+                const days = (mk.weekdays && mk.weekdays.length) ? mk.weekdays : [s.getDay()];
+                if (days.indexOf(wd) === -1) return false;
+                const startSunday = dayNum(sy, sm, sd) - s.getDay();
+                const thisSunday = dayNum(y, m, d) - wd;
+                return ((thisSunday - startSunday) / 7) % n === 0;
+            }
+            case 'monthly': {
+                const diff = (y - sy) * 12 + (m - sm);
+                if (diff < 0 || diff % n !== 0) return false;
+                return d === Math.min(sd, daysInMonth(y, m));      // 31st -> last day of short months
+            }
+            case 'yearly': {
+                if ((y - sy) % n !== 0 || m !== sm) return false;
+                const target = (sm === 1 && sd === 29 && !isLeap(y)) ? 28 : sd;
+                return d === target;
+            }
+        }
+        return false;
+    }
+
+    function describe(mk) {
+        if (mk.type === 'date') return 'On ' + niceDate(mk.date);
+        if (mk.type === 'range') return niceDate(mk.start) + ' \u2192 ' + niceDate(mk.end || mk.start);
+        const n = Math.max(1, parseInt(mk.interval, 10) || 1);
+        const unit = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' }[mk.freq] || 'period';
+        let s = 'Every ' + (n > 1 ? n + ' ' : '') + unit + (n > 1 ? 's' : '');
+        if (mk.freq === 'weekly' && mk.weekdays && mk.weekdays.length) {
+            s += ' on ' + mk.weekdays.slice().sort().map(function(w) { return WD_SHORT[w]; }).join(', ');
+        }
+        s += ' from ' + niceDate(mk.start);
+        if (mk.until) s += ' until ' + niceDate(mk.until);
+        return s;
+    }
+
+    /* --------------------------- calendar --------------------------- */
     let calYear, calMonth;
+    let selectedIso = isoOf(new Date());
 
     function renderCalendar() {
         const today = new Date();
+        const todayKey = isoOf(today);
         monthLabel.textContent = new Date(calYear, calMonth, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
         const firstDay = new Date(calYear, calMonth, 1).getDay();
-        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const monthDays = daysInMonth(calYear, calMonth);
         const prevDays = new Date(calYear, calMonth, 0).getDate();
+        const markers = allMarkers();
 
         // Always render 6 rows so the popover never jumps in height
         let html = '<tr>';
         for (let i = 0; i < 42; i++) {
             const col = i % 7;
-            let cls = 'lcw-day', label;
-            if (i < firstDay) { label = prevDays - firstDay + 1 + i; cls = 'lcw-other'; }
-            else if (i >= firstDay + daysInMonth) { label = i - firstDay - daysInMonth + 1; cls = 'lcw-other'; }
-            else {
-                label = i - firstDay + 1;
-                if (calYear === today.getFullYear() && calMonth === today.getMonth() && label === today.getDate()) cls += ' lcw-today';
-            }
+            let y = calYear, m = calMonth, d, other = false;
+            if (i < firstDay) { d = prevDays - firstDay + 1 + i; m = calMonth - 1; other = true; }
+            else if (i >= firstDay + monthDays) { d = i - firstDay - monthDays + 1; m = calMonth + 1; other = true; }
+            else { d = i - firstDay + 1; }
+            if (m < 0) { m = 11; y--; } else if (m > 11) { m = 0; y++; }
+
+            const key = iso(y, m, d);
+            const hits = markers.filter(function(mk) { return appliesOn(mk, y, m, d); });
+            const isToday = key === todayKey;
+
+            let cls = other ? 'lcw-day lcw-other' : 'lcw-day';
             if (col === 0 || col === 6) cls += ' lcw-weekend';
-            html += '<td class="' + cls + '">' + label + '</td>';
+            if (isToday) cls += ' lcw-today';
+            if (key === selectedIso) cls += ' lcw-sel';
+
+            const highlights = hits.filter(function(h) { return h.style === 'highlight'; });
+            const labels = hits.filter(function(h) { return h.style === 'label'; });
+            // extra highlights beyond the first show as dots so nothing is invisible
+            const dots = hits.filter(function(h) { return h.style !== 'highlight' && h.style !== 'label'; }).concat(highlights.slice(1));
+
+            let style = '';
+            let inner = '<span class="lcw-num">' + d + '</span>';
+
+            if (highlights.length) {
+                const h = highlights[0], c = hexOk(h.color);
+                cls += ' lcw-hl';
+                if (h.type === 'range') {
+                    const isStart = key === h.start, isEnd = key === (h.end || h.start);
+                    cls += (isStart && isEnd) ? ' lcw-r-single' : isStart ? ' lcw-r-start' : isEnd ? ' lcw-r-end' : ' lcw-r-mid';
+                }
+                style = isToday
+                    ? 'box-shadow:inset 0 0 0 2px ' + c + ';'
+                    : 'background:' + rgba(c, 0.28) + ';box-shadow:inset 0 0 0 1px ' + rgba(c, 0.65) + ';';
+            }
+            if (labels.length) cls += ' lcw-has-lbl';
+            if (dots.length) {
+                inner += '<span class="lcw-dots">' + dots.slice(0, 3).map(function(mk) {
+                    return '<i style="background:' + hexOk(mk.color) + '"></i>';
+                }).join('') + '</span>';
+            }
+            if (labels.length) {
+                inner += '<span class="lcw-mk-lbl" style="color:' + hexOk(labels[0].color) + '">' +
+                         esc(String(labels[0].title).slice(0, 5)) + (labels.length > 1 ? '+' : '') + '</span>';
+            }
+
+            const tip = hits.map(function(h) { return h.title; }).join(' \u2022 ');
+            html += '<td class="' + cls + '" data-date="' + key + '"' +
+                    (style ? ' style="' + style + '"' : '') +
+                    (tip ? ' title="' + esc(tip) + '"' : '') + '>' + inner + '</td>';
             if (col === 6 && i < 41) html += '</tr><tr>';
         }
         html += '</tr>';
@@ -213,13 +492,43 @@
         weekEl.textContent = 'Week ' + isoWeek(today);
     }
 
+    function itemHtml(mk) {
+        return '<div class="lcw-item" data-id="' + esc(mk.id) + '">' +
+               '<span class="lcw-swatch" style="background:' + hexOk(mk.color) + '"></span>' +
+               '<span class="lcw-item-body"><span class="lcw-item-title">' + esc(mk.title) + '</span>' +
+               '<span class="lcw-item-meta">' + esc(describe(mk)) + (mk.shared ? ' \u00b7 shared' : '') + '</span></span>' +
+               (mk.shared ? '' : '<button type="button" class="lcw-item-del" data-id="' + esc(mk.id) +
+                '" title="Delete marker" aria-label="Delete marker"><i class="fas fa-trash-alt"></i></button>') +
+               '</div>';
+    }
+
+    function renderAgenda() {
+        const p = parseIso(selectedIso);
+        const hits = allMarkers().filter(function(mk) { return appliesOn(mk, p.getFullYear(), p.getMonth(), p.getDate()); });
+        const head = p.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        let html = '<div class="lcw-ag-head">' + esc(head) + '</div>';
+        html += hits.length ? hits.map(itemHtml).join('')
+                            : '<div class="lcw-ag-empty">Nothing marked. Use \u201c+ Mark\u201d to add something.</div>';
+        agendaEl.innerHTML = html;
+    }
+
+    function renderList() {
+        const all = allMarkers();
+        listEl.innerHTML = '<div class="lcw-ed-title">All markers (' + all.length + ')</div>' +
+            (all.length ? all.map(itemHtml).join('') : '<div class="lcw-ag-empty">No markers yet.</div>');
+    }
+
+    function refreshAll() { renderCalendar(); renderAgenda(); renderList(); }
+
     function resetToToday() {
         const t = new Date();
         calYear = t.getFullYear();
         calMonth = t.getMonth();
-        renderCalendar();
+        selectedIso = isoOf(t);
+        refreshAll();
     }
     resetToToday();
+    updateClock();
 
     function shiftMonth(delta) {
         calMonth += delta;
@@ -237,6 +546,234 @@
     bind('lcwTodayBtn', resetToToday);
     bind('lcwFmtBtn', function() { use12h = !use12h; store('plastiq-clock12', use12h ? '1' : '0'); updateClock(); });
 
+    // select a day (click), or start a marker on it (double-click)
+    calBody.addEventListener('click', function(e) {
+        const td = e.target.closest('td[data-date]');
+        if (!td) return;
+        selectedIso = td.dataset.date;
+        const p = parseIso(selectedIso);
+        if (p.getMonth() !== calMonth || p.getFullYear() !== calYear) { calYear = p.getFullYear(); calMonth = p.getMonth(); }
+        renderCalendar();
+        renderAgenda();
+    });
+    calBody.addEventListener('dblclick', function(e) {
+        const td = e.target.closest('td[data-date]');
+        if (!td) return;
+        selectedIso = td.dataset.date;
+        renderCalendar();
+        renderAgenda();
+        openEditor();
+    });
+
+    /* ----------------------- marker editor ----------------------- */
+    const edTitle = document.getElementById('lcwEdTitle');
+    const edType = document.getElementById('lcwEdType');
+    const edStyle = document.getElementById('lcwEdStyle');
+    const edDate = document.getElementById('lcwEdDate');
+    const edStart = document.getElementById('lcwEdStart');
+    const edEnd = document.getElementById('lcwEdEnd');
+    const edFreq = document.getElementById('lcwEdFreq');
+    const edInterval = document.getElementById('lcwEdInterval');
+    const edRStart = document.getElementById('lcwEdRStart');
+    const edUntil = document.getElementById('lcwEdUntil');
+    const edErr = document.getElementById('lcwEdErr');
+    const dateRow = document.getElementById('lcwEdDateRow');
+    const rangeRow = document.getElementById('lcwEdRangeRow');
+    const repeatRow = document.getElementById('lcwEdRepeatRow');
+    const wdEl = document.getElementById('lcwEdWeekdays');
+    const freqHint = document.getElementById('lcwEdFreqHint');
+    const colorsEl = document.getElementById('lcwEdColors');
+
+    let currentColor = PALETTE[0];
+    const edWeekdays = new Set();
+
+    PALETTE.forEach(function(c) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'lcw-sw'; b.dataset.color = c;
+        b.style.background = c; b.setAttribute('aria-label', 'Colour ' + c);
+        colorsEl.appendChild(b);
+    });
+    const customColor = document.createElement('input');
+    customColor.type = 'color'; customColor.className = 'lcw-sw-custom'; customColor.title = 'Custom colour';
+    colorsEl.appendChild(customColor);
+
+    function setColor(c) {
+        currentColor = hexOk(c);
+        customColor.value = currentColor.toLowerCase();
+        colorsEl.querySelectorAll('.lcw-sw').forEach(function(b) {
+            b.classList.toggle('on', b.dataset.color.toLowerCase() === currentColor.toLowerCase());
+        });
+    }
+    colorsEl.addEventListener('click', function(e) {
+        const b = e.target.closest('.lcw-sw');
+        if (b) setColor(b.dataset.color);
+    });
+    customColor.addEventListener('input', function() { setColor(customColor.value); });
+
+    ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(function(letter, i) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.dataset.wd = i; b.textContent = letter; b.title = WD_SHORT[i];
+        wdEl.appendChild(b);
+    });
+    function syncWeekdayButtons() {
+        wdEl.querySelectorAll('button').forEach(function(b) { b.classList.toggle('on', edWeekdays.has(+b.dataset.wd)); });
+    }
+    wdEl.addEventListener('click', function(e) {
+        const b = e.target.closest('button[data-wd]');
+        if (!b) return;
+        const w = +b.dataset.wd;
+        if (edWeekdays.has(w)) edWeekdays.delete(w); else edWeekdays.add(w);
+        syncWeekdayButtons();
+    });
+
+    function syncEditorRows() {
+        const t = edType.value;
+        dateRow.hidden = t !== 'date';
+        rangeRow.hidden = t !== 'range';
+        repeatRow.hidden = t !== 'repeat';
+        wdEl.hidden = !(t === 'repeat' && edFreq.value === 'weekly');
+        const hints = {
+            daily: '',
+            weekly: 'Pick the weekdays to repeat on (defaults to the start date\u2019s weekday).',
+            monthly: 'Repeats on the same day each month; short months use their last day.',
+            yearly: 'Repeats on the same date each year (Feb 29 falls on Feb 28 in non-leap years).'
+        };
+        freqHint.textContent = t === 'repeat' ? (hints[edFreq.value] || '') : '';
+    }
+    edType.addEventListener('change', syncEditorRows);
+    edFreq.addEventListener('change', syncEditorRows);
+
+    function showError(msg) { edErr.textContent = msg || ''; }
+    function closeEditor() { editor.hidden = true; }
+    function closeList() { listEl.hidden = true; }
+
+    function openEditor() {
+        closeList();
+        edTitle.value = '';
+        edType.value = 'date';
+        edStyle.value = 'dot';
+        edDate.value = selectedIso;
+        edStart.value = selectedIso;
+        edEnd.value = selectedIso;
+        edRStart.value = selectedIso;
+        edUntil.value = '';
+        edFreq.value = 'weekly';
+        edInterval.value = 1;
+        edWeekdays.clear();
+        edWeekdays.add(parseIso(selectedIso).getDay());
+        syncWeekdayButtons();
+        setColor(PALETTE[userMarkers.length % PALETTE.length]);
+        syncEditorRows();
+        showError('');
+        editor.hidden = false;
+        edTitle.focus();
+    }
+
+    function newId() { return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+    function saveFromEditor() {
+        const title = edTitle.value.trim();
+        if (!title) return showError('Give the marker a title.');
+        const mk = { id: newId(), title: title, color: currentColor, style: edStyle.value, type: edType.value };
+
+        if (mk.type === 'date') {
+            if (!edDate.value) return showError('Pick a date.');
+            mk.date = edDate.value;
+        } else if (mk.type === 'range') {
+            if (!edStart.value || !edEnd.value) return showError('Pick a start and an end date.');
+            if (edEnd.value < edStart.value) return showError('The end date must be on or after the start date.');
+            mk.start = edStart.value;
+            mk.end = edEnd.value;
+        } else {
+            if (!edRStart.value) return showError('Pick a start date.');
+            mk.start = edRStart.value;
+            mk.freq = edFreq.value;
+            mk.interval = Math.max(1, parseInt(edInterval.value, 10) || 1);
+            if (mk.freq === 'weekly') mk.weekdays = Array.from(edWeekdays).sort();
+            if (edUntil.value) {
+                if (edUntil.value < mk.start) return showError('The end date must be on or after the start date.');
+                mk.until = edUntil.value;
+            }
+        }
+        userMarkers.push(mk);
+        saveMarkers(userMarkers);
+        closeEditor();
+        refreshAll();
+    }
+
+    function deleteMarker(id) {
+        if (!window.confirm('Delete this marker?')) return;
+        userMarkers = userMarkers.filter(function(m) { return m.id !== id; });
+        saveMarkers(userMarkers);
+        refreshAll();
+    }
+
+    // For a repeating marker, jump to its next occurrence rather than a start date long ago
+    function jumpToMarker(id) {
+        const mk = allMarkers().filter(function(m) { return m.id === id; })[0];
+        if (!mk) return;
+        let target = mk.type === 'date' ? mk.date : mk.start;
+        if (mk.type === 'repeat') {
+            const t = new Date();
+            for (let i = 0; i < 800; i++) {
+                const probe = new Date(t.getFullYear(), t.getMonth(), t.getDate() + i);
+                if (appliesOn(mk, probe.getFullYear(), probe.getMonth(), probe.getDate())) { target = isoOf(probe); break; }
+            }
+        }
+        if (!target) return;
+        const p = parseIso(target);
+        calYear = p.getFullYear();
+        calMonth = p.getMonth();
+        selectedIso = target;
+        refreshAll();
+    }
+
+    bind('lcwEdSave', saveFromEditor);
+    bind('lcwEdCancel', closeEditor);
+    bind('lcwAddBtn', function() { if (editor.hidden) openEditor(); else closeEditor(); });
+    bind('lcwListBtn', function() {
+        closeEditor();
+        listEl.hidden = !listEl.hidden;
+        if (!listEl.hidden) renderList();
+    });
+    edTitle.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); saveFromEditor(); } });
+
+    agendaEl.addEventListener('click', function(e) {
+        const del = e.target.closest('.lcw-item-del');
+        if (del) deleteMarker(del.dataset.id);
+    });
+    listEl.addEventListener('click', function(e) {
+        const del = e.target.closest('.lcw-item-del');
+        if (del) { deleteMarker(del.dataset.id); return; }
+        const item = e.target.closest('.lcw-item');
+        if (item) jumpToMarker(item.dataset.id);
+    });
+
+    // keep several open tabs in sync
+    window.addEventListener('storage', function(e) {
+        if (e.key === STORE_KEY) { userMarkers = loadMarkers(); refreshAll(); }
+    });
+
+    // small public API for other scripts/pages
+    window.PlastiqCalendar = {
+        getMarkers: function() { return allMarkers(); },
+        addMarker: function(mk) {
+            if (!mk || !mk.title || !mk.type) return null;
+            const clean = Object.assign({ style: 'dot', color: PALETTE[0] }, mk, { id: newId() });
+            userMarkers.push(clean);
+            saveMarkers(userMarkers);
+            refreshAll();
+            return clean.id;
+        },
+        removeMarker: function(id) {
+            userMarkers = userMarkers.filter(function(m) { return m.id !== id; });
+            saveMarkers(userMarkers);
+            refreshAll();
+        },
+        refresh: refreshAll
+    };
+
+    /* ----------------------- open / close popover ----------------------- */
     function closePopover() {
         popover.classList.remove('show');
         link.setAttribute('aria-expanded', 'false');
@@ -248,8 +785,15 @@
         e.stopPropagation();
         const isOpen = popover.classList.contains('show');
         document.querySelectorAll('.navbar .dropdown-menu.show').forEach(function(m) { m.classList.remove('show'); });
-        if (!isOpen) { popover.classList.add('show'); link.setAttribute('aria-expanded', 'true'); resetToToday(); }
-        else closePopover();
+        if (!isOpen) {
+            popover.classList.add('show');
+            link.setAttribute('aria-expanded', 'true');
+            closeEditor();
+            closeList();
+            resetToToday();
+        } else {
+            closePopover();
+        }
     });
     link.addEventListener('dblclick', function(e) {
         e.preventDefault();
@@ -261,6 +805,7 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && popover.classList.contains('show')) { closePopover(); link.focus(); }
     });
+    // clicks inside the popover (including ones that re-render its contents) must not reach the outside-click handler
     popover.addEventListener('click', function(e) { e.stopPropagation(); });
 })();
 </script>
